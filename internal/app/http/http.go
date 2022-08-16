@@ -3,23 +3,27 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"social/internal/app/http/middleware"
 	"social/internal/usecase"
 	"social/internal/usecase/repo"
 	"social/pkg/log"
 	"social/pkg/postgres"
-	"syscall"
-	"time"
 )
 
 func Run() {
 	r := gin.New()
 	gin.SetMode(gin.DebugMode)
-	pg, err := postgres.New("127.0.0.1:6008", postgres.MaxPoolSize(2))
+	pg, err := postgres.New(fmt.Sprintf("%s:%s",
+		viper.GetString("postgres.host"), viper.GetString("postgres.port")),
+		postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("postgres New err: %w", err))
 	}
@@ -27,16 +31,16 @@ func Run() {
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg))
 	r.Use(
 		gin.Recovery(),
-		middleware.JWTMiddleware(userUseCase, "prod", "social-key"),
+		middleware.JWTMiddleware(userUseCase, "social-key"),
 	)
 	NewRouter(r)
 
 	srv := http.Server{
-		Addr:    ":7788",
+		Addr:    viper.GetString("http.addr"),
 		Handler: r,
 	}
 	go func() {
-		if err  = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
 		}
 	}()

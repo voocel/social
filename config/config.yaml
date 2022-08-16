@@ -1,0 +1,30 @@
+app:
+  prefixUrl: http://127.0.0.1:8100
+  avatarSavePath: static/uploads/avatar/
+  runtimeRootPath: runtime/
+  imageAllowExts: .jpg,.jpeg,.png
+  imageMaxSize: 5
+  logFile: log/gin.log
+  heartbeat: 1000
+  jwtTime: 7200
+  jwtSecret: social
+websocket:
+  addr: ":8000"
+
+http:
+  addr: ":8100"
+
+rpc:
+  addr: ":9100"
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  DB: 0
+  poolSize: 30
+  minIdleConns: 30
+
+postgres:
+  host: 127.0.0.1
+  port: 5433

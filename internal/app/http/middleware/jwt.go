@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"social/internal/usecase"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,62 +17,41 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"social/internal/entity"
-)
-
-// ReleaseMode is the mode for release, such as dev or release.
-type ReleaseMode string
-
-const (
-	// ReleaseModeProd is the prod mode.
-	ReleaseModeProd ReleaseMode = "prod"
-	// ReleaseModeDev is the dev mode.
-	ReleaseModeDev ReleaseMode = "dev"
+	"social/internal/usecase"
 )
 
 const (
-	issuer                  = "bytebase"
-	accessTokenAudienceFmt  = "bb.user.access.%s"
-	refreshTokenAudienceFmt = "bb.user.refresh.%s"
+	issuer                  = "social"
+	accessTokenAudienceFmt  = "social.user.access"
+	refreshTokenAudienceFmt = "social.user.refresh"
 
-	// Cookie section.
 	accessTokenCookieName  = "access-token"
 	refreshTokenCookieName = "refresh-token"
 
-	// Signing key section. For now, this is only used for signing, not for verifying since we only
-	// have 1 version. But it will be used to maintain backward compatibility if we change the signing mechanism.
 	keyID = "v1"
 
-	// Expiration section.
 	refreshThresholdDuration = 1 * time.Hour
 	accessTokenDuration      = 24 * time.Hour
 	refreshTokenDuration     = 7 * 24 * time.Hour
-	// Make cookie expire slightly earlier than the jwt expiration. Client would be logged out if the user
-	// cookie expires, thus the client would always logout first before attempting to make a request with the expired jwt.
-	// Suppose we have a valid refresh token, we will refresh the token in 2 cases:
-	// 1. The access token is about to expire in <<refreshThresholdDuration>>
-	// 2. The access token has already expired, we refresh the token so that the ongoing request can pass through.
+
+	// cookie的过期时间略早于jwt过期时间, 使得如果用户cookie过期，则会在使用过期的jwt前先注销
 	cookieExpDuration = refreshTokenDuration - 1*time.Minute
 
-	// Context section
-	// The key name used to store principal id in the context
-	// principal id is extracted from the jwt token subject field.
-	principalIDContextKey = "principal-id"
+	socialIDContextKey = "social-id"
 )
 
-// Claims creates a struct that will be encoded to a JWT.
-// We add jwt.RegisteredClaims as an embedded type, to provide fields like name.
 type Claims struct {
 	Name string `json:"name"`
 	jwt.RegisteredClaims
 }
 
-func getPrincipalIDContextKey() string {
-	return principalIDContextKey
+func getSocialIDContextKey() string {
+	return socialIDContextKey
 }
 
-// GenerateTokensAndSetCookies generates jwt token and saves it to the http-only cookie.
-func GenerateTokensAndSetCookies(c *gin.Context, user *entity.User, mode ReleaseMode, secret string) error {
-	accessToken, err := generateAccessToken(user, mode, secret)
+// GenerateTokensAndSetCookies 生成 jwt token 并且保存到 http-only cookie
+func GenerateTokensAndSetCookies(c *gin.Context, user *entity.User, secret string) error {
+	accessToken, err := generateAccessToken(user, secret)
 	if err != nil {
 		return fmt.Errorf("failed to generate access token: %w", err)
 	}
@@ -82,8 +60,8 @@ func GenerateTokensAndSetCookies(c *gin.Context, user *entity.User, mode Release
 	setTokenCookie(c, accessTokenCookieName, accessToken, cookieExp.Second())
 	setUserCookie(c, user, cookieExp.Second())
 
-	// We generate here a new refresh token and saving it to the cookie.
-	refreshToken, err := generateRefreshToken(user, mode, secret)
+	// 生成refreshToken并保存到cookie中
+	refreshToken, err := generateRefreshToken(user, secret)
 	if err != nil {
 		return fmt.Errorf("failed to generate refresh token: %w", err)
 	}
@@ -92,36 +70,30 @@ func GenerateTokensAndSetCookies(c *gin.Context, user *entity.User, mode Release
 	return nil
 }
 
-func generateAccessToken(user *entity.User, mode ReleaseMode, secret string) (string, error) {
+func generateAccessToken(user *entity.User, secret string) (string, error) {
 	expirationTime := time.Now().Add(accessTokenDuration)
-	return generateToken(user, fmt.Sprintf(accessTokenAudienceFmt, mode), expirationTime, []byte(secret))
+	return generateToken(user, fmt.Sprintf(accessTokenAudienceFmt), expirationTime, []byte(secret))
 }
 
-func generateRefreshToken(user *entity.User, mode ReleaseMode, secret string) (string, error) {
+func generateRefreshToken(user *entity.User, secret string) (string, error) {
 	expirationTime := time.Now().Add(refreshTokenDuration)
-	return generateToken(user, fmt.Sprintf(refreshTokenAudienceFmt, mode), expirationTime, []byte(secret))
+	return generateToken(user, refreshTokenAudienceFmt, expirationTime, []byte(secret))
 }
 
-// Pay attention to this function. It holds the main JWT token generation logic.
 func generateToken(user *entity.User, aud string, expirationTime time.Time, secret []byte) (string, error) {
-	// Create the JWT claims, which includes the username and expiry time.
 	claims := &Claims{
 		Name: user.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Audience: jwt.ClaimStrings{aud},
-			// In JWT, the expiry time is expressed as unix milliseconds.
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			Audience:  jwt.ClaimStrings{aud},
+			ExpiresAt: jwt.NewNumericDate(expirationTime), // unix milliseconds
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    issuer,
 			Subject:   strconv.Itoa(user.ID),
 		},
 	}
 
-	// Declare the token with the HS256 algorithm used for signing, and the claims.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token.Header["kid"] = keyID
-
-	// Create the JWT string.
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
@@ -130,16 +102,17 @@ func generateToken(user *entity.User, aud string, expirationTime time.Time, secr
 	return tokenString, nil
 }
 
-// Here we are creating a new cookie, which will store the valid JWT token.
+// 创建一个新的cookie，并存储有效的token
 func setTokenCookie(c *gin.Context, name, token string, expiration int) {
 	c.SetCookie(name, token, expiration, "/", "localhost", false, true)
 }
 
+// 清除cookie
 func removeTokenCookie(c *gin.Context, name string) {
 	c.SetCookie(name, "", -1, "/", "localhost", false, true)
 }
 
-// Purpose of this cookie is to store the user's id.
+// 此cookie的目的是存储用户的id
 func setUserCookie(c *gin.Context, user *entity.User, expiration int) {
 	c.SetCookie("user", strconv.Itoa(user.ID), expiration, "/", "localhost", false, true)
 }
@@ -148,22 +121,14 @@ func removeUserCookie(c *gin.Context) {
 	c.SetCookie("user", "", -1, "/", "localhost", false, true)
 }
 
-// JWTMiddleware validates the access token.
-// If the access token is about to expire or has expired and the request has a valid refresh token, it
-// will try to generate new access token and refresh token.
-func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret string) gin.HandlerFunc {
+// JWTMiddleware 验证 access token
+func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Skips auth, actuator, plan
-		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/api/actuator", "/api/plan") {
+		// 跳过 auth, register
+		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/api/register", "/api/plan") {
 			c.Next()
 			return
 		}
-
-		//method := c.Request().Method
-		//// Skip GET /subscription request
-		//if HasPrefixes(c.Path(), "/api/subscription") && method == "GET" {
-		//	return next(c)
-		//}
 
 		cookie, err := c.Cookie(accessTokenCookieName)
 		if err != nil {
@@ -188,12 +153,12 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 			return nil, fmt.Errorf("unexpected access token kid=%v", t.Header["kid"])
 		})
 
-		if !audienceContains(claims.Audience, fmt.Sprintf(accessTokenAudienceFmt, mode)) {
+		if !audienceContains(claims.Audience, accessTokenAudienceFmt) {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code": 400,
 				"msg": fmt.Sprintf("Invalid access token, audience mismatch, got %q, expected %q. you may send request to the wrong environment",
 					claims.Audience,
-					fmt.Sprintf(accessTokenAudienceFmt, mode),
+					accessTokenAudienceFmt,
 				),
 			})
 			c.Abort()
@@ -204,8 +169,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 		if err != nil {
 			var ve *jwt.ValidationError
 			if errors.As(err, &ve) {
-				// If expiration error is the only error, we will clear the err
-				// and generate new access token and refresh token
+				// token过期则清除错误并刷新token
 				if ve.Errors == jwt.ValidationErrorExpired {
 					err = nil
 					generateToken = true
@@ -213,7 +177,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 			}
 		}
 
-		// We either have a valid access token or we will attempt to generate new access token and refresh token
+		// 要么拥有有效的访问令牌，要么尝试生成新的访问令牌和刷新令牌
 		if err == nil {
 			ctx := c.Request.Context()
 			uid, err := strconv.Atoi(claims.Subject)
@@ -226,7 +190,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 				return
 			}
 
-			// Even if there is no error, we still need to make sure the user still exists.
+			// 即使没有错误，仍然需要确保用户仍然存在。
 			user, err := userRepo.GetUserById(ctx, uid)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -256,7 +220,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 						}
 					}
 
-					// Parses token and checks if it's valid.
+					// 解析token并检查其是否有效.
 					refreshTokenClaims := &Claims{}
 					refreshToken, err := jwt.ParseWithClaims(rc, refreshTokenClaims, func(t *jwt.Token) (interface{}, error) {
 						if t.Method.Alg() != jwt.SigningMethodHS256.Name {
@@ -283,19 +247,19 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 						}
 					}
 
-					if !audienceContains(refreshTokenClaims.Audience, fmt.Sprintf(refreshTokenAudienceFmt, mode)) {
+					if !audienceContains(refreshTokenClaims.Audience, refreshTokenAudienceFmt) {
 						return &generateTokenErr{
 							code: http.StatusUnauthorized,
 							msg: fmt.Sprintf("Invalid refresh token, audience mismatch, got %q, expected %q. you may send request to the wrong environment",
 								refreshTokenClaims.Audience,
-								fmt.Sprintf(refreshTokenAudienceFmt, mode),
+								refreshTokenAudienceFmt,
 							),
 						}
 					}
 
-					// If we have a valid refresh token, we will generate new access token and refresh token
+					// 如果有一个有效的refresh token，将生成新的access token和refresh token
 					if refreshToken != nil && refreshToken.Valid {
-						if err := GenerateTokensAndSetCookies(c, user, mode, secret); err != nil {
+						if err := GenerateTokensAndSetCookies(c, user, secret); err != nil {
 							return &generateTokenErr{
 								code: http.StatusInternalServerError,
 								msg:  fmt.Sprintf("Server error to refresh expired token. User Id %d", uid),
@@ -306,8 +270,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 					return nil
 				}
 
-				// It may happen that we still have a valid access token, but we encounter issue when trying to generate new token
-				// In such case, we won't return the error.
+				// 这可能仍然有一个有效的access token，但在尝试生成新令牌时会遇到问题，这种情况不反回错误
 				if err := generateTokenFunc(); err != nil && !accessToken.Valid {
 					c.JSON(http.StatusUnauthorized, gin.H{
 						"code": err.code,
@@ -318,8 +281,8 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, mode ReleaseMode, secret strin
 				}
 			}
 
-			// Stores principalID into context.
-			c.Set(getPrincipalIDContextKey(), uid)
+			// 将socialID存储到上下文
+			c.Set(getSocialIDContextKey(), uid)
 			c.Next()
 		}
 
@@ -346,7 +309,6 @@ func audienceContains(audience jwt.ClaimStrings, token string) bool {
 	return false
 }
 
-// FindString returns the search index of sorted strings.
 func FindString(stringList []string, search string) int {
 	sort.Strings(stringList)
 	i := sort.SearchStrings(stringList, search)
@@ -358,14 +320,10 @@ func FindString(stringList []string, search string) int {
 
 var letters = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-// RandomString returns a random string with length n.
 func RandomString(n int) (string, error) {
 	var sb strings.Builder
 	sb.Grow(n)
 	for i := 0; i < n; i++ {
-		// The reason for using crypto/rand instead of math/rand is that
-		// the former relies on hardware to generate random numbers and
-		// thus has a stronger source of random numbers.
 		randNum, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
 		if err != nil {
 			return "", err
@@ -377,7 +335,6 @@ func RandomString(n int) (string, error) {
 	return sb.String(), nil
 }
 
-// HasPrefixes returns true if the string s has any of the given prefixes.
 func HasPrefixes(src string, prefixes ...string) bool {
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(src, prefix) {
@@ -387,33 +344,23 @@ func HasPrefixes(src string, prefixes ...string) bool {
 	return false
 }
 
-// GetPostgresDataDir returns the postgres data directory of Bytebase.
 func GetPostgresDataDir(dataDir string) string {
 	return path.Join(dataDir, "pgdata")
 }
 
-// GetPostgresSocketDir returns the postgres socket directory of Bytebase.
 func GetPostgresSocketDir() string {
 	return "/tmp"
 }
 
-// GetResourceDir returns the resource directory of Bytebase.
 func GetResourceDir(dataDir string) string {
 	return path.Join(dataDir, "resources")
 }
 
-// DefaultMigrationVersion returns the default migration version string.
-// Use the current time in second to guarantee uniqueness in a monotonic increasing way.
-// We cannot add task ID because tenant mode databases should use the same migration version string when applying a schema update.
 func DefaultMigrationVersion() string {
 	return time.Now().Format("20060102150405")
 }
 
-// ParseTemplateTokens parses the template and returns template tokens and their delimiters.
-// For example, if the template is "{{DB_NAME}}_hello_{{LOCATION}}", then the tokens will be ["{{DB_NAME}}", "{{LOCATION}}"],
-// and the delimiters will be ["_hello_"].
-// The caller will usually replace the tokens with a normal string, or a regexp. In the latter case, it will be a problem
-// if there are special regexp characters like "$" in the delimiters. The caller should escape the delimiters in such cases.
+// ParseTemplateTokens 解析模板并返回模板标记及其分隔符
 func ParseTemplateTokens(template string) ([]string, []string) {
 	r := regexp.MustCompile(`{{[^{}]+}}`)
 	tokens := r.FindAllString(template, -1)
@@ -430,7 +377,6 @@ func ParseTemplateTokens(template string) ([]string, []string) {
 	return nil, nil
 }
 
-// GetFileSizeSum calculates the sum of file sizes for file names in the list.
 func GetFileSizeSum(fileNameList []string) (int64, error) {
 	var sum int64
 	for _, fileName := range fileNameList {
