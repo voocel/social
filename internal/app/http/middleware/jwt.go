@@ -112,7 +112,7 @@ func removeTokenCookie(c *gin.Context, name string) {
 	c.SetCookie(name, "", -1, "/", "localhost", false, true)
 }
 
-// 此cookie的目的是存储用户的id
+// 存储用户id
 func setUserCookie(c *gin.Context, user *entity.User, expiration int) {
 	c.SetCookie("user", strconv.Itoa(user.ID), expiration, "/", "localhost", false, true)
 }

@@ -1,13 +1,15 @@
+log_level: info
+log_path: log
+
 app:
-  prefixUrl: http://127.0.0.1:8100
-  avatarSavePath: static/uploads/avatar/
-  runtimeRootPath: runtime/
-  imageAllowExts: .jpg,.jpeg,.png
-  imageMaxSize: 5
-  logFile: log/gin.log
+  prefix_url: http://127.0.0.1:8100
+  avatar_save_path: static/uploads/avatar/
+  runtime_root_path: runtime/
+  image_allow_exts: .jpg,.jpeg,.png
+  image_max_size: 5
   heartbeat: 1000
-  jwtTime: 7200
-  jwtSecret: social
+  jwt_time: 7200
+  jwt_secret: social
 websocket:
   addr: ":8000"
 
@@ -21,9 +23,9 @@ redis:
   host: 127.0.0.1
   port: 6379
   password: ""
-  DB: 0
-  poolSize: 30
-  minIdleConns: 30
+  db: 0
+  pool_size: 30
+  min_idle_conn: 30
 
 postgres:
   host: 127.0.0.1

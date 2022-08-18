@@ -1,8 +1,9 @@
 syntax = "proto3";
-package social.v1;
+package im.v1;
 option  go_package = "github.com/voocel/social/api/gen/v1";
 
 import "google/protobuf/timestamp.proto";
+import "im/v1/common.proto";
 
 message Message {
   int64 mid = 1;
@@ -10,5 +11,4 @@ message Message {
   string content = 3;
   string msgtype = 4;
   google.protobuf.Timestamp time = 5;
-
 }

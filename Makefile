@@ -12,5 +12,5 @@ help:
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
 	@echo ''
 	@echo 'Available targets are:'
-	@echo ' make gen protofile=[your proto filename]'
+	@echo ' make gen proto=[your proto filename]'
 	@echo ''

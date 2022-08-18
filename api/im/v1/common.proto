@@ -1,0 +1,10 @@
+syntax = "proto3";
+package im.v1;
+option  go_package = "github.com/voocel/social/api/gen/v1";
+
+import "google/protobuf/timestamp.proto";
+
+message Response {
+  bool ok = 1;
+  string message = 2;
+}
