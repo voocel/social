@@ -40,11 +40,13 @@ type RedisConfig struct {
 	MinIdleConn int
 }
 
-func LoadConfig(path ...string) {
-	if len(path) == 0 {
+func LoadConfig(paths ...string) {
+	if len(paths) == 0 {
 		viper.AddConfigPath("config")
 	} else {
-		viper.AddConfigPath(path[0])
+		for _, path := range paths {
+			viper.AddConfigPath(path)
+		}
 	}
 
 	viper.SetConfigType("yaml")
