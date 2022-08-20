@@ -1,3 +1,5 @@
+VERSION:=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | tr -d '"')
+
 default:gen
 
 gen:
@@ -30,10 +32,10 @@ help:
 	@echo '    build              Compile a program into an executable file'
 	@echo '    compress           Compress executable files'
 	@echo '    install-protobuf   Install protobuf plugins'
-	@echo '    version            Display Go version'
+	@echo '    version            Display social version'
 	@echo ''
 	@echo 'make gen proto=[your proto filename]'
 	@echo ''
 
 version:
-	@go version
+	@echo ${VERSION}
