@@ -33,9 +33,15 @@ help:
 	@echo '    compress           Compress executable files'
 	@echo '    install-protobuf   Install protobuf plugins'
 	@echo '    version            Display social version'
+	@echo '    bench              Benchmarks are run sequentially'
 	@echo ''
 	@echo 'make gen proto=[your proto filename]'
 	@echo ''
 
 version:
 	@echo ${VERSION}
+
+bench:
+	go test -benchmem -cpuprofile cpu.out -memprofile mem.out -run=^$ github.com/voocel/social/benchmark -bench ^Benchmark$
+	go tool pprof -svg bench.test cpu.out > cpu.svg
+	go tool pprof -svg bench.test mem.out > mem.svg
