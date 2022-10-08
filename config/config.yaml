@@ -1,3 +1,4 @@
+mode: debug
 log_level: info
 log_path: log
 
@@ -11,18 +12,18 @@ app:
   jwt_time: 7200
   jwt_secret: social
 websocket:
-  addr: ":8000"
+  addr: :8000
 
 http:
-  addr: ":8100"
+  addr: :8100
 
 rpc:
-  addr: ":9100"
+  addr: :9100
 
 redis:
   host: 127.0.0.1
   port: 6379
-  password: ""
+  password: 123456
   db: 0
   pool_size: 30
   min_idle_conn: 30
@@ -30,3 +31,32 @@ redis:
 postgres:
   host: 127.0.0.1
   port: 5433
+
+mysql:
+  host: 127.0.0.1
+  port: 6555
+  dbname: social
+  username: root
+  password: 123456
+  maximum_pool_size: 50
+  maximum_idle_size: 10
+
+gateway:
+  name: gateway
+  endpoint:
+    - name: ws_service
+      proxy:
+        balance: random
+        targets:
+          - target: "127.0.0.1:6660"
+          - target: "127.0.0.1:6661"
+          - target: "127.0.0.1:6662"
+      rate_limit: false
+    - name: im_service
+      proxy:
+        balance: random
+        targets:
+          - target: "127.0.0.1:6660"
+          - target: "127.0.0.1:6661"
+          - target: "127.0.0.1:6662"
+      rate_limit: false
