@@ -24,9 +24,9 @@ func NewRegistry(endpoints []string, key, val string, lease int64) (*Registry, e
 		return nil, err
 	}
 	r := &Registry{
-		cli:           cli,
-		key:           key,
-		val:           val,
+		cli: cli,
+		key: key,
+		val: val,
 	}
 	if err = r.putKeyWithLease(lease); err != nil {
 		return nil, err
@@ -36,22 +36,22 @@ func NewRegistry(endpoints []string, key, val string, lease int64) (*Registry, e
 
 func (r *Registry) putKeyWithLease(lease int64) error {
 	//设置租约时间
-	resp, err := r.cli.Grant(context.Background(), lease)
+	leaseResp, err := r.cli.Grant(context.Background(), lease)
 	if err != nil {
 		return err
 	}
 	//注册服务并绑定租约
-	_, err = r.cli.Put(context.Background(), r.key, r.val, clientv3.WithLease(resp.ID))
+	_, err = r.cli.Put(context.Background(), r.key, r.val, clientv3.WithLease(leaseResp.ID))
 	if err != nil {
 		return err
 	}
-	//设置续租定期发送需求请求
-	leaseResp, err := r.cli.KeepAlive(context.Background(), resp.ID)
+	//定期刷新租约使其不过期
+	leaseKeepResp, err := r.cli.KeepAlive(context.Background(), leaseResp.ID)
 	if err != nil {
 		return err
 	}
-	r.leaseID = resp.ID
-	r.keepAliveChan = leaseResp
+	r.leaseID = leaseResp.ID
+	r.keepAliveChan = leaseKeepResp
 	log.Printf("put key:%s  value:%s  success!", r.key, r.val)
 	return nil
 }
