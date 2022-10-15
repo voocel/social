@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go.etcd.io/etcd/client/v3"
 	"log"
+	"social/pkg/discovery"
 	"testing"
 	"time"
 )
@@ -12,7 +13,7 @@ import (
 func TestName(t *testing.T) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"localhost:2379"},
-		DialTimeout: 10*time.Second,
+		DialTimeout: 10 * time.Second,
 	})
 	if err != nil {
 		panic(err)
@@ -30,7 +31,7 @@ func TestName(t *testing.T) {
 	fmt.Println(res.ID)
 	cli.Put(context.Background(), "test2", "666", clientv3.WithLease(res.ID))
 	for i := 0; i < 15; i++ {
-		r , _ := cli.Get(context.Background(), "test2")
+		r, _ := cli.Get(context.Background(), "test2")
 		fmt.Println(r)
 		time.Sleep(time.Second)
 	}
@@ -44,21 +45,24 @@ func TestDiscovery(t *testing.T) {
 	for {
 		select {
 		case <-time.Tick(10 * time.Second):
-			log.Println(d.GetServices())
+			log.Println(d.QueryServices())
 		}
 	}
 }
 
 func TestRegistry(t *testing.T) {
-	var endpoints = []string{"node1:6666"}
-	ser, err := NewRegistry(endpoints, "/web/node1", "localhost:2379", 20)
+	reg, err := NewRegistry(20)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	//监听续租相应chan
-	go ser.ListenLeaseChan()
+	reg.Register(context.Background(), discovery.Node{
+		ID:   "node1",
+		Name: "web",
+		Addr: "node1:8888",
+	})
+
 	select {
 	case <-time.After(30 * time.Second):
-		ser.Close()
+		reg.Close()
 	}
 }

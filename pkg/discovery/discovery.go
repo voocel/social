@@ -1,28 +1,21 @@
 package discovery
 
-type Discovery interface {
-	// QueryServices 向注册中心查询所有服务
-	QueryServices() ([]*ServiceInfo, error)
+import "context"
 
+type Discovery interface {
 	// Register 注册服务
-	Register() error
+	Register(context.Context, Node, int64) error
 
 	// UnRegister 取消服务
-	UnRegister() error
+	UnRegister(context.Context, Node) error
 
-	// GetService 获取指定服务
-	GetService(name string) []ServiceInfo
+	// QueryServices 向注册中心查询所有服务
+	QueryServices() []*Node
 }
 
-type Watcher interface {
-	// Next 返回服务实例列表
-	Next() ([]*ServiceInfo, error)
-	// Stop 停止监听
-	Stop() error
-}
-
-type ServiceInfo struct {
-	ServiceName string
-	Addr        string
-	Meta        map[string]string
+type Node struct {
+	ID   string
+	Name string
+	Addr string
+	Meta map[string]string
 }

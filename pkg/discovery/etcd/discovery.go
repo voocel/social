@@ -2,16 +2,25 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
 	"log"
+	"social/pkg/discovery"
 	"sync"
 	"time"
 )
 
+const defaultRefreshDuration = time.Second * 10
+
 type Discovery struct {
-	cli        *clientv3.Client
-	serverList sync.Map
+	cli             *clientv3.Client
+	serverList      map[string]*discovery.Node
+	refreshDuration time.Duration
+	serviceName     string
+	Registry        *Registry
+	sync.Mutex
 }
 
 func NewDiscovery() *Discovery {
@@ -22,20 +31,38 @@ func NewDiscovery() *Discovery {
 	if err != nil {
 		panic(err)
 	}
+	reg, err := NewRegistry()
 	return &Discovery{
-		cli: cli,
+		cli:      cli,
+		Registry: reg,
 	}
 }
 
-func (d *Discovery) Watch(prefix string) error {
-	resp, err := d.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
-	if err != nil {
-		return err
+func (d *Discovery) Register(ctx context.Context, info discovery.Node, lease int64) error {
+	return d.Registry.Register(ctx, info, lease)
+}
+
+func (d *Discovery) UnRegister(ctx context.Context, info discovery.Node) error {
+	return d.Registry.UnRegister(ctx, info)
+}
+
+func (d *Discovery) QueryServices() []*discovery.Node {
+	addrs := make([]*discovery.Node, 0, 10)
+	for _, node := range d.serverList {
+		addrs = append(addrs, node)
 	}
-	for _, kv := range resp.Kvs {
-		d.SetService(string(kv.Key), string(kv.Value))
+	return addrs
+}
+
+func (d *Discovery) Watch(keyPrefix string) error {
+	if keyPrefix == "" {
+		return errors.New("serviceName is empty")
 	}
-	go d.watcher(prefix)
+	d.serviceName = keyPrefix
+
+	d.setServices()
+	go d.watcher(keyPrefix)
+	go d.refresh()
 	return nil
 }
 
@@ -44,32 +71,59 @@ func (d *Discovery) watcher(prefix string) {
 	log.Printf("watching prefix:%s now...", prefix)
 	for ch := range watchCh {
 		for _, event := range ch.Events {
+			key := string(event.Kv.Key)
 			switch event.Type {
-			case mvccpb.DELETE:
-				d.DelService(string(event.Kv.Key))
 			case mvccpb.PUT:
-				d.SetService(string(event.Kv.Key), string(event.Kv.Value))
+				info := &discovery.Node{}
+				json.Unmarshal(event.Kv.Value, info)
+				d.setService(key, info)
+				log.Println("PUT: ", key)
+			case mvccpb.DELETE:
+				d.delService(key)
+				log.Println("DELETE: ", key)
 			}
 		}
 	}
 }
 
-func (d *Discovery) SetService(k, v string) {
-	d.serverList.Store(k, v)
+func (d *Discovery) refresh() {
+	if d.refreshDuration == -1 {
+		return
+	}
+	if d.refreshDuration == 0 {
+		d.refreshDuration = defaultRefreshDuration
+	}
+	ticker := time.NewTicker(d.refreshDuration)
+	for range ticker.C {
+		d.setServices()
+		log.Println("refresh all!")
+	}
+}
+
+func (d *Discovery) setServices() {
+	resp, err := d.cli.Get(context.Background(), d.serviceName, clientv3.WithPrefix())
+	if err != nil {
+		log.Printf("get by prefix [%v] err: %v", d.serviceName, err)
+		return
+	}
+	for _, kv := range resp.Kvs {
+		info := &discovery.Node{}
+		json.Unmarshal(kv.Value, info)
+		d.setService(string(kv.Key), info)
+	}
+}
+
+func (d *Discovery) setService(k string, v *discovery.Node) {
+	d.Lock()
+	d.Unlock()
+	d.serverList[k] = v
 	log.Println("put key :", k, "value:", v)
 }
 
-func (d *Discovery) DelService(key string) {
-	d.serverList.Delete(key)
-}
-
-func (d *Discovery) GetServices() []string {
-	addrs := make([]string, 0, 10)
-	d.serverList.Range(func(k, v interface{}) bool {
-		addrs = append(addrs, v.(string))
-		return true
-	})
-	return addrs
+func (d *Discovery) delService(key string) {
+	d.Lock()
+	defer d.Unlock()
+	delete(d.serverList, key)
 }
 
 func (d *Discovery) Close() error {

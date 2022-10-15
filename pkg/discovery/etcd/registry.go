@@ -2,20 +2,20 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"go.etcd.io/etcd/client/v3"
 	"log"
+	"social/pkg/discovery"
 	"time"
 )
 
 type Registry struct {
-	cli           *clientv3.Client
-	leaseID       clientv3.LeaseID
-	key           string
-	val           string
-	keepAliveChan <-chan *clientv3.LeaseKeepAliveResponse
+	cli     *clientv3.Client
+	leaseID clientv3.LeaseID
 }
 
-func NewRegistry(endpoints []string, key, val string, lease int64) (*Registry, error) {
+func NewRegistry() (*Registry, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{"127.0.0.1:2379"},
 		DialTimeout: 10 * time.Second,
@@ -25,43 +25,58 @@ func NewRegistry(endpoints []string, key, val string, lease int64) (*Registry, e
 	}
 	r := &Registry{
 		cli: cli,
-		key: key,
-		val: val,
-	}
-	if err = r.putKeyWithLease(lease); err != nil {
-		return nil, err
 	}
 	return r, nil
 }
 
-func (r *Registry) putKeyWithLease(lease int64) error {
+func (r *Registry) Register(ctx context.Context, info discovery.Node, lease int64) error {
+	key := fmt.Sprintf("/%s/%s", info.Name, info.ID)
+	b, err := json.Marshal(info)
+	if err != nil {
+		return err
+	}
+	value := string(b)
 	//设置租约时间
-	leaseResp, err := r.cli.Grant(context.Background(), lease)
+	leaseResp, err := r.cli.Grant(ctx, lease)
 	if err != nil {
 		return err
 	}
 	//注册服务并绑定租约
-	_, err = r.cli.Put(context.Background(), r.key, r.val, clientv3.WithLease(leaseResp.ID))
+	_, err = r.cli.Put(ctx, key, value, clientv3.WithLease(leaseResp.ID))
 	if err != nil {
 		return err
 	}
 	//定期刷新租约使其不过期
-	leaseKeepResp, err := r.cli.KeepAlive(context.Background(), leaseResp.ID)
+	leaseKeepResp, err := r.cli.KeepAlive(ctx, leaseResp.ID)
 	if err != nil {
 		return err
 	}
 	r.leaseID = leaseResp.ID
-	r.keepAliveChan = leaseKeepResp
-	log.Printf("put key:%s  value:%s  success!", r.key, r.val)
+
+	// 监听续租情况
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("关闭续租")
+				return
+			case _, ok := <-leaseKeepResp:
+				if !ok {
+					log.Println("关闭续租")
+					return
+				}
+				log.Println("续约成功", leaseKeepResp)
+			}
+		}
+	}(ctx)
+	log.Printf("put key:%s  value:%s  success!", key, value)
 	return nil
 }
 
-//ListenLeaseChan 监听续租情况
-func (r *Registry) ListenLeaseChan() {
-	for leaseKeepResp := range r.keepAliveChan {
-		log.Println("续约成功", leaseKeepResp)
-	}
-	log.Println("关闭续租")
+func (r *Registry) UnRegister(ctx context.Context, info discovery.Node) error {
+	key := fmt.Sprintf("/%s/%s", info.Name, info.ID)
+	_, err := r.cli.Delete(ctx, key)
+	return err
 }
 
 // Close 注销服务
