@@ -3,66 +3,48 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"go.etcd.io/etcd/client/v3"
-	"log"
 	"social/pkg/discovery"
 	"testing"
 	"time"
 )
 
-func TestName(t *testing.T) {
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379"},
-		DialTimeout: 10 * time.Second,
-	})
-	if err != nil {
-		panic(err)
-	}
-	cli.Put(context.Background(), "test", "hello")
-	resp, err := cli.Get(context.Background(), "test")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(resp.Kvs)
-	res, err := cli.Grant(context.Background(), 10)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(res.ID)
-	cli.Put(context.Background(), "test2", "666", clientv3.WithLease(res.ID))
-	for i := 0; i < 15; i++ {
-		r, _ := cli.Get(context.Background(), "test2")
-		fmt.Println(r)
-		time.Sleep(time.Second)
-	}
-}
-
 func TestDiscovery(t *testing.T) {
 	d := NewDiscovery()
 	defer d.Close()
-	d.Watch("/web/")
+
 	d.Watch("/grpc/")
+	d.Watch("/web/")
 	for {
 		select {
-		case <-time.Tick(10 * time.Second):
-			log.Println(d.QueryServices())
+		case <-time.Tick(5 * time.Second):
+			res := d.QueryServices()
+			for _, v := range res {
+				fmt.Println(v)
+			}
 		}
 	}
 }
 
 func TestRegistry(t *testing.T) {
-	reg, err := NewRegistry(20)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	reg.Register(context.Background(), discovery.Node{
-		ID:   "node1",
+	d := NewDiscovery()
+	d.Registry.Register(context.Background(), discovery.Node{
 		Name: "web",
-		Addr: "node1:8888",
-	})
+		Host: "node1",
+		Port: "8888",
+	}, 10)
+	d.Registry.Register(context.Background(), discovery.Node{
+		Name: "web",
+		Host: "node2",
+		Port: "8888",
+	}, 10)
+	d.Registry.Register(context.Background(), discovery.Node{
+		Name: "grpc",
+		Host: "node1",
+		Port: "8888",
+	}, 10)
 
 	select {
-	case <-time.After(30 * time.Second):
-		reg.Close()
+	case <-time.After(60 * time.Second):
+		d.Registry.Close()
 	}
 }

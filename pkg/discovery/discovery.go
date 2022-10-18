@@ -3,6 +3,8 @@ package discovery
 import "context"
 
 type Discovery interface {
+	Name() string
+
 	// Register 注册服务
 	Register(context.Context, Node, int64) error
 
@@ -14,8 +16,8 @@ type Discovery interface {
 }
 
 type Node struct {
-	ID   string
 	Name string
-	Addr string
+	Host string
+	Port string
 	Meta map[string]string
 }

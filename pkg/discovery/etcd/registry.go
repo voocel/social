@@ -30,7 +30,7 @@ func NewRegistry() (*Registry, error) {
 }
 
 func (r *Registry) Register(ctx context.Context, info discovery.Node, lease int64) error {
-	key := fmt.Sprintf("/%s/%s", info.Name, info.ID)
+	key := fmt.Sprintf("/%s/%s", info.Name, info.Host+":"+info.Port)
 	b, err := json.Marshal(info)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (r *Registry) Register(ctx context.Context, info discovery.Node, lease int6
 }
 
 func (r *Registry) UnRegister(ctx context.Context, info discovery.Node) error {
-	key := fmt.Sprintf("/%s/%s", info.Name, info.ID)
+	key := fmt.Sprintf("/%s/%s", info.Name, info.Host+":"+info.Port)
 	_, err := r.cli.Delete(ctx, key)
 	return err
 }

@@ -18,7 +18,6 @@ type Discovery struct {
 	cli             *clientv3.Client
 	serverList      map[string]*discovery.Node
 	refreshDuration time.Duration
-	serviceName     string
 	Registry        *Registry
 	sync.Mutex
 }
@@ -33,9 +32,14 @@ func NewDiscovery() *Discovery {
 	}
 	reg, err := NewRegistry()
 	return &Discovery{
-		cli:      cli,
-		Registry: reg,
+		cli:        cli,
+		Registry:   reg,
+		serverList: make(map[string]*discovery.Node),
 	}
+}
+
+func (d *Discovery) Name() string {
+	return "etcd"
 }
 
 func (d *Discovery) Register(ctx context.Context, info discovery.Node, lease int64) error {
@@ -58,11 +62,10 @@ func (d *Discovery) Watch(keyPrefix string) error {
 	if keyPrefix == "" {
 		return errors.New("serviceName is empty")
 	}
-	d.serviceName = keyPrefix
 
-	d.setServices()
+	d.setServices(keyPrefix)
 	go d.watcher(keyPrefix)
-	go d.refresh()
+	go d.refresh(keyPrefix)
 	return nil
 }
 
@@ -86,7 +89,7 @@ func (d *Discovery) watcher(prefix string) {
 	}
 }
 
-func (d *Discovery) refresh() {
+func (d *Discovery) refresh(prefix string) {
 	if d.refreshDuration == -1 {
 		return
 	}
@@ -95,15 +98,15 @@ func (d *Discovery) refresh() {
 	}
 	ticker := time.NewTicker(d.refreshDuration)
 	for range ticker.C {
-		d.setServices()
+		d.setServices(prefix)
 		log.Println("refresh all!")
 	}
 }
 
-func (d *Discovery) setServices() {
-	resp, err := d.cli.Get(context.Background(), d.serviceName, clientv3.WithPrefix())
+func (d *Discovery) setServices(prefix string) {
+	resp, err := d.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
-		log.Printf("get by prefix [%v] err: %v", d.serviceName, err)
+		log.Printf("get by prefix [%v] err: %v", prefix, err)
 		return
 	}
 	for _, kv := range resp.Kvs {
@@ -115,7 +118,7 @@ func (d *Discovery) setServices() {
 
 func (d *Discovery) setService(k string, v *discovery.Node) {
 	d.Lock()
-	d.Unlock()
+	defer d.Unlock()
 	d.serverList[k] = v
 	log.Println("put key :", k, "value:", v)
 }
