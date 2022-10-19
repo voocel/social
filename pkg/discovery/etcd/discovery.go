@@ -4,27 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"go.etcd.io/etcd/api/v3/mvccpb"
-	"go.etcd.io/etcd/client/v3"
 	"log"
-	"social/pkg/discovery"
 	"sync"
 	"time"
+
+	"go.etcd.io/etcd/api/v3/mvccpb"
+	"go.etcd.io/etcd/client/v3"
+	"google.golang.org/grpc/resolver"
+	"social/pkg/discovery"
 )
 
 const defaultRefreshDuration = time.Second * 10
 
 type Discovery struct {
 	cli             *clientv3.Client
+	cc              resolver.ClientConn
 	serverList      map[string]*discovery.Node
 	refreshDuration time.Duration
 	Registry        *Registry
 	sync.Mutex
 }
 
-func NewDiscovery() *Discovery {
+func NewDiscovery(endpoints []string) *Discovery {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"127.0.0.1:2379"},
+		Endpoints:   endpoints,
 		DialTimeout: 10 * time.Second,
 	})
 	if err != nil {
@@ -70,6 +73,21 @@ func (d *Discovery) Watch(keyPrefix string) error {
 }
 
 func (d *Discovery) watcher(prefix string) {
+	addrDict := make(map[string]resolver.Address)
+	update := func() {
+		addrList := make([]resolver.Address, 0, len(addrDict))
+		for _, v := range addrDict {
+			addrList = append(addrList, v)
+		}
+		d.cc.UpdateState(resolver.State{Addresses: addrList})
+	}
+	resp, err := d.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
+	if err == nil {
+		for i := range resp.Kvs {
+			addrDict[string(resp.Kvs[i].Value)] = resolver.Address{Addr: string(resp.Kvs[i].Value)}
+		}
+	}
+	update()
 	watchCh := d.cli.Watch(context.Background(), prefix, clientv3.WithPrefix())
 	log.Printf("watching prefix:%s now...", prefix)
 	for ch := range watchCh {
@@ -77,15 +95,18 @@ func (d *Discovery) watcher(prefix string) {
 			key := string(event.Kv.Key)
 			switch event.Type {
 			case mvccpb.PUT:
+				addrDict[key] = resolver.Address{Addr: string(event.Kv.Value)}
 				info := &discovery.Node{}
 				json.Unmarshal(event.Kv.Value, info)
 				d.setService(key, info)
 				log.Println("PUT: ", key)
 			case mvccpb.DELETE:
+				delete(addrDict, string(event.PrevKv.Key))
 				d.delService(key)
 				log.Println("DELETE: ", key)
 			}
 		}
+		update()
 	}
 }
 

@@ -3,13 +3,15 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/resolver"
 	"social/pkg/discovery"
 	"testing"
 	"time"
 )
 
 func TestDiscovery(t *testing.T) {
-	d := NewDiscovery()
+	d := NewDiscovery([]string{"127.0.0.1:2379"})
 	defer d.Close()
 
 	d.Watch("/grpc/")
@@ -26,7 +28,7 @@ func TestDiscovery(t *testing.T) {
 }
 
 func TestRegistry(t *testing.T) {
-	d := NewDiscovery()
+	d := NewDiscovery([]string{"127.0.0.1:2379"})
 	d.Registry.Register(context.Background(), discovery.Node{
 		Name: "web",
 		Host: "node1",
@@ -47,4 +49,15 @@ func TestRegistry(t *testing.T) {
 	case <-time.After(60 * time.Second):
 		d.Registry.Close()
 	}
+}
+
+func TestGrpc(t *testing.T) {
+	r := NewResolver([]string{"127.0.0.1:2379"}, "")
+	resolver.Register(r)
+	conn, err := grpc.DialContext(context.Background(), r.Scheme()+"://web", grpc.WithInsecure(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), grpc.WithBlock())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(conn)
 }
