@@ -1,6 +1,9 @@
 package discovery
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type Discovery interface {
 	Name() string
@@ -16,8 +19,56 @@ type Discovery interface {
 }
 
 type Node struct {
-	Name string
-	Host string
-	Port string
-	Meta map[string]string
+	Id       string
+	Name     string
+	Host     string
+	Port     int
+	Enable   bool
+	Healthy  bool
+	Weight   float64
+	Tags     []string
+	Metadata map[string]string
+}
+
+func (n *Node) GetId() string {
+	return n.Id
+}
+
+func (n *Node) GetName() string {
+	return n.Name
+}
+
+func (n *Node) GetHost() string {
+	return n.Host
+}
+
+func (n *Node) GetPort() int {
+	return n.Port
+}
+
+func (n *Node) GetAddress() string {
+	return fmt.Sprintf("%s:%d", n.GetHost(), n.GetPort())
+}
+
+func (n *Node) IsEnable() bool {
+	return n.Enable
+}
+
+func (n *Node) IsHealthy() bool {
+	return n.Healthy
+}
+
+func (n *Node) GetWeight() float64 {
+	return n.Weight
+}
+
+func (n *Node) GetTags() []string {
+	return n.Tags
+}
+
+func (n *Node) GetMetadata() map[string]string {
+	if n.Metadata == nil {
+		n.Metadata = make(map[string]string, 0)
+	}
+	return n.Metadata
 }
