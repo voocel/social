@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/grpc/backoff"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -97,6 +98,18 @@ func (p *Pool) checkState(conn *grpc.ClientConn) error {
 	return nil
 }
 
+// refer to https://github.com/grpc/grpc-proto/blob/master/grpc/service_config/service_config.proto
+//retryPolicy := fmt.Sprintf(`{
+//		"methodConfig": [{
+//		  "name": [{"service": "%s"}],
+//		  "retryPolicy": {
+//			  "MaxAttempts": %d,
+//			  "InitialBackoff": "%fs",
+//			  "MaxBackoff": "%fs",
+//			  "BackoffMultiplier": %f,
+//			  "RetryableStatusCodes": [ "UNAVAILABLE" ]
+//		  }
+//		}]}`, RetryServiceName, MaxAttempts, InitialBackoff, MaxBackoff, BackoffMultiplier)
 func (p *Pool) defaultDialOptions() []grpc.DialOption {
 	return []grpc.DialOption{
 		//grpc.WithBlock(),
@@ -123,12 +136,23 @@ func (p *Pool) defaultDialOptions() []grpc.DialOption {
 		grpc.WithUnaryInterceptor(UnaryClientInterceptor),
 		grpc.WithInitialWindowSize(defaultInitialWindowSize),
 		grpc.WithInitialConnWindowSize(defaultInitialConnWindowSize),
-		grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(defaultMaxSendMsgSize)),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(defaultMaxMaxRecvMsgSize)),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallSendMsgSize(defaultMaxSendMsgSize),
+			grpc.MaxCallRecvMsgSize(defaultMaxMaxRecvMsgSize),
+		),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                p.option.KeepAlive,
 			Timeout:             p.option.KeepAliveTimeout,
 			PermitWithoutStream: true,
+		}),
+		grpc.WithConnectParams(grpc.ConnectParams{
+			Backoff: backoff.Config{
+				BaseDelay:  100 * time.Millisecond,
+				Multiplier: 1.6,
+				Jitter:     0.2,
+				MaxDelay:   3 * time.Second,
+			},
+			MinConnectTimeout: defaultDialTimeout,
 		}),
 	}
 }
