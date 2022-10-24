@@ -83,7 +83,7 @@ func LoadConfig(paths ...string) {
 	log.Println("load config successfully")
 }
 
-func GetConfig() *Config {
+func NewConfig() *Config {
 	return &Config{
 		LogLevel: viper.GetString("log_level"),
 		LogPath:  viper.GetString("log_path"),
@@ -93,6 +93,10 @@ func GetConfig() *Config {
 		Redis:    GetRedisConfig(),
 		Mysql:    GetMysqlConfig(),
 	}
+}
+
+func (c *Config) Get(key string) string {
+	return viper.GetString(key)
 }
 
 func GetHttpConfig() HttpConfig {
