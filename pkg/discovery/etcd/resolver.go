@@ -1,30 +1,31 @@
 package etcd
 
 import (
-	"fmt"
 	"google.golang.org/grpc/resolver"
+	"log"
 )
 
 type Resolver struct {
-	prefix    string
-	discovery *Discovery
+	prefix   string
+	registry *Registry
 }
 
-func NewResolver(endpoints []string, prefix string) *Resolver {
+func NewResolver(endpoints []string, prefix string) (*Resolver, error) {
+	r, err := NewRegistry(endpoints)
 	return &Resolver{
-		prefix:    prefix,
-		discovery: NewDiscovery(endpoints),
-	}
+		prefix:   prefix,
+		registry: r,
+	}, err
 }
 
 func (r *Resolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	key := "/" + target.URL.Scheme + "/" + target.URL.Path + "/"
-	fmt.Println("resolver key: ", key)
-	err := r.discovery.Watch(r.prefix)
+	key := target.URL.Scheme + target.URL.Path + "/"
+	log.Println("resolver key: ", key)
+	err := r.registry.watch(key)
 	if err != nil {
 		return nil, err
 	}
-	r.discovery.cc = cc
+	r.registry.cc = cc
 	return r, nil
 }
 
