@@ -21,6 +21,7 @@ const (
 )
 
 type server struct {
+	cid      int64
 	opts     *Options
 	listener net.Listener
 	sessions *sync.Map
@@ -91,8 +92,9 @@ func (s *server) accept(ctx context.Context) {
 			continue
 		}
 
+		s.cid++
 		cc := s.pool.Get().(*Conn)
-		cc.cid++
+		cc.cid = s.cid
 		cc.conn = conn
 		cc.timer = time.NewTimer(2 * time.Second)
 		cc.msgCh = make(chan *message.Message, 1024)

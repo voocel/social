@@ -69,10 +69,15 @@ func (c *Conn) Close() error {
 		return err
 	}
 
+	atomic.StoreInt32(&c.state, int32(network.ConnClosed))
+	delete(c.srv.conns, c.conn)
 	err := c.conn.Close()
 	c.conn = nil
-	delete(c.srv.conns, c.conn)
-	c.srv.pool.Put(c.conn)
+	c.srv.pool.Put(c)
+
+	if c.srv.disconnectHandler != nil {
+		c.srv.disconnectHandler(c, err)
+	}
 	return err
 }
 
@@ -139,6 +144,7 @@ func (c *Conn) process(ctx context.Context) {
 
 // readLoop read goroutine
 func (c *Conn) readLoop(ctx context.Context) {
+	defer c.Close()
 	reader := bufio.NewReader(c.conn)
 	for {
 		select {
@@ -158,8 +164,6 @@ func (c *Conn) readLoop(ctx context.Context) {
 						err = ErrServerClosed
 					}
 				}
-				c.srv.disconnectHandler(c, err)
-				c.conn.Close()
 				return
 			}
 			c.msgCh <- msg
@@ -176,6 +180,7 @@ func (c *Conn) readLoop(ctx context.Context) {
 
 // writeLoop write goroutine
 func (c *Conn) writeLoop(ctx context.Context) {
+	defer c.Close()
 	for {
 		select {
 		case <-c.srv.exitCh:
@@ -189,8 +194,7 @@ func (c *Conn) writeLoop(ctx context.Context) {
 			}
 			_, err = c.conn.Write(b)
 			if err != nil {
-				c.srv.disconnectHandler(c, err)
-				c.conn.Close()
+				log.Errorf("write message err: %v", err)
 			}
 		case <-c.timer.C:
 			//c.SendBytes(Heartbeat, []byte("ping"))
