@@ -12,6 +12,7 @@ import (
 )
 
 type server struct {
+	cid      int64
 	opts     *Options
 	listener net.Listener
 	pool     sync.Pool
@@ -89,7 +90,10 @@ func (s *server) Stop() error {
 		return err
 	}
 	for _, conn := range s.conns {
-		conn.Close()
+		err := conn.Close()
+		if err != nil {
+			log.Errorf("closed connection err: %v", err)
+		}
 	}
 	if s.stopHandler != nil {
 		s.stopHandler()
@@ -129,8 +133,9 @@ func (s *server) wsHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Infof("连接成功：%v\n", conn.RemoteAddr())
 
+	s.cid++
 	c := s.pool.Get().(*Conn)
-	c.cid++
+	c.cid = s.cid
 	c.conn = conn
 	c.msgCh = make(chan *message.Message, 1024)
 	c.sendCh = make(chan *message.Message, 1024)

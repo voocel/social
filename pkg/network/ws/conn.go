@@ -60,18 +60,16 @@ func (c *Conn) Close() error {
 		return err
 	}
 
+	atomic.StoreInt32(&c.state, int32(network.ConnClosed))
+	delete(c.server.conns, c.conn)
 	err := c.conn.Close()
 	c.conn = nil
-	delete(c.server.conns, c.conn)
-	c.server.pool.Put(c.conn)
-	return err
-}
+	c.server.pool.Put(c)
 
-func (c *Conn) close() {
-	atomic.StoreInt32(&c.state, int32(network.ConnClosed))
 	if c.server.disconnectHandler != nil {
-		c.server.disconnectHandler(c, nil)
+		c.server.disconnectHandler(c, err)
 	}
+	return err
 }
 
 func (c *Conn) LocalIP() (string, error) {
@@ -118,7 +116,7 @@ func (c *Conn) checkState() error {
 }
 
 func (c *Conn) readLoop() {
-	defer c.close()
+	defer c.Close()
 	for {
 		select {
 		case <-c.exitCh:
@@ -127,13 +125,11 @@ func (c *Conn) readLoop() {
 			_, readerMsg, err := c.conn.NextReader()
 			if err != nil {
 				log.Errorf("read message err: %v", err)
-				c.conn.Close()
 				return
 			}
 			msg, err := c.server.protocol.Unpack(readerMsg)
 			if err != nil {
 				log.Errorf("unpack message err: ", err)
-				c.conn.Close()
 				return
 			}
 			c.msgCh <- msg
