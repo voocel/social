@@ -3,9 +3,9 @@ VERSION:=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | t
 default:gen
 
 gen:
-	@protoc -I. --go_out=./proto \
-	 	    --go-grpc_out=./proto \
-	 	   ./proto/$(protofile)
+	@protoc -I. --go_out=./protos \
+	 	    --go-grpc_out=./protos \
+	 	   ./protos/$(protofile)
 
 ## build: Compile a program into an executable file
 build:
@@ -29,7 +29,7 @@ install-protobuf:
 ## help: Show this help screen
 help: Makefile
 	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
-	@echo ''
+	@echo '' | awk '{printf "\033[36m%-30s\n", $$1}'
 	@echo 'Available targets are:'
 	@echo ''
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
