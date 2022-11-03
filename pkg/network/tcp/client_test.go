@@ -2,7 +2,6 @@ package tcp
 
 import (
 	"fmt"
-	"social/pkg/message"
 	"social/pkg/network"
 	"testing"
 )
@@ -14,8 +13,8 @@ func TestClient(t *testing.T) {
 		fmt.Println("connect")
 	})
 
-	c.OnReceive(func(conn network.Conn, msg *message.Message, msgType int) {
-		fmt.Println("msg: ", msg)
+	c.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+		fmt.Println("msg: ", string(msg))
 	})
 
 	c.OnDisconnect(func(conn network.Conn, err error) {
@@ -27,12 +26,8 @@ func TestClient(t *testing.T) {
 		panic(err)
 	}
 
-	for i := 0; i < 10; i++ {
-		msg := message.NewMessage(message.Heartbeat, []byte(fmt.Sprintf("test-%d", i)))
-		b, err := c.Codec().Pack(msg)
-		if err != nil {
-			fmt.Println("pack err:", err)
-		}
+	for i := 0; i < 3; i++ {
+		b := []byte("test\n")
 		if err = conn.Send(b, 1); err != nil {
 			fmt.Println("send err:", err)
 		}

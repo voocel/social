@@ -12,8 +12,8 @@ func TestClient(t *testing.T) {
 	c.OnConnect(func(conn network.Conn) {
 		fmt.Println("client connect successfully")
 	})
-	c.OnReceive(func(conn network.Conn, msg *message.Message, msgType int) {
-		fmt.Printf("收到服务端消息: %+v\n", msg)
+	c.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+		fmt.Printf("收到服务端消息: %+v\n", string(msg))
 	})
 	c.OnDisconnect(func(conn network.Conn, err error) {
 		fmt.Println("关闭连接: ", conn.Cid())

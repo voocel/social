@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"social/pkg/log"
-	"social/pkg/message"
 	"social/pkg/network"
 	"syscall"
 	"testing"
@@ -22,8 +21,8 @@ func TestServer(t *testing.T) {
 		fmt.Println("connect")
 	})
 
-	s.OnReceive(func(conn network.Conn, msg *message.Message, msgType int) {
-		fmt.Println("msg: ", msg)
+	s.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+		fmt.Println("msg: ", string(msg))
 	})
 
 	s.OnDisconnect(func(conn network.Conn, err error) {

@@ -97,8 +97,8 @@ func (s *server) accept(ctx context.Context) {
 		cc.cid = s.cid
 		cc.conn = conn
 		cc.timer = time.NewTimer(2 * time.Second)
-		cc.msgCh = make(chan *message.Message, 1024)
-		cc.sendCh = make(chan *message.Message, 1024)
+		cc.msgCh = make(chan []byte, 1024)
+		cc.sendCh = make(chan []byte, 1024)
 		cc.extraMap = make(map[string]interface{})
 		cc.srv = s
 

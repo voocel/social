@@ -2,12 +2,12 @@ package tcp
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net"
 	"social/pkg/log"
-	"social/pkg/message"
 	"social/pkg/network"
 	"sync"
 	"sync/atomic"
@@ -20,8 +20,8 @@ type Conn struct {
 	uid      int64
 	state    int32
 	conn     net.Conn
-	sendCh   chan *message.Message
-	msgCh    chan *message.Message
+	sendCh   chan []byte
+	msgCh    chan []byte
 	done     chan struct{}
 	errDone  chan error
 	srv      *server
@@ -55,8 +55,7 @@ func (c *Conn) AsyncSend(msg []byte, msgType ...int) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
-	m := message.NewMessage(message.Heartbeat, msg)
-	c.sendCh <- m
+	c.sendCh <- msg
 	return nil
 }
 
@@ -81,37 +80,30 @@ func (c *Conn) Close() error {
 	return err
 }
 
-func (c *Conn) LocalIP() (string, error) {
-	addr, err := c.LocalAddr()
-	if err != nil {
-		return "", err
-	}
+func (c *Conn) LocalIP() string {
+	addr := c.LocalAddr()
 
 	return ExtractIP(addr)
 }
 
-func (c *Conn) LocalAddr() (net.Addr, error) {
+func (c *Conn) LocalAddr() net.Addr {
 	if err := c.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return c.conn.LocalAddr(), nil
+	return c.conn.LocalAddr()
 }
 
-func (c *Conn) RemoteIP() (string, error) {
-	addr, err := c.RemoteAddr()
-	if err != nil {
-		return "", err
-	}
-	return ExtractIP(addr)
+func (c *Conn) RemoteIP() string {
+	return ExtractIP(c.RemoteAddr())
 }
 
-func (c *Conn) RemoteAddr() (net.Addr, error) {
+func (c *Conn) RemoteAddr() net.Addr {
 	if err := c.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return c.conn.RemoteAddr(), nil
+	return c.conn.RemoteAddr()
 }
 
 func (c *Conn) process(ctx context.Context) {
@@ -153,20 +145,15 @@ func (c *Conn) readLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			msg, err := c.srv.protocol.Unpack(reader)
+			buf, err := reader.ReadBytes('\n')
 			if err != nil {
-				fmt.Println("unpack错误: ", err)
-				if err == io.EOF {
+				fmt.Println("read err: ", err)
+				if err == io.EOF || err == io.ErrUnexpectedEOF {
 					err = ErrClientClosed
-				} else {
-					netOpError, ok := err.(*net.OpError)
-					if ok && netOpError.Err.Error() == "use of closed network connection" {
-						err = ErrServerClosed
-					}
 				}
 				return
 			}
-			c.msgCh <- msg
+			c.msgCh <- bytes.Trim(buf, "\n")
 
 			v, ok := c.srv.sessions.Load(c.sessId)
 			if !ok {
@@ -188,11 +175,7 @@ func (c *Conn) writeLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case msg := <-c.sendCh:
-			b, err := c.srv.protocol.Pack(msg)
-			if err != nil {
-				log.Errorf("send message err: %v", err)
-			}
-			_, err = c.conn.Write(b)
+			_, err := c.conn.Write(msg)
 			if err != nil {
 				log.Errorf("write message err: %v", err)
 			}
@@ -216,7 +199,7 @@ func (c *Conn) checkState() error {
 	return nil
 }
 
-func ExtractIP(addr net.Addr) (host string, err error) {
-	host, _, err = net.SplitHostPort(addr.String())
+func ExtractIP(addr net.Addr) (host string) {
+	host, _, _ = net.SplitHostPort(addr.String())
 	return
 }

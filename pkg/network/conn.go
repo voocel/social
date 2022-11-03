@@ -36,11 +36,11 @@ type Conn interface {
 	// Close 关闭连接
 	Close() error
 	// LocalIP 获取本地IP
-	LocalIP() (string, error)
+	LocalIP() string
 	// LocalAddr 获取本地地址
-	LocalAddr() (net.Addr, error)
+	LocalAddr() net.Addr
 	// RemoteIP 获取远端IP
-	RemoteIP() (string, error)
+	RemoteIP() string
 	// RemoteAddr 获取远端地址
-	RemoteAddr() (net.Addr, error)
+	RemoteAddr() net.Addr
 }

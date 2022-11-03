@@ -1,23 +1,28 @@
 package tcp
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"net"
-	"social/pkg/message"
 	"social/pkg/network"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type clientConn struct {
-	rw     sync.RWMutex
-	cid    int64
-	uid    int64
-	conn   net.Conn
-	state  int32
-	client *client
-	sendCh chan *message.Message
-	done   chan struct{}
+	rw       sync.RWMutex
+	cid      int64
+	uid      int64
+	conn     net.Conn
+	state    int32
+	client   *client
+	sendCh   chan []byte
+	done     chan struct{}
+	timer    *time.Timer
+	interval time.Duration
 }
 
 func newClientConn(c *client, conn net.Conn) network.Conn {
@@ -26,9 +31,14 @@ func newClientConn(c *client, conn net.Conn) network.Conn {
 		conn:   conn,
 		state:  int32(network.ConnOpened),
 		client: c,
-		sendCh: make(chan *message.Message, 1024),
+		sendCh: make(chan []byte, 1024),
 		done:   make(chan struct{}),
+		timer:  time.NewTimer(10 * time.Second),
 	}
+
+	go cc.readLoop()
+	go cc.writeLoop()
+
 	if cc.client.connectHandler != nil {
 		cc.client.connectHandler(cc)
 	}
@@ -36,27 +46,46 @@ func newClientConn(c *client, conn net.Conn) network.Conn {
 	return cc
 }
 
-func (c *clientConn) readLoop()  {
+func (c *clientConn) readLoop() {
+	defer c.Close()
+	reader := bufio.NewReader(c.conn)
 	for {
 		select {
 		case <-c.done:
 			return
 		default:
-			msg, err := c.client.protocol.Unpack(c.conn)
+			buf, err := reader.ReadBytes('\n')
 			if err != nil {
-				fmt.Println("unpack err: ", err)
-				c.conn.Close()
+				if err != io.EOF && err != io.ErrUnexpectedEOF {
+					fmt.Println("read err: ", err)
+				}
 				return
 			}
 			if c.client.receiveHandler != nil {
-				c.client.receiveHandler(c, msg, 1)
+				c.client.receiveHandler(c, bytes.Trim(buf, "\n"), 1)
 			}
 		}
 	}
 }
 
-func (c *clientConn) writeLoop()  {
-
+func (c *clientConn) writeLoop() {
+	defer c.Close()
+	for {
+		select {
+		case <-c.done:
+			return
+		case msg := <-c.sendCh:
+			_, err := c.conn.Write(msg)
+			if err != nil {
+				fmt.Println("write message err: ", err)
+			}
+		case <-c.timer.C:
+			//c.SendBytes(Heartbeat, []byte("ping"))
+			if c.interval > 0 {
+				c.timer.Reset(c.interval)
+			}
+		}
+	}
 }
 
 func (c *clientConn) Cid() int64 {
@@ -83,8 +112,7 @@ func (c *clientConn) AsyncSend(msg []byte, msgType ...int) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
-	m := message.NewMessage(message.Heartbeat, msg)
-	c.sendCh <- m
+	c.sendCh <- msg
 	return nil
 }
 
@@ -101,37 +129,28 @@ func (c *clientConn) Close() error {
 	return c.conn.Close()
 }
 
-func (c *clientConn) LocalIP() (string, error) {
-	addr, err := c.LocalAddr()
-	if err != nil {
-		return "", err
-	}
-
-	return ExtractIP(addr)
+func (c *clientConn) LocalIP() string {
+	return ExtractIP(c.LocalAddr())
 }
 
-func (c *clientConn) LocalAddr() (net.Addr, error) {
+func (c *clientConn) LocalAddr() net.Addr {
 	if err := c.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return c.conn.LocalAddr(), nil
+	return c.conn.LocalAddr()
 }
 
-func (c *clientConn) RemoteIP() (string, error) {
-	addr, err := c.RemoteAddr()
-	if err != nil {
-		return "", err
-	}
-	return ExtractIP(addr)
+func (c *clientConn) RemoteIP() string {
+	return ExtractIP(c.RemoteAddr())
 }
 
-func (c *clientConn) RemoteAddr() (net.Addr, error) {
+func (c *clientConn) RemoteAddr() net.Addr {
 	if err := c.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return c.conn.RemoteAddr(), nil
+	return c.conn.RemoteAddr()
 }
 
 func (c *clientConn) checkState() error {

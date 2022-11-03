@@ -1,12 +1,10 @@
 package ws
 
 import (
-	"bytes"
 	"fmt"
 	"net"
 
 	"github.com/gorilla/websocket"
-	"social/pkg/message"
 	"social/pkg/network"
 	"sync/atomic"
 )
@@ -17,7 +15,7 @@ type clientConn struct {
 	client *client
 	conn   *websocket.Conn
 	state  int32
-	sendCh chan *message.Message
+	sendCh chan []byte
 	exitCh chan struct{}
 }
 
@@ -27,7 +25,7 @@ func NewWsConn(c *client, conn *websocket.Conn) network.Conn {
 		uid:    0,
 		conn:   conn,
 		client: c,
-		sendCh: make(chan *message.Message, 1024),
+		sendCh: make(chan []byte, 1024),
 	}
 	if cc.client.connectHandler != nil {
 		cc.client.connectHandler(cc)
@@ -50,19 +48,8 @@ func (cc *clientConn) readLoop() {
 				cc.conn.Close()
 				return
 			}
-			fmt.Println(rawMsg)
-			p := message.NewDefaultProtocol()
-			m, e := p.Unpack(bytes.NewReader([]byte("aa")))
-			fmt.Println(m, e)
-
-			msg, err := cc.client.protocol.Unpack(bytes.NewReader([]byte("aaa")))
-			if err != nil {
-				fmt.Println("unpack err: ", err)
-				cc.conn.Close()
-				return
-			}
 			if cc.client.receiveHandler != nil {
-				cc.client.receiveHandler(cc, msg, 1)
+				cc.client.receiveHandler(cc, rawMsg, 1)
 			}
 		}
 	}
@@ -77,12 +64,7 @@ func (cc *clientConn) writeLoop() {
 			if !ok {
 				return
 			}
-			byteMsg, err := cc.client.protocol.Pack(msg)
-			if err != nil {
-				fmt.Println("pack msg err: ", err)
-				return
-			}
-			if err := cc.conn.WriteMessage(websocket.TextMessage, byteMsg); err != nil {
+			if err := cc.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 				fmt.Println("client write closed")
 				return
 			}
@@ -127,8 +109,7 @@ func (cc *clientConn) AsyncSend(msg []byte, msgType ...int) error {
 	if err := cc.checkState(); err != nil {
 		return err
 	}
-	m := message.NewMessage(message.Heartbeat, msg)
-	cc.sendCh <- m
+	cc.sendCh <- msg
 	return nil
 }
 
@@ -145,37 +126,28 @@ func (cc *clientConn) Close() error {
 	return cc.conn.Close()
 }
 
-func (cc *clientConn) LocalIP() (string, error) {
-	addr, err := cc.LocalAddr()
-	if err != nil {
-		return "", err
-	}
-
-	return ExtractIP(addr)
+func (cc *clientConn) LocalIP() string {
+	return ExtractIP(cc.LocalAddr())
 }
 
-func (cc *clientConn) LocalAddr() (net.Addr, error) {
+func (cc *clientConn) LocalAddr() net.Addr {
 	if err := cc.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return cc.conn.LocalAddr(), nil
+	return cc.conn.LocalAddr()
 }
 
-func (cc *clientConn) RemoteIP() (string, error) {
-	addr, err := cc.RemoteAddr()
-	if err != nil {
-		return "", err
-	}
-	return ExtractIP(addr)
+func (cc *clientConn) RemoteIP() string {
+	return ExtractIP(cc.RemoteAddr())
 }
 
-func (cc *clientConn) RemoteAddr() (net.Addr, error) {
+func (cc *clientConn) RemoteAddr() net.Addr {
 	if err := cc.checkState(); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return cc.conn.RemoteAddr(), nil
+	return cc.conn.RemoteAddr()
 }
 
 func (cc *clientConn) close() {
@@ -186,7 +158,7 @@ func (cc *clientConn) close() {
 	}
 }
 
-func ExtractIP(addr net.Addr) (host string, err error) {
-	host, _, err = net.SplitHostPort(addr.String())
+func ExtractIP(addr net.Addr) (host string) {
+	host, _, _ = net.SplitHostPort(addr.String())
 	return
 }

@@ -137,8 +137,8 @@ func (s *server) wsHandle(w http.ResponseWriter, r *http.Request) {
 	c := s.pool.Get().(*Conn)
 	c.cid = s.cid
 	c.conn = conn
-	c.msgCh = make(chan *message.Message, 1024)
-	c.sendCh = make(chan *message.Message, 1024)
+	c.msgCh = make(chan []byte, 1024)
+	c.sendCh = make(chan []byte, 1024)
 	c.exitCh = make(chan struct{})
 	c.server = s
 
