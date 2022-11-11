@@ -79,6 +79,7 @@ func (s *server) serve() {
 }
 
 func (s *server) accept(ctx context.Context) {
+	var tempDelay time.Duration
 	for {
 		select {
 		case <-s.exitCh:
@@ -88,9 +89,27 @@ func (s *server) accept(ctx context.Context) {
 
 		conn, err := s.listener.Accept()
 		if err != nil {
+			if ne, ok := err.(net.Error); ok && ne.Temporary() {
+				if tempDelay == 0 {
+					tempDelay = 5 * time.Millisecond
+				} else {
+					tempDelay *= 2
+				}
+				if max := 1 * time.Second; tempDelay > max {
+					tempDelay = max
+				}
+				log.Errorf("accept error: %v; retrying in %v", err, tempDelay)
+				time.Sleep(tempDelay)
+				continue
+			}
 			log.Errorf("accept connection err: %v", err)
-			continue
+			return
 		}
+		tempDelay = 0
+
+		//conn.SetDeadline(time.Now().Add(time.Second))
+		//conn.SetReadDeadline(time.Now().Add(time.Second))
+		//conn.SetWriteDeadline(time.Now().Add(time.Second))
 
 		s.cid++
 		cc := s.pool.Get().(*Conn)

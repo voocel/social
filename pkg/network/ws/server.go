@@ -4,12 +4,18 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
 )
+
+func DefaultErrorWriter(rw http.ResponseWriter, req *http.Request, code int, err error) {
+	rw.WriteHeader(code)
+	rw.Write([]byte(err.Error()))
+}
 
 type server struct {
 	cid      int64
@@ -37,11 +43,13 @@ func NewServer(addr string, opts ...OptionFunc) network.Server {
 		opts:     o,
 		listener: nil,
 		upgrade: websocket.Upgrader{
-			ReadBufferSize:  4096,
-			WriteBufferSize: 4096,
+			ReadBufferSize:   4096,
+			WriteBufferSize:  4096,
+			HandshakeTimeout: time.Second * 5,
 			CheckOrigin: func(r *http.Request) bool {
 				return true
 			},
+			Error: DefaultErrorWriter,
 		},
 		pool: sync.Pool{
 			New: func() interface{} { return &Conn{} },
