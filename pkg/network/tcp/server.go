@@ -17,7 +17,8 @@ var (
 )
 
 const (
-	IdleTime = 60
+	IdleTime   = 60
+	MaxConnNum = 1024
 )
 
 type server struct {
@@ -107,6 +108,12 @@ func (s *server) accept(ctx context.Context) {
 		}
 		tempDelay = 0
 
+		if len(s.conns) > MaxConnNum {
+			conn.Close()
+			log.Warn("too many connections")
+			continue
+		}
+
 		//conn.SetDeadline(time.Now().Add(time.Second))
 		//conn.SetReadDeadline(time.Now().Add(time.Second))
 		//conn.SetWriteDeadline(time.Now().Add(time.Second))
@@ -156,6 +163,7 @@ func (s *server) Stop() error {
 	for _, conn := range s.conns {
 		conn.Close()
 	}
+	s.conns = nil
 	if s.stopHandler != nil {
 		s.stopHandler()
 	}
