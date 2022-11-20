@@ -186,7 +186,6 @@ func (r *Registry) setService(k string, v *discovery.Node) {
 	r.Lock()
 	defer r.Unlock()
 	r.serviceList[k] = v
-	log.Println("put key :", k, "value:", v)
 }
 
 func (r *Registry) delService(key string) {
