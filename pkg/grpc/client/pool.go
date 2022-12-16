@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc/backoff"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
