@@ -50,7 +50,7 @@ func Init(serviceName, filePath, level string) {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(err)
 		}
 	}()
