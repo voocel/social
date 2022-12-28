@@ -6,6 +6,9 @@
 *.dll
 *.so
 *.dylib
+*.cert
+*.key
+*.log
 
 test
 *.test

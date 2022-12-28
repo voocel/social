@@ -54,7 +54,10 @@ type MysqlConfig struct {
 
 func LoadConfig(paths ...string) {
 	if len(paths) == 0 {
+		viper.AddConfigPath(".")
 		viper.AddConfigPath("config")
+		viper.AddConfigPath("../config")
+		viper.AddConfigPath("../../config")
 	} else {
 		for _, path := range paths {
 			viper.AddConfigPath(path)

@@ -30,7 +30,10 @@ redis:
 
 postgres:
   host: 127.0.0.1
-  port: 5433
+  port: 5432
+  username: postgres
+  password: 123456
+  database: postgres
 
 mysql:
   host: 127.0.0.1
