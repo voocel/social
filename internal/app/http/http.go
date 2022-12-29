@@ -21,8 +21,11 @@ import (
 func Run() {
 	r := gin.New()
 	gin.SetMode(gin.DebugMode)
-	pg, err := postgres.New(fmt.Sprintf("%s:%s",
-		viper.GetString("postgres.host"), viper.GetString("postgres.port")),
+	fmt.Println(viper.GetString("postgres.host"))
+	pg, err := postgres.New(fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		viper.GetString("postgres.username"), viper.GetString("postgres.password"),
+		viper.GetString("postgres.host"), viper.GetString("postgres.port"),
+		viper.GetString("postgres.database")),
 		postgres.MaxPoolSize(2))
 	if err != nil {
 		log.Fatal(fmt.Errorf("postgres New err: %w", err))
