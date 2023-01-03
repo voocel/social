@@ -68,11 +68,12 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 
 func (g *Gateway) Start() {
 	g.newNodeClient("im")
+	g.proxy.newNodeClient("im")
 	g.startGate()
 }
 
 func (g *Gateway) startGate() {
-	startupMessage(":9000", false, "", "gateway")
+	startupMessage(":9000", false, "gateway")
 	g.opts.server.OnConnect(g.handleConnect)
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
@@ -118,7 +119,13 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte, msgType int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	fmt.Printf("id: %v, 用户id: %v", conn.Cid(), conn.Uid())
-	g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
+
+	payload, err := g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
+	if err != nil {
+		conn.Send([]byte("gateway send error"))
+	} else {
+		conn.Send(payload)
+	}
 }
 
 func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
