@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"os"
 	"path"
 	"regexp"
 	"sort"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"social/internal/entity"
 	"social/internal/usecase"
 )
 
@@ -41,7 +39,7 @@ const (
 )
 
 type Claims struct {
-	Name string `json:"name"`
+	UserId int `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -49,89 +47,60 @@ func getSocialIDContextKey() string {
 	return socialIDContextKey
 }
 
-// GenerateTokensAndSetCookies 生成 jwt token 并且保存到 http-only cookie
-func GenerateTokensAndSetCookies(c *gin.Context, user *entity.User, secret string) error {
-	accessToken, err := generateAccessToken(user, secret)
+// GenerateToken 生成 jwt token
+func GenerateToken(uid int, secret string) (accessToken, refreshToken string, err error) {
+	accessToken, err = generateAccessToken(uid, secret)
 	if err != nil {
-		return fmt.Errorf("failed to generate access token: %w", err)
+		err = fmt.Errorf("failed to generate access token: %w", err)
+		return
 	}
 
-	cookieExp := time.Now().Add(cookieExpDuration)
-	setTokenCookie(c, accessTokenCookieName, accessToken, cookieExp.Second())
-	setUserCookie(c, user, cookieExp.Second())
-
-	// 生成refreshToken并保存到cookie中
-	refreshToken, err := generateRefreshToken(user, secret)
+	refreshToken, err = generateRefreshToken(uid, secret)
 	if err != nil {
-		return fmt.Errorf("failed to generate refresh token: %w", err)
+		err = fmt.Errorf("failed to generate refresh token: %w", err)
+		return
 	}
-	setTokenCookie(c, refreshTokenCookieName, refreshToken, cookieExp.Second())
-
-	return nil
+	return
 }
 
-func generateAccessToken(user *entity.User, secret string) (string, error) {
+func generateAccessToken(uid int, secret string) (string, error) {
 	expirationTime := time.Now().Add(accessTokenDuration)
-	return generateToken(user, fmt.Sprintf(accessTokenAudienceFmt), expirationTime, []byte(secret))
+	return generateToken(uid, accessTokenAudienceFmt, expirationTime, []byte(secret))
 }
 
-func generateRefreshToken(user *entity.User, secret string) (string, error) {
+func generateRefreshToken(uid int, secret string) (string, error) {
 	expirationTime := time.Now().Add(refreshTokenDuration)
-	return generateToken(user, refreshTokenAudienceFmt, expirationTime, []byte(secret))
+	return generateToken(uid, refreshTokenAudienceFmt, expirationTime, []byte(secret))
 }
 
-func generateToken(user *entity.User, aud string, expirationTime time.Time, secret []byte) (string, error) {
+func generateToken(uid int, aud string, expirationTime time.Time, secret []byte) (string, error) {
 	claims := &Claims{
-		Name: user.Name,
+		UserId: uid,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience:  jwt.ClaimStrings{aud},
 			ExpiresAt: jwt.NewNumericDate(expirationTime), // unix milliseconds
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    issuer,
-			Subject:   strconv.Itoa(user.ID),
+			Subject:   strconv.Itoa(uid),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token.Header["kid"] = keyID
-	tokenString, err := token.SignedString(secret)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
-// 创建一个新的cookie，并存储有效的token
-func setTokenCookie(c *gin.Context, name, token string, expiration int) {
-	c.SetCookie(name, token, expiration, "/", "localhost", false, true)
-}
-
-// 清除cookie
-func removeTokenCookie(c *gin.Context, name string) {
-	c.SetCookie(name, "", -1, "/", "localhost", false, true)
-}
-
-// 存储用户id
-func setUserCookie(c *gin.Context, user *entity.User, expiration int) {
-	c.SetCookie("user", strconv.Itoa(user.ID), expiration, "/", "localhost", false, true)
-}
-
-func removeUserCookie(c *gin.Context) {
-	c.SetCookie("user", "", -1, "/", "localhost", false, true)
+	return token.SignedString(secret)
 }
 
 // JWTMiddleware 验证 access token
 func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 跳过 auth, register
-		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/api/register", "/api/plan") {
+		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/api/register", "/api/plan", "/v1/user/login") {
 			c.Next()
 			return
 		}
 
-		cookie, err := c.Cookie(accessTokenCookieName)
-		if err != nil {
+		tokenString := c.GetHeader("Authorization")
+		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code": 400,
 				"msg":  "Missing access token",
@@ -141,7 +110,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 		}
 
 		claims := &Claims{}
-		accessToken, err := jwt.ParseWithClaims(cookie, claims, func(t *jwt.Token) (interface{}, error) {
+		accessToken, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			if t.Method.Alg() != jwt.SigningMethodHS256.Name {
 				return nil, fmt.Errorf("unexpected access token signing method=%v, expect %v", t.Header["alg"], jwt.SigningMethodHS256)
 			}
@@ -165,14 +134,14 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 			return
 		}
 
-		generateToken := time.Until(claims.ExpiresAt.Time) < refreshThresholdDuration
+		isGenToken := time.Until(claims.ExpiresAt.Time) < refreshThresholdDuration
 		if err != nil {
 			var ve *jwt.ValidationError
 			if errors.As(err, &ve) {
 				// token过期则清除错误并刷新token
 				if ve.Errors == jwt.ValidationErrorExpired {
 					err = nil
-					generateToken = true
+					isGenToken = true
 				}
 			}
 		}
@@ -209,11 +178,10 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 				return
 			}
 
-			if generateToken {
+			if isGenToken {
 				generateTokenFunc := func() *generateTokenErr {
-					rc, err := c.Cookie(refreshTokenCookieName)
-
-					if err != nil {
+					refreshTokenString := c.GetHeader("refresh-token")
+					if refreshTokenString == "" {
 						return &generateTokenErr{
 							code: http.StatusUnauthorized,
 							msg:  "Failed to generate access token. Missing refresh token.",
@@ -222,7 +190,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 
 					// 解析token并检查其是否有效.
 					refreshTokenClaims := &Claims{}
-					refreshToken, err := jwt.ParseWithClaims(rc, refreshTokenClaims, func(t *jwt.Token) (interface{}, error) {
+					refreshToken, err := jwt.ParseWithClaims(refreshTokenString, refreshTokenClaims, func(t *jwt.Token) (interface{}, error) {
 						if t.Method.Alg() != jwt.SigningMethodHS256.Name {
 							return nil, fmt.Errorf("unexpected refresh token signing method=%v, expected %v", t.Header["alg"], jwt.SigningMethodHS256)
 						}
@@ -259,12 +227,21 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 
 					// 如果有一个有效的refresh token，将生成新的access token和refresh token
 					if refreshToken != nil && refreshToken.Valid {
-						if err := GenerateTokensAndSetCookies(c, user, secret); err != nil {
+						at, rt, err := GenerateToken(user.ID, secret)
+						if err != nil {
 							return &generateTokenErr{
 								code: http.StatusInternalServerError,
 								msg:  fmt.Sprintf("Server error to refresh expired token. User Id %d", uid),
 							}
 						}
+						c.JSON(http.StatusOK, gin.H{
+							"code": 0,
+							"msg":  "refresh token success",
+							"data": map[string]string{
+								"access_token":  at,
+								"refresh_token": rt,
+							},
+						})
 					}
 
 					return nil
@@ -375,16 +352,4 @@ func ParseTemplateTokens(template string) ([]string, []string) {
 		return tokens, delimiters
 	}
 	return nil, nil
-}
-
-func GetFileSizeSum(fileNameList []string) (int64, error) {
-	var sum int64
-	for _, fileName := range fileNameList {
-		stat, err := os.Stat(fileName)
-		if err != nil {
-			return 0, err
-		}
-		sum += stat.Size()
-	}
-	return sum, nil
 }
