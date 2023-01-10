@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"social/ent"
 	"social/internal/usecase"
 )
 
@@ -23,10 +24,8 @@ const (
 	accessTokenAudienceFmt  = "social.user.access"
 	refreshTokenAudienceFmt = "social.user.refresh"
 
-	accessTokenCookieName  = "access-token"
-	refreshTokenCookieName = "refresh-token"
-
-	keyID = "v1"
+	keyID     = "v1"
+	jwtSecret = "social-key"
 
 	refreshThresholdDuration = 1 * time.Hour
 	accessTokenDuration      = 24 * time.Hour
@@ -35,27 +34,23 @@ const (
 	// cookie的过期时间略早于jwt过期时间, 使得如果用户cookie过期，则会在使用过期的jwt前先注销
 	cookieExpDuration = refreshTokenDuration - 1*time.Minute
 
-	socialIDContextKey = "social-id"
+	socialContextKey = "user"
 )
 
 type Claims struct {
-	UserId int `json:"user_id"`
+	User *ent.User `json:"user"`
 	jwt.RegisteredClaims
 }
 
-func getSocialIDContextKey() string {
-	return socialIDContextKey
-}
-
 // GenerateToken 生成 jwt token
-func GenerateToken(uid int, secret string) (accessToken, refreshToken string, err error) {
-	accessToken, err = generateAccessToken(uid, secret)
+func GenerateToken(user *ent.User) (accessToken, refreshToken string, err error) {
+	accessToken, err = generateAccessToken(user)
 	if err != nil {
 		err = fmt.Errorf("failed to generate access token: %w", err)
 		return
 	}
 
-	refreshToken, err = generateRefreshToken(uid, secret)
+	refreshToken, err = generateRefreshToken(user)
 	if err != nil {
 		err = fmt.Errorf("failed to generate refresh token: %w", err)
 		return
@@ -63,38 +58,38 @@ func GenerateToken(uid int, secret string) (accessToken, refreshToken string, er
 	return
 }
 
-func generateAccessToken(uid int, secret string) (string, error) {
+func generateAccessToken(user *ent.User) (string, error) {
 	expirationTime := time.Now().Add(accessTokenDuration)
-	return generateToken(uid, accessTokenAudienceFmt, expirationTime, []byte(secret))
+	return generateToken(user, accessTokenAudienceFmt, expirationTime)
 }
 
-func generateRefreshToken(uid int, secret string) (string, error) {
+func generateRefreshToken(user *ent.User) (string, error) {
 	expirationTime := time.Now().Add(refreshTokenDuration)
-	return generateToken(uid, refreshTokenAudienceFmt, expirationTime, []byte(secret))
+	return generateToken(user, refreshTokenAudienceFmt, expirationTime)
 }
 
-func generateToken(uid int, aud string, expirationTime time.Time, secret []byte) (string, error) {
+func generateToken(user *ent.User, aud string, expirationTime time.Time) (string, error) {
 	claims := &Claims{
-		UserId: uid,
+		User: user,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience:  jwt.ClaimStrings{aud},
 			ExpiresAt: jwt.NewNumericDate(expirationTime), // unix milliseconds
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    issuer,
-			Subject:   strconv.Itoa(uid),
+			Subject:   strconv.Itoa(int(user.ID)),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token.Header["kid"] = keyID
-	return token.SignedString(secret)
+	return token.SignedString([]byte(jwtSecret))
 }
 
 // JWTMiddleware 验证 access token
-func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc {
+func JWTMiddleware(userRepo *usecase.UserUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 跳过 auth, register
-		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/api/register", "/api/plan", "/v1/user/login") {
+		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/v1/user/register", "/v1/user/login") {
 			c.Next()
 			return
 		}
@@ -116,7 +111,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 			}
 			if kid, ok := t.Header["kid"].(string); ok {
 				if kid == "v1" {
-					return []byte(secret), nil
+					return []byte(jwtSecret), nil
 				}
 			}
 			return nil, fmt.Errorf("unexpected access token kid=%v", t.Header["kid"])
@@ -160,7 +155,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 			}
 
 			// 即使没有错误，仍然需要确保用户仍然存在。
-			user, err := userRepo.GetUserById(ctx, uid)
+			user, err := userRepo.GetUserById(ctx, int64(uid))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"code": 401,
@@ -197,7 +192,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 
 						if kid, ok := t.Header["kid"].(string); ok {
 							if kid == "v1" {
-								return []byte(secret), nil
+								return []byte(jwtSecret), nil
 							}
 						}
 						return nil, fmt.Errorf("unexpected refresh token kid=%v", t.Header["kid"])
@@ -227,7 +222,7 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 
 					// 如果有一个有效的refresh token，将生成新的access token和refresh token
 					if refreshToken != nil && refreshToken.Valid {
-						at, rt, err := GenerateToken(user.ID, secret)
+						at, _, err := GenerateToken(user)
 						if err != nil {
 							return &generateTokenErr{
 								code: http.StatusInternalServerError,
@@ -238,10 +233,10 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 							"code": 0,
 							"msg":  "refresh token success",
 							"data": map[string]string{
-								"access_token":  at,
-								"refresh_token": rt,
+								"access_token": at,
 							},
 						})
+						c.Abort()
 					}
 
 					return nil
@@ -258,9 +253,10 @@ func JWTMiddleware(userRepo *usecase.UserUseCase, secret string) gin.HandlerFunc
 				}
 			}
 
-			// 将socialID存储到上下文
-			c.Set(getSocialIDContextKey(), uid)
+			// 将用户信息存储到上下文
+			c.Set(socialContextKey, user)
 			c.Next()
+			return
 		}
 
 		c.JSON(http.StatusUnauthorized, gin.H{
