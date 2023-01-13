@@ -15,7 +15,7 @@ import (
 
 const (
 	pattern  = "/log/level"
-	endpoint = ":4247"
+	endpoint = ":4246"
 )
 
 var levelMap = map[string]zapcore.Level{
@@ -42,18 +42,18 @@ func toZapLevel(l string) zapcore.Level {
 func Init(serviceName, filePath, level string) {
 	var atomicLevel = zap.NewAtomicLevel()
 	atomicLevel.SetLevel(toZapLevel(level))
-	mux := http.NewServeMux()
-	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
-	srv = &http.Server{
-		Addr:    endpoint,
-		Handler: mux,
-	}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			panic(err)
-		}
-	}()
+	//mux := http.NewServeMux()
+	//mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
+	//srv = &http.Server{
+	//	Addr:    endpoint,
+	//	Handler: mux,
+	//}
+	//
+	//go func() {
+	//	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	//		panic(err)
+	//	}
+	//}()
 
 	//// error, fatal, panic
 	//highLevel := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
@@ -122,6 +122,26 @@ func newCore(filePath string, atomicLevel zap.AtomicLevel) zapcore.Core {
 	)
 }
 
+type DefaultPair struct {
+	key   string
+	value interface{}
+}
+
+func Pair(key string, v interface{}) DefaultPair {
+	return DefaultPair{
+		key:   key,
+		value: v,
+	}
+}
+
+func spread(kvs ...DefaultPair) []interface{} {
+	s := make([]interface{}, 0, len(kvs))
+	for _, v := range kvs {
+		s = append(s, v.key, v.value)
+	}
+	return s
+}
+
 // Debug .
 func Debug(args ...interface{}) {
 	logger.Debug(args...)
@@ -129,8 +149,9 @@ func Debug(args ...interface{}) {
 func Debugf(format string, args ...interface{}) {
 	logger.Debugf(format, args...)
 }
-func Debugw(msg string, keysAndValues ...interface{}) {
-	logger.Debugw(msg, keysAndValues...)
+func Debugw(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Debugw(msg, args...)
 }
 
 // Info .
@@ -140,8 +161,9 @@ func Info(args ...interface{}) {
 func Infof(format string, args ...interface{}) {
 	logger.Infof(format, args...)
 }
-func Infow(msg string, keysAndValues ...interface{}) {
-	logger.Infow(msg, keysAndValues...)
+func Infow(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Infow(msg, args...)
 }
 
 // Warn .
@@ -151,8 +173,9 @@ func Warn(args ...interface{}) {
 func Warnf(format string, args ...interface{}) {
 	logger.Warnf(format, args...)
 }
-func Warnw(msg string, keysAndValues ...interface{}) {
-	logger.Warnw(msg, keysAndValues...)
+func Warnw(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Warnw(msg, args...)
 }
 
 // Error .
@@ -162,8 +185,9 @@ func Error(args ...interface{}) {
 func Errorf(format string, args ...interface{}) {
 	logger.Errorf(format, args...)
 }
-func Errorw(msg string, keysAndValues ...interface{}) {
-	logger.Errorw(msg, keysAndValues...)
+func Errorw(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Errorw(msg, args...)
 }
 
 // Fatal .
@@ -173,8 +197,9 @@ func Fatal(args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
 }
-func Fatalw(msg string, keysAndValues ...interface{}) {
-	logger.Fatalw(msg, keysAndValues...)
+func Fatalw(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Fatalw(msg, args...)
 }
 
 // Panic .
@@ -184,13 +209,14 @@ func Panic(args ...interface{}) {
 func Panicf(format string, args ...interface{}) {
 	logger.Panicf(format, args...)
 }
-func Panicw(msg string, keysAndValues ...interface{}) {
-	logger.Panicw(msg, keysAndValues...)
+func Panicw(msg string, kvs ...DefaultPair) {
+	args := spread(kvs...)
+	logger.Panicw(msg, args...)
 }
 
 func Sync() error {
-	srv.Shutdown(context.Background())
-	if logger != nil {
+	if srv != nil && logger != nil {
+		srv.Shutdown(context.Background())
 		return logger.Sync()
 	}
 	return nil
