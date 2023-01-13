@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"social/ent"
 	entUser "social/ent/user"
+	"social/internal/entity"
 )
 
 type UserRepo struct {
@@ -31,6 +32,14 @@ func (r *UserRepo) GetUserByNameRepo(ctx context.Context, name string) (*ent.Use
 	return found, err
 }
 
+func (r *UserRepo) GetUserByNameExistRepo(ctx context.Context, name string) (bool, error) {
+	exist, err := r.ent.User.Query().Where(entUser.Username(name)).Exist(ctx)
+	if err != nil {
+		return false, fmt.Errorf("UserRepo - GetUserByNameExistRepo query fail: %w", err)
+	}
+	return exist, err
+}
+
 func (r *UserRepo) GetUsersRepo(ctx context.Context) ([]*ent.User, int, error) {
 	total, err := r.ent.User.Query().Where(entUser.DeletedAtIsNil()).Count(ctx)
 	if err != nil {
@@ -46,4 +55,18 @@ func (r *UserRepo) GetUsersRepo(ctx context.Context) ([]*ent.User, int, error) {
 		return nil, 0, err
 	}
 	return users, total, nil
+}
+
+func (r *UserRepo) AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error) {
+	create, err := r.ent.User.Create().
+		SetUsername(user.Username).
+		SetPassword(user.Password).
+		SetMobile(user.Mobile).
+		SetNickname(user.Nickname).
+		SetEmail("").
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return create, nil
 }

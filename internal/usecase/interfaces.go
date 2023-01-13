@@ -8,13 +8,16 @@ import (
 
 type (
 	User interface {
-		GetUserById(ctx context.Context, uid int64) (*entity.User, error)
+		GetUserById(ctx context.Context, uid int64) (*ent.User, error)
 	}
 
 	UserRepo interface {
 		GetUserByIdRepo(ctx context.Context, uid int64) (*ent.User, error)
 		GetUserByNameRepo(ctx context.Context, name string) (*ent.User, error)
+		GetUserByNameExistRepo(ctx context.Context, name string) (bool, error)
 		GetUsersRepo(ctx context.Context) ([]*ent.User, int, error)
+
+		AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error)
 	}
 
 	UserWebAPI interface{}

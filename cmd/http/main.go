@@ -6,8 +6,9 @@ import (
 	"social/pkg/log"
 )
 
-func main()  {
+func main() {
 	config.LoadConfig()
 	log.Init("http", "log", "debug")
-	http.Run()
+	srv := http.NewServer()
+	srv.Run()
 }
