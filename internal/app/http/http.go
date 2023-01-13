@@ -12,13 +12,15 @@ import (
 
 	"entgo.io/ent/dialect"
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	"social/ent"
 	"social/internal/app/http/middleware"
+	"social/internal/delivery/http/ping"
 	"social/internal/usecase"
 	"social/internal/usecase/repo"
 	"social/pkg/log"
+
+	_ "github.com/lib/pq"
 )
 
 type Server struct {
@@ -41,12 +43,18 @@ func (s *Server) Run() {
 	gin.SetMode(gin.DebugMode)
 
 	s.initEnt()
-
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(s.ent))
 	g.Use(
+		gin.Logger(),
 		gin.Recovery(),
+		middleware.Logger,
 		middleware.JWTMiddleware(userUseCase),
 	)
+	g.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, "404 not found!")
+	})
+	g.GET("/ping", ping.Ping())
+
 	s.routerLoad(g, getRouters(userUseCase)...)
 
 	srv := http.Server{
@@ -82,13 +90,13 @@ func (s *Server) Run() {
 }
 
 func (s *Server) initEnt() {
-	dsn := fmt.Sprintf("postgres://%s:%d/%s?sslmode=%s&user=%s&password=%s",
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		viper.GetString("postgres.username"),
+		viper.GetString("postgres.password"),
 		viper.GetString("postgres.host"),
 		viper.GetInt("postgres.port"),
 		viper.GetString("postgres.database"),
 		viper.GetString("postgres.sslmode"),
-		viper.GetString("postgres.username"),
-		viper.GetString("postgres.password"),
 	)
 
 	client, err := ent.Open(dialect.Postgres, dsn)
