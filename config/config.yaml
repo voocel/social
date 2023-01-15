@@ -10,7 +10,7 @@ app:
   image_max_size: 5
   heartbeat: 1000
   jwt_time: 7200
-  jwt_secret: social
+  jwt_secret: social-key
 websocket:
   addr: :8000
 
@@ -34,6 +34,7 @@ postgres:
   username: postgres
   password: 123456
   database: social
+  sslmode: disable
 
 mysql:
   host: 127.0.0.1

@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jinzhu/copier"
 	"testing"
 
 	_ "github.com/jackc/pgx/stdlib"
@@ -26,19 +25,4 @@ func TestMigrator(t *testing.T) {
 		t.Fatal(err)
 	}
 	migrator.Up()
-}
-
-func TestName(t *testing.T) {
-	type Tt struct {
-		Name string
-		Age  string
-	}
-	j := Tt{
-		Name: "aaa",
-		Age:  "10",
-	}
-	m := make(map[string]interface{})
-	err := copier.Copy(&m, &j)
-	fmt.Println(err)
-	fmt.Printf("%+v\n", m)
 }
