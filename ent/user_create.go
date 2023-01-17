@@ -84,9 +84,25 @@ func (uc *UserCreate) SetSex(i int8) *UserCreate {
 	return uc
 }
 
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (uc *UserCreate) SetNillableSex(i *int8) *UserCreate {
+	if i != nil {
+		uc.SetSex(*i)
+	}
+	return uc
+}
+
 // SetStatus sets the "status" field.
 func (uc *UserCreate) SetStatus(i int8) *UserCreate {
 	uc.mutation.SetStatus(i)
+	return uc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (uc *UserCreate) SetNillableStatus(i *int8) *UserCreate {
+	if i != nil {
+		uc.SetStatus(*i)
+	}
 	return uc
 }
 
@@ -236,12 +252,6 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
-	}
-	if _, ok := uc.mutation.Sex(); !ok {
-		return &ValidationError{Name: "sex", err: errors.New(`ent: missing required field "User.sex"`)}
-	}
-	if _, ok := uc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "User.status"`)}
 	}
 	return nil
 }

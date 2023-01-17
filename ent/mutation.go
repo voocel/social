@@ -485,10 +485,24 @@ func (m *UserMutation) AddedSex() (r int8, exists bool) {
 	return *v, true
 }
 
+// ClearSex clears the value of the "sex" field.
+func (m *UserMutation) ClearSex() {
+	m.sex = nil
+	m.addsex = nil
+	m.clearedFields[user.FieldSex] = struct{}{}
+}
+
+// SexCleared returns if the "sex" field was cleared in this mutation.
+func (m *UserMutation) SexCleared() bool {
+	_, ok := m.clearedFields[user.FieldSex]
+	return ok
+}
+
 // ResetSex resets all changes to the "sex" field.
 func (m *UserMutation) ResetSex() {
 	m.sex = nil
 	m.addsex = nil
+	delete(m.clearedFields, user.FieldSex)
 }
 
 // SetStatus sets the "status" field.
@@ -541,10 +555,24 @@ func (m *UserMutation) AddedStatus() (r int8, exists bool) {
 	return *v, true
 }
 
+// ClearStatus clears the value of the "status" field.
+func (m *UserMutation) ClearStatus() {
+	m.status = nil
+	m.addstatus = nil
+	m.clearedFields[user.FieldStatus] = struct{}{}
+}
+
+// StatusCleared returns if the "status" field was cleared in this mutation.
+func (m *UserMutation) StatusCleared() bool {
+	_, ok := m.clearedFields[user.FieldStatus]
+	return ok
+}
+
 // ResetStatus resets all changes to the "status" field.
 func (m *UserMutation) ResetStatus() {
 	m.status = nil
 	m.addstatus = nil
+	delete(m.clearedFields, user.FieldStatus)
 }
 
 // SetBirthday sets the "birthday" field.
@@ -1034,6 +1062,12 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldSummary) {
 		fields = append(fields, user.FieldSummary)
 	}
+	if m.FieldCleared(user.FieldSex) {
+		fields = append(fields, user.FieldSex)
+	}
+	if m.FieldCleared(user.FieldStatus) {
+		fields = append(fields, user.FieldStatus)
+	}
 	if m.FieldCleared(user.FieldBirthday) {
 		fields = append(fields, user.FieldBirthday)
 	}
@@ -1065,6 +1099,12 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldSummary:
 		m.ClearSummary()
+		return nil
+	case user.FieldSex:
+		m.ClearSex()
+		return nil
+	case user.FieldStatus:
+		m.ClearStatus()
 		return nil
 	case user.FieldBirthday:
 		m.ClearBirthday()

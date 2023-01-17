@@ -105,9 +105,23 @@ func (uu *UserUpdate) SetSex(i int8) *UserUpdate {
 	return uu
 }
 
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableSex(i *int8) *UserUpdate {
+	if i != nil {
+		uu.SetSex(*i)
+	}
+	return uu
+}
+
 // AddSex adds i to the "sex" field.
 func (uu *UserUpdate) AddSex(i int8) *UserUpdate {
 	uu.mutation.AddSex(i)
+	return uu
+}
+
+// ClearSex clears the value of the "sex" field.
+func (uu *UserUpdate) ClearSex() *UserUpdate {
+	uu.mutation.ClearSex()
 	return uu
 }
 
@@ -118,9 +132,23 @@ func (uu *UserUpdate) SetStatus(i int8) *UserUpdate {
 	return uu
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableStatus(i *int8) *UserUpdate {
+	if i != nil {
+		uu.SetStatus(*i)
+	}
+	return uu
+}
+
 // AddStatus adds i to the "status" field.
 func (uu *UserUpdate) AddStatus(i int8) *UserUpdate {
 	uu.mutation.AddStatus(i)
+	return uu
+}
+
+// ClearStatus clears the value of the "status" field.
+func (uu *UserUpdate) ClearStatus() *UserUpdate {
+	uu.mutation.ClearStatus()
 	return uu
 }
 
@@ -356,6 +384,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldSex,
 		})
 	}
+	if uu.mutation.SexCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Column: user.FieldSex,
+		})
+	}
 	if value, ok := uu.mutation.Status(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
@@ -367,6 +401,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
 			Value:  value,
+			Column: user.FieldStatus,
+		})
+	}
+	if uu.mutation.StatusCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
 			Column: user.FieldStatus,
 		})
 	}
@@ -518,9 +558,23 @@ func (uuo *UserUpdateOne) SetSex(i int8) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSex(i *int8) *UserUpdateOne {
+	if i != nil {
+		uuo.SetSex(*i)
+	}
+	return uuo
+}
+
 // AddSex adds i to the "sex" field.
 func (uuo *UserUpdateOne) AddSex(i int8) *UserUpdateOne {
 	uuo.mutation.AddSex(i)
+	return uuo
+}
+
+// ClearSex clears the value of the "sex" field.
+func (uuo *UserUpdateOne) ClearSex() *UserUpdateOne {
+	uuo.mutation.ClearSex()
 	return uuo
 }
 
@@ -531,9 +585,23 @@ func (uuo *UserUpdateOne) SetStatus(i int8) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableStatus(i *int8) *UserUpdateOne {
+	if i != nil {
+		uuo.SetStatus(*i)
+	}
+	return uuo
+}
+
 // AddStatus adds i to the "status" field.
 func (uuo *UserUpdateOne) AddStatus(i int8) *UserUpdateOne {
 	uuo.mutation.AddStatus(i)
+	return uuo
+}
+
+// ClearStatus clears the value of the "status" field.
+func (uuo *UserUpdateOne) ClearStatus() *UserUpdateOne {
+	uuo.mutation.ClearStatus()
 	return uuo
 }
 
@@ -793,6 +861,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Column: user.FieldSex,
 		})
 	}
+	if uuo.mutation.SexCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Column: user.FieldSex,
+		})
+	}
 	if value, ok := uuo.mutation.Status(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
@@ -804,6 +878,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
 			Value:  value,
+			Column: user.FieldStatus,
+		})
+	}
+	if uuo.mutation.StatusCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
 			Column: user.FieldStatus,
 		})
 	}

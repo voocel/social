@@ -1064,6 +1064,20 @@ func SexLTE(v int8) predicate.User {
 	})
 }
 
+// SexIsNil applies the IsNil predicate on the "sex" field.
+func SexIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSex)))
+	})
+}
+
+// SexNotNil applies the NotNil predicate on the "sex" field.
+func SexNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSex)))
+	})
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v int8) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -1137,6 +1151,20 @@ func StatusLT(v int8) predicate.User {
 func StatusLTE(v int8) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldStatus), v))
+	})
+}
+
+// StatusIsNil applies the IsNil predicate on the "status" field.
+func StatusIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStatus)))
+	})
+}
+
+// StatusNotNil applies the NotNil predicate on the "status" field.
+func StatusNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStatus)))
 	})
 }
 
