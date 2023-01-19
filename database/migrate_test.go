@@ -3,9 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"testing"
-
 	_ "github.com/jackc/pgx/stdlib"
+	"testing"
 )
 
 func TestMigrator(t *testing.T) {

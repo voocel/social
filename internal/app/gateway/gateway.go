@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
@@ -44,6 +46,7 @@ func Run() {
 type Gateway struct {
 	opts      *options
 	proxy     *proxy
+	sessions  *sync.Map
 	protocol  message.Protocol
 	nodeConns map[string]*grpc.ClientConn
 }
@@ -58,6 +61,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 	}
 	g := &Gateway{
 		opts:      o,
+		sessions:  &sync.Map{},
 		nodeConns: make(map[string]*grpc.ClientConn),
 		protocol:  message.NewDefaultProtocol(),
 	}
@@ -84,7 +88,7 @@ func (g *Gateway) startGate() {
 }
 
 func (g *Gateway) newNodeClient(serviceName string) {
-	reg, err := etcd.NewResolver([]string{"127.0.0.1:2379"}, serviceName)
+	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
 	if err != nil {
 		panic(err)
 	}
@@ -107,6 +111,8 @@ func (g *Gateway) Stop() {
 
 func (g *Gateway) handleConnect(conn network.Conn) {
 	fmt.Println("[gateway]连接成功: ", conn.RemoteAddr().String())
+	s := newSession(conn)
+	g.sessions.Store(conn.Uid(), s)
 }
 
 func (g *Gateway) handleReceive(conn network.Conn, data []byte, msgType int) {
@@ -118,7 +124,7 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte, msgType int) {
 	fmt.Printf("Gateway 收到消息: data: %v, route: %v\n", string(msg.Buffer), msg.Route)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	fmt.Printf("id: %v, 用户id: %v", conn.Cid(), conn.Uid())
+	fmt.Printf("路由: %v, id: %v, 用户id: %v\n", msg.Route, conn.Cid(), conn.Uid())
 
 	payload, err := g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
 	if err != nil {
@@ -131,4 +137,5 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte, msgType int) {
 func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
 	fmt.Println(conn.RemoteAddr())
 	//log.Infof("[Gateway] connection closed: %v, err: %v", conn.RemoteAddr().String(), err.Error())
+	g.sessions.Delete(conn.Uid())
 }
