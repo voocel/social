@@ -42,6 +42,23 @@ func NewRegistry(endpoints []string) (*Registry, error) {
 	return r, nil
 }
 
+func NewRegistryWithAuth(endpoints []string, username, password string) (*Registry, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   endpoints,
+		Username:    username,
+		Password:    password,
+		DialTimeout: 10 * time.Second,
+	})
+	if err != nil {
+		return nil, err
+	}
+	r := &Registry{
+		cli:         cli,
+		serviceList: make(map[string]*discovery.Node),
+	}
+	return r, nil
+}
+
 func (r *Registry) Name() string {
 	return "etcd"
 }
@@ -75,7 +92,7 @@ func (r *Registry) Register(ctx context.Context, info *discovery.Node, lease int
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("关闭续租")
+				log.Println("关闭续租..")
 				return
 			case _, ok := <-leaseKeepResp:
 				if !ok {
