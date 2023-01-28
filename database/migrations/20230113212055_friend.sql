@@ -1,9 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
+CREATE TABLE IF NOT EXISTS friend(
+    id         BIGSERIAL PRIMARY KEY NOT NULL,
+    uid        bigint NOT NULL,
+    friend_id  bigint NOT NULL,
+    remark     char(64) NOT NULL DEFAULT '',
+    shield     smallint NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
+    deleted_at TIMESTAMP,
+)
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+drop table friend;
 -- +goose StatementEnd
