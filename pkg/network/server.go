@@ -5,7 +5,7 @@ type (
 	CloseHandler      func()
 	ConnectHandler    func(conn Conn)
 	DisconnectHandler func(conn Conn, err error)
-	ReceiveHandler    func(conn Conn, msg []byte, msgType int)
+	ReceiveHandler    func(conn Conn, msg []byte)
 )
 
 type Server interface {

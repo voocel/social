@@ -28,9 +28,9 @@ type Conn interface {
 	// Bind 绑定用户ID
 	Bind(uid int64)
 	// Send 发送消息（同步）
-	Send(msg []byte, msgType ...int) error
-	// AsyncSend 发送消息（异步）
-	AsyncSend(msg []byte, msgType ...int) error
+	Send(msg []byte) error
+	// Push 发送消息（异步）
+	Push(msg []byte) error
 	// State 获取连接状态
 	State() ConnState
 	// Close 关闭连接

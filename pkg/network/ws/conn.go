@@ -34,14 +34,14 @@ func (c *Conn) Bind(uid int64) {
 	c.uid = uid
 }
 
-func (c *Conn) Send(msg []byte, msgType ...int) error {
+func (c *Conn) Send(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
 	return c.conn.WriteMessage(websocket.TextMessage, msg)
 }
 
-func (c *Conn) AsyncSend(msg []byte, msgType ...int) error {
+func (c *Conn) Push(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}

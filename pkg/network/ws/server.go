@@ -164,7 +164,7 @@ func (s *server) wsHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		case msg := <-c.msgCh:
 			if s.receiveHandler != nil {
-				s.receiveHandler(c, msg, 1)
+				s.receiveHandler(c, msg)
 			}
 		}
 	}

@@ -62,7 +62,7 @@ func (c *clientConn) readLoop() {
 				return
 			}
 			if c.client.receiveHandler != nil {
-				c.client.receiveHandler(c, bytes.Trim(buf, "\n"), 1)
+				c.client.receiveHandler(c, bytes.Trim(buf, "\n"))
 			}
 		}
 	}
@@ -100,7 +100,7 @@ func (c *clientConn) Bind(uid int64) {
 	c.uid = uid
 }
 
-func (c *clientConn) Send(msg []byte, msgType ...int) error {
+func (c *clientConn) Send(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (c *clientConn) Send(msg []byte, msgType ...int) error {
 	return err
 }
 
-func (c *clientConn) AsyncSend(msg []byte, msgType ...int) error {
+func (c *clientConn) Push(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}

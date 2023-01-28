@@ -43,7 +43,7 @@ func (c *Conn) Bind(uid int64) {
 	c.uid = uid
 }
 
-func (c *Conn) Send(msg []byte, msgType ...int) error {
+func (c *Conn) Send(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (c *Conn) Send(msg []byte, msgType ...int) error {
 	return err
 }
 
-func (c *Conn) AsyncSend(msg []byte, msgType ...int) error {
+func (c *Conn) Push(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (c *Conn) process(ctx context.Context) {
 		case <-c.srv.exitCh:
 			return
 		case msg := <-c.msgCh:
-			c.srv.receiveHandler(c, msg, 1)
+			c.srv.receiveHandler(c, msg)
 		}
 	}
 }
