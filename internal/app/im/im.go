@@ -1,15 +1,21 @@
 package im
 
 import (
+	"github.com/spf13/viper"
 	"os"
 	"os/signal"
 	"social/internal/node"
+	"social/pkg/discovery"
 	"social/pkg/log"
 	"syscall"
 )
 
 func Run() {
-	n := node.NewNode()
+	n := node.NewNode(&discovery.Node{
+		Name: "im",
+		Host: viper.GetString("im.host"),
+		Port: viper.GetInt("im.port"),
+	})
 	core := NewCore(n.GetProxy())
 	core.Init()
 	n.Start()

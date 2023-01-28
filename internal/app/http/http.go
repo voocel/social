@@ -48,6 +48,7 @@ func (s *Server) Run() {
 		gin.Logger(),
 		gin.Recovery(),
 		middleware.Logger,
+		middleware.CorsMiddleware(),
 		middleware.JWTMiddleware(userUseCase),
 	)
 	g.NoRoute(func(c *gin.Context) {
