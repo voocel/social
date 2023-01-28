@@ -8,6 +8,23 @@ import (
 )
 
 var (
+	// FriendsColumns holds the columns for the "friends" table.
+	FriendsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "uid", Type: field.TypeInt64},
+		{Name: "friend_id", Type: field.TypeInt64},
+		{Name: "remark", Type: field.TypeString},
+		{Name: "shield", Type: field.TypeInt8},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+	}
+	// FriendsTable holds the schema information for the "friends" table.
+	FriendsTable = &schema.Table{
+		Name:       "friends",
+		Columns:    FriendsColumns,
+		PrimaryKey: []*schema.Column{FriendsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -33,6 +50,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		FriendsTable,
 		UsersTable,
 	}
 )

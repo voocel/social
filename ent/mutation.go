@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"social/ent/friend"
 	"social/ent/predicate"
 	"social/ent/user"
 	"sync"
@@ -23,8 +24,812 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeUser = "User"
+	TypeFriend = "Friend"
+	TypeUser   = "User"
 )
+
+// FriendMutation represents an operation that mutates the Friend nodes in the graph.
+type FriendMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int64
+	uid           *int64
+	adduid        *int64
+	friend_id     *int64
+	addfriend_id  *int64
+	remark        *string
+	shield        *int8
+	addshield     *int8
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Friend, error)
+	predicates    []predicate.Friend
+}
+
+var _ ent.Mutation = (*FriendMutation)(nil)
+
+// friendOption allows management of the mutation configuration using functional options.
+type friendOption func(*FriendMutation)
+
+// newFriendMutation creates new mutation for the Friend entity.
+func newFriendMutation(c config, op Op, opts ...friendOption) *FriendMutation {
+	m := &FriendMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeFriend,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withFriendID sets the ID field of the mutation.
+func withFriendID(id int64) friendOption {
+	return func(m *FriendMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Friend
+		)
+		m.oldValue = func(ctx context.Context) (*Friend, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Friend.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withFriend sets the old Friend of the mutation.
+func withFriend(node *Friend) friendOption {
+	return func(m *FriendMutation) {
+		m.oldValue = func(context.Context) (*Friend, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m FriendMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m FriendMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Friend entities.
+func (m *FriendMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *FriendMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *FriendMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Friend.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUID sets the "uid" field.
+func (m *FriendMutation) SetUID(i int64) {
+	m.uid = &i
+	m.adduid = nil
+}
+
+// UID returns the value of the "uid" field in the mutation.
+func (m *FriendMutation) UID() (r int64, exists bool) {
+	v := m.uid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUID returns the old "uid" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldUID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUID: %w", err)
+	}
+	return oldValue.UID, nil
+}
+
+// AddUID adds i to the "uid" field.
+func (m *FriendMutation) AddUID(i int64) {
+	if m.adduid != nil {
+		*m.adduid += i
+	} else {
+		m.adduid = &i
+	}
+}
+
+// AddedUID returns the value that was added to the "uid" field in this mutation.
+func (m *FriendMutation) AddedUID() (r int64, exists bool) {
+	v := m.adduid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUID resets all changes to the "uid" field.
+func (m *FriendMutation) ResetUID() {
+	m.uid = nil
+	m.adduid = nil
+}
+
+// SetFriendID sets the "friend_id" field.
+func (m *FriendMutation) SetFriendID(i int64) {
+	m.friend_id = &i
+	m.addfriend_id = nil
+}
+
+// FriendID returns the value of the "friend_id" field in the mutation.
+func (m *FriendMutation) FriendID() (r int64, exists bool) {
+	v := m.friend_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFriendID returns the old "friend_id" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldFriendID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFriendID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFriendID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFriendID: %w", err)
+	}
+	return oldValue.FriendID, nil
+}
+
+// AddFriendID adds i to the "friend_id" field.
+func (m *FriendMutation) AddFriendID(i int64) {
+	if m.addfriend_id != nil {
+		*m.addfriend_id += i
+	} else {
+		m.addfriend_id = &i
+	}
+}
+
+// AddedFriendID returns the value that was added to the "friend_id" field in this mutation.
+func (m *FriendMutation) AddedFriendID() (r int64, exists bool) {
+	v := m.addfriend_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFriendID resets all changes to the "friend_id" field.
+func (m *FriendMutation) ResetFriendID() {
+	m.friend_id = nil
+	m.addfriend_id = nil
+}
+
+// SetRemark sets the "remark" field.
+func (m *FriendMutation) SetRemark(s string) {
+	m.remark = &s
+}
+
+// Remark returns the value of the "remark" field in the mutation.
+func (m *FriendMutation) Remark() (r string, exists bool) {
+	v := m.remark
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemark returns the old "remark" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldRemark(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemark is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemark requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemark: %w", err)
+	}
+	return oldValue.Remark, nil
+}
+
+// ResetRemark resets all changes to the "remark" field.
+func (m *FriendMutation) ResetRemark() {
+	m.remark = nil
+}
+
+// SetShield sets the "shield" field.
+func (m *FriendMutation) SetShield(i int8) {
+	m.shield = &i
+	m.addshield = nil
+}
+
+// Shield returns the value of the "shield" field in the mutation.
+func (m *FriendMutation) Shield() (r int8, exists bool) {
+	v := m.shield
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShield returns the old "shield" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldShield(ctx context.Context) (v int8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShield is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShield requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShield: %w", err)
+	}
+	return oldValue.Shield, nil
+}
+
+// AddShield adds i to the "shield" field.
+func (m *FriendMutation) AddShield(i int8) {
+	if m.addshield != nil {
+		*m.addshield += i
+	} else {
+		m.addshield = &i
+	}
+}
+
+// AddedShield returns the value that was added to the "shield" field in this mutation.
+func (m *FriendMutation) AddedShield() (r int8, exists bool) {
+	v := m.addshield
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetShield resets all changes to the "shield" field.
+func (m *FriendMutation) ResetShield() {
+	m.shield = nil
+	m.addshield = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *FriendMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *FriendMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *FriendMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[friend.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *FriendMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[friend.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *FriendMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, friend.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *FriendMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *FriendMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *FriendMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[friend.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *FriendMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[friend.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *FriendMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, friend.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *FriendMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *FriendMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Friend entity.
+// If the Friend object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FriendMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *FriendMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[friend.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *FriendMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[friend.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *FriendMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, friend.FieldDeletedAt)
+}
+
+// Where appends a list predicates to the FriendMutation builder.
+func (m *FriendMutation) Where(ps ...predicate.Friend) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *FriendMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Friend).
+func (m *FriendMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *FriendMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.uid != nil {
+		fields = append(fields, friend.FieldUID)
+	}
+	if m.friend_id != nil {
+		fields = append(fields, friend.FieldFriendID)
+	}
+	if m.remark != nil {
+		fields = append(fields, friend.FieldRemark)
+	}
+	if m.shield != nil {
+		fields = append(fields, friend.FieldShield)
+	}
+	if m.created_at != nil {
+		fields = append(fields, friend.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, friend.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, friend.FieldDeletedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *FriendMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case friend.FieldUID:
+		return m.UID()
+	case friend.FieldFriendID:
+		return m.FriendID()
+	case friend.FieldRemark:
+		return m.Remark()
+	case friend.FieldShield:
+		return m.Shield()
+	case friend.FieldCreatedAt:
+		return m.CreatedAt()
+	case friend.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case friend.FieldDeletedAt:
+		return m.DeletedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *FriendMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case friend.FieldUID:
+		return m.OldUID(ctx)
+	case friend.FieldFriendID:
+		return m.OldFriendID(ctx)
+	case friend.FieldRemark:
+		return m.OldRemark(ctx)
+	case friend.FieldShield:
+		return m.OldShield(ctx)
+	case friend.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case friend.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case friend.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Friend field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FriendMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case friend.FieldUID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUID(v)
+		return nil
+	case friend.FieldFriendID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFriendID(v)
+		return nil
+	case friend.FieldRemark:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemark(v)
+		return nil
+	case friend.FieldShield:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShield(v)
+		return nil
+	case friend.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case friend.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case friend.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Friend field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *FriendMutation) AddedFields() []string {
+	var fields []string
+	if m.adduid != nil {
+		fields = append(fields, friend.FieldUID)
+	}
+	if m.addfriend_id != nil {
+		fields = append(fields, friend.FieldFriendID)
+	}
+	if m.addshield != nil {
+		fields = append(fields, friend.FieldShield)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *FriendMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case friend.FieldUID:
+		return m.AddedUID()
+	case friend.FieldFriendID:
+		return m.AddedFriendID()
+	case friend.FieldShield:
+		return m.AddedShield()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FriendMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case friend.FieldUID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUID(v)
+		return nil
+	case friend.FieldFriendID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFriendID(v)
+		return nil
+	case friend.FieldShield:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddShield(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Friend numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *FriendMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(friend.FieldCreatedAt) {
+		fields = append(fields, friend.FieldCreatedAt)
+	}
+	if m.FieldCleared(friend.FieldUpdatedAt) {
+		fields = append(fields, friend.FieldUpdatedAt)
+	}
+	if m.FieldCleared(friend.FieldDeletedAt) {
+		fields = append(fields, friend.FieldDeletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *FriendMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *FriendMutation) ClearField(name string) error {
+	switch name {
+	case friend.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case friend.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case friend.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Friend nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *FriendMutation) ResetField(name string) error {
+	switch name {
+	case friend.FieldUID:
+		m.ResetUID()
+		return nil
+	case friend.FieldFriendID:
+		m.ResetFriendID()
+		return nil
+	case friend.FieldRemark:
+		m.ResetRemark()
+		return nil
+	case friend.FieldShield:
+		m.ResetShield()
+		return nil
+	case friend.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case friend.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case friend.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Friend field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *FriendMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *FriendMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *FriendMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *FriendMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *FriendMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *FriendMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *FriendMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Friend unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *FriendMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Friend edge %s", name)
+}
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {

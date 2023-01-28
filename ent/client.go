@@ -9,6 +9,7 @@ import (
 
 	"social/ent/migrate"
 
+	"social/ent/friend"
 	"social/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -20,6 +21,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Friend is the client for interacting with the Friend builders.
+	Friend *FriendClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -35,6 +38,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Friend = NewFriendClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -69,6 +73,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Friend: NewFriendClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -89,6 +94,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Friend: NewFriendClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -96,7 +102,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Friend.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -118,7 +124,98 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Friend.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// FriendClient is a client for the Friend schema.
+type FriendClient struct {
+	config
+}
+
+// NewFriendClient returns a client for the Friend from the given config.
+func NewFriendClient(c config) *FriendClient {
+	return &FriendClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `friend.Hooks(f(g(h())))`.
+func (c *FriendClient) Use(hooks ...Hook) {
+	c.hooks.Friend = append(c.hooks.Friend, hooks...)
+}
+
+// Create returns a create builder for Friend.
+func (c *FriendClient) Create() *FriendCreate {
+	mutation := newFriendMutation(c.config, OpCreate)
+	return &FriendCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Friend entities.
+func (c *FriendClient) CreateBulk(builders ...*FriendCreate) *FriendCreateBulk {
+	return &FriendCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Friend.
+func (c *FriendClient) Update() *FriendUpdate {
+	mutation := newFriendMutation(c.config, OpUpdate)
+	return &FriendUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FriendClient) UpdateOne(f *Friend) *FriendUpdateOne {
+	mutation := newFriendMutation(c.config, OpUpdateOne, withFriend(f))
+	return &FriendUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FriendClient) UpdateOneID(id int64) *FriendUpdateOne {
+	mutation := newFriendMutation(c.config, OpUpdateOne, withFriendID(id))
+	return &FriendUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Friend.
+func (c *FriendClient) Delete() *FriendDelete {
+	mutation := newFriendMutation(c.config, OpDelete)
+	return &FriendDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *FriendClient) DeleteOne(f *Friend) *FriendDeleteOne {
+	return c.DeleteOneID(f.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *FriendClient) DeleteOneID(id int64) *FriendDeleteOne {
+	builder := c.Delete().Where(friend.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FriendDeleteOne{builder}
+}
+
+// Query returns a query builder for Friend.
+func (c *FriendClient) Query() *FriendQuery {
+	return &FriendQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Friend entity by its id.
+func (c *FriendClient) Get(ctx context.Context, id int64) (*Friend, error) {
+	return c.Query().Where(friend.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FriendClient) GetX(ctx context.Context, id int64) *Friend {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FriendClient) Hooks() []Hook {
+	return c.hooks.Friend
 }
 
 // UserClient is a client for the User schema.
