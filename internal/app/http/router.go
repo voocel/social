@@ -54,7 +54,7 @@ func NewFriendRouter(h *v1.FriendHandler) *friendRouter {
 func (r *friendRouter) Load(g *gin.Engine) {
 	fr := g.Group("/v1/friend")
 	{
-		fr.GET("/getFriends")
+		fr.GET("/getFriends", r.h.GetFriends)
 		fr.POST("/addFriendApply")
 		fr.GET("/getFriendApply")
 		fr.GET("/agreeFriendApply")
