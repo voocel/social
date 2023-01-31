@@ -59,7 +59,9 @@ func Logger(c *gin.Context) {
 		log.Pair("request_id", requestID),
 		log.Pair("host", ip),
 		log.Pair("path", path),
+		log.Pair("status", c.Writer.Status()),
 		log.Pair("cost", latency),
 		log.Pair("body", body),
+		log.Pair("error", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 	)
 }
