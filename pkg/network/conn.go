@@ -2,7 +2,7 @@ package network
 
 import (
 	"errors"
-	"net"
+	"net/url"
 )
 
 const (
@@ -38,9 +38,11 @@ type Conn interface {
 	// LocalIP 获取本地IP
 	LocalIP() string
 	// LocalAddr 获取本地地址
-	LocalAddr() net.Addr
+	LocalAddr() string
 	// RemoteIP 获取远端IP
 	RemoteIP() string
 	// RemoteAddr 获取远端地址
-	RemoteAddr() net.Addr
+	RemoteAddr() string
+	// Values 额外数据
+	Values() url.Values
 }

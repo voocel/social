@@ -12,7 +12,7 @@ func TestClient(t *testing.T) {
 	c.OnConnect(func(conn network.Conn) {
 		fmt.Println("client connect successfully")
 	})
-	c.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+	c.OnReceive(func(conn network.Conn, msg []byte) {
 		fmt.Printf("收到服务端消息: %+v\n", string(msg))
 	})
 	c.OnDisconnect(func(conn network.Conn, err error) {
@@ -30,7 +30,7 @@ func TestClient(t *testing.T) {
 		if err != nil {
 			fmt.Println("pack err:", err)
 		}
-		if err = conn.Send(b, 1); err != nil {
+		if err = conn.Send(b); err != nil {
 			fmt.Println("send err:", err)
 		}
 	}

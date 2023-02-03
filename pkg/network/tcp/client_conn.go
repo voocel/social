@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"social/pkg/network"
 	"sync"
 	"sync/atomic"
@@ -133,24 +134,28 @@ func (c *clientConn) LocalIP() string {
 	return ExtractIP(c.LocalAddr())
 }
 
-func (c *clientConn) LocalAddr() net.Addr {
+func (c *clientConn) LocalAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return c.conn.LocalAddr()
+	return c.conn.LocalAddr().String()
 }
 
 func (c *clientConn) RemoteIP() string {
 	return ExtractIP(c.RemoteAddr())
 }
 
-func (c *clientConn) RemoteAddr() net.Addr {
+func (c *clientConn) RemoteAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return ""
 	}
 
-	return c.conn.RemoteAddr()
+	return c.conn.RemoteAddr().String()
+}
+
+func (c *clientConn) Values() url.Values {
+	return nil
 }
 
 func (c *clientConn) checkState() error {

@@ -1,7 +1,8 @@
 package ws
 
 import (
-	"net"
+	"fmt"
+	"net/url"
 	"sync"
 	"sync/atomic"
 
@@ -20,6 +21,7 @@ type Conn struct {
 	sendCh chan []byte
 	exitCh chan struct{}
 	server *server
+	values url.Values
 }
 
 func (c *Conn) Cid() int64 {
@@ -62,11 +64,14 @@ func (c *Conn) Close() error {
 	delete(c.server.conns, c.conn)
 	err := c.conn.Close()
 	c.conn = nil
+	c.values = nil
 	c.server.pool.Put(c)
 
 	if c.server.disconnectHandler != nil {
+		fmt.Println("开始断开连接")
 		c.server.disconnectHandler(c, err)
 	}
+	close(c.exitCh)
 	return err
 }
 
@@ -74,24 +79,28 @@ func (c *Conn) LocalIP() string {
 	return ExtractIP(c.LocalAddr())
 }
 
-func (c *Conn) LocalAddr() net.Addr {
+func (c *Conn) LocalAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return c.conn.LocalAddr()
+	return c.conn.LocalAddr().String()
 }
 
 func (c *Conn) RemoteIP() string {
 	return ExtractIP(c.RemoteAddr())
 }
 
-func (c *Conn) RemoteAddr() net.Addr {
+func (c *Conn) RemoteAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return ""
 	}
 
-	return c.conn.RemoteAddr()
+	return c.conn.RemoteAddr().String()
+}
+
+func (c *Conn) Values() url.Values {
+	return c.values
 }
 
 func (c *Conn) checkState() error {
@@ -105,7 +114,6 @@ func (c *Conn) checkState() error {
 }
 
 func (c *Conn) readLoop() {
-	defer c.Close()
 	for {
 		select {
 		case <-c.exitCh:

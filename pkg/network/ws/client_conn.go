@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"net"
+	"net/url"
 
 	"github.com/gorilla/websocket"
 	"social/pkg/network"
@@ -130,24 +131,28 @@ func (cc *clientConn) LocalIP() string {
 	return ExtractIP(cc.LocalAddr())
 }
 
-func (cc *clientConn) LocalAddr() net.Addr {
+func (cc *clientConn) LocalAddr() string {
 	if err := cc.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return cc.conn.LocalAddr()
+	return cc.conn.LocalAddr().String()
 }
 
 func (cc *clientConn) RemoteIP() string {
 	return ExtractIP(cc.RemoteAddr())
 }
 
-func (cc *clientConn) RemoteAddr() net.Addr {
+func (cc *clientConn) RemoteAddr() string {
 	if err := cc.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return cc.conn.RemoteAddr()
+	return cc.conn.RemoteAddr().String()
+}
+
+func (cc *clientConn) Values() url.Values {
+	return nil
 }
 
 func (cc *clientConn) close() {
@@ -158,7 +163,7 @@ func (cc *clientConn) close() {
 	}
 }
 
-func ExtractIP(addr net.Addr) (host string) {
-	host, _, _ = net.SplitHostPort(addr.String())
+func ExtractIP(addr string) (host string) {
+	host, _, _ = net.SplitHostPort(addr)
 	return
 }

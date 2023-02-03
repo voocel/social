@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"social/pkg/log"
 	"social/pkg/network"
 	"sync"
@@ -86,24 +87,28 @@ func (c *Conn) LocalIP() string {
 	return ExtractIP(addr)
 }
 
-func (c *Conn) LocalAddr() net.Addr {
+func (c *Conn) LocalAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return c.conn.LocalAddr()
+	return c.conn.LocalAddr().String()
 }
 
 func (c *Conn) RemoteIP() string {
 	return ExtractIP(c.RemoteAddr())
 }
 
-func (c *Conn) RemoteAddr() net.Addr {
+func (c *Conn) RemoteAddr() string {
 	if err := c.checkState(); err != nil {
-		return nil
+		return "unknown"
 	}
 
-	return c.conn.RemoteAddr()
+	return c.conn.RemoteAddr().String()
+}
+
+func (c *Conn) Values() url.Values {
+	return nil
 }
 
 func (c *Conn) process(ctx context.Context) {
@@ -199,7 +204,7 @@ func (c *Conn) checkState() error {
 	return nil
 }
 
-func ExtractIP(addr net.Addr) (host string) {
-	host, _, _ = net.SplitHostPort(addr.String())
+func ExtractIP(addr string) (host string) {
+	host, _, _ = net.SplitHostPort(addr)
 	return
 }
