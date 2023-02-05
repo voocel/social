@@ -20,6 +20,9 @@ http:
 rpc:
   addr: :9100
 
+etcd:
+  addr: 127.0.0.1:2379
+
 redis:
   host: 127.0.0.1
   port: 6379
@@ -64,3 +67,11 @@ gateway:
           - target: "127.0.0.1:6661"
           - target: "127.0.0.1:6662"
       rate_limit: false
+
+im:
+  host: 127.0.0.1
+  port: 9001
+
+group:
+  host: 127.0.0.1
+  port: 9002

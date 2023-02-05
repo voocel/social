@@ -14,6 +14,7 @@ type Config struct {
 
 	Http  HttpConfig
 	IM    IMConfig
+	Group GroupConfig
 	Gate  GateConfig
 	RPC   RPCConfig
 	Redis RedisConfig
@@ -25,6 +26,9 @@ type HttpConfig struct {
 }
 
 type IMConfig struct {
+}
+
+type GroupConfig struct {
 }
 
 type GateConfig struct {
@@ -93,6 +97,7 @@ func NewConfig() *Config {
 		Mode:     viper.GetString("mode"),
 		Http:     GetHttpConfig(),
 		IM:       GetIMConfig(),
+		Group:    GetGroupConfig(),
 		Redis:    GetRedisConfig(),
 		Mysql:    GetMysqlConfig(),
 	}
@@ -110,6 +115,10 @@ func GetHttpConfig() HttpConfig {
 
 func GetIMConfig() IMConfig {
 	return IMConfig{}
+}
+
+func GetGroupConfig() GroupConfig {
+	return GroupConfig{}
 }
 
 func GetRedisConfig() RedisConfig {
