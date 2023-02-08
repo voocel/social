@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"sync"
@@ -16,16 +17,18 @@ import (
 	"google.golang.org/grpc/resolver"
 	"social/internal/app/gateway/packet"
 	"social/pkg/discovery/etcd"
+	"social/pkg/jwt"
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
 	"social/pkg/network/ws"
+	"social/protos/gate"
 )
 
 func Run() {
 	srv := ws.NewServer(":8800")
-	gate := NewGateway(WithServer(srv))
-	gate.Start()
+	gateway := NewGateway(WithServer(srv))
+	gateway.Start()
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
@@ -34,7 +37,7 @@ func Run() {
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			log.Sync()
-			gate.Stop()
+			gateway.Stop()
 			return
 		case syscall.SIGHUP:
 		default:
@@ -44,11 +47,13 @@ func Run() {
 }
 
 type Gateway struct {
-	opts      *options
-	proxy     *proxy
-	sessions  *sync.Map
-	protocol  message.Protocol
-	nodeConns map[string]*grpc.ClientConn
+	opts         *options
+	proxy        *proxy
+	srv          *grpc.Server
+	protocol     message.Protocol
+	nodeConns    map[string]*grpc.ClientConn
+	sessions     *sync.Map
+	sessionGroup *SessionGroup
 }
 
 func NewGateway(opts ...OptionFunc) *Gateway {
@@ -60,10 +65,10 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 		o.id = uuid.New().String()
 	}
 	g := &Gateway{
-		opts:      o,
-		sessions:  &sync.Map{},
-		nodeConns: make(map[string]*grpc.ClientConn),
-		protocol:  message.NewDefaultProtocol(),
+		opts:         o,
+		sessionGroup: NewSessionGroup(),
+		nodeConns:    make(map[string]*grpc.ClientConn),
+		protocol:     message.NewDefaultProtocol(),
 	}
 	g.proxy = newProxy(g)
 
@@ -71,13 +76,37 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 }
 
 func (g *Gateway) Start() {
+	// 启动RPC客户端
 	g.newNodeClient("im")
 	g.proxy.newNodeClient("im")
+	// 启动RPC服务端
+	g.startRPCServer()
+	// 启动网关
 	g.startGate()
 }
 
+func (g *Gateway) startRPCServer() {
+	lis, err := net.Listen("tcp", ":7400")
+	if err != nil {
+		log.Fatalf("failed to listen: %s", err)
+	}
+
+	s := grpc.NewServer()
+	g.srv = s
+	//s.RegisterService(&gate.Gate_ServiceDesc, &endpoint{})
+	gate.RegisterGateServer(s, &endpoint{sessionGroup: g.sessionGroup})
+
+	go func() {
+		defer lis.Close()
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %s", err)
+		}
+		log.Infof("[%s]gateway GRPC server stop success")
+	}()
+}
+
 func (g *Gateway) startGate() {
-	startupMessage(":9000", false, "gateway")
+	startupMessage(":9000", "Gateway")
 	g.opts.server.OnConnect(g.handleConnect)
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
@@ -95,47 +124,66 @@ func (g *Gateway) newNodeClient(serviceName string) {
 	resolver.Register(reg)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
+
+	log.Infof("[Gateway] grpc client trying to connect to node [%s]...", serviceName)
+
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:///%s", reg.Scheme(), serviceName), grpc.WithInsecure(),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithBlock())
 	if err != nil {
-		panic(err)
+		log.Warnf("[Gateway] the node[%s] grpc server not ready yet: %v", serviceName, err)
+		return
 	}
+
+	log.Infof("[Gateway] grpc client connect to [%s] is successful!", serviceName)
 	g.nodeConns[serviceName] = conn
 }
 
 func (g *Gateway) Stop() {
+	g.srv.GracefulStop()
 	if err := g.opts.server.Stop(); err != nil {
 		log.Errorf("gateway server stop failed: %v", err)
 	}
 }
 
 func (g *Gateway) handleConnect(conn network.Conn) {
-	fmt.Println("[gateway]连接成功: ", conn.RemoteAddr().String())
+	log.Debugf("[Gateway] user connect successful: %v", conn.RemoteAddr())
+	token, ok := conn.Values()["token"]
+	if !ok {
+		conn.Send([]byte("token non-existent"))
+		conn.Close()
+		return
+	}
+	claims, err := jwt.ParseToken(token[0])
+	if err != nil {
+		conn.Send([]byte("token parse fail"))
+		conn.Close()
+		return
+	}
+	uid := claims.User.ID
 	s := newSession(conn)
-	g.sessions.Store(conn.Uid(), s)
+	g.sessionGroup.uidSession[uid] = s
+	g.sessionGroup.cidSession[conn.Cid()] = s
+	conn.Bind(uid)
 }
 
-func (g *Gateway) handleReceive(conn network.Conn, data []byte, msgType int) {
+func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 	msg, err := packet.Unpack(data)
 	if err != nil {
 		log.Errorf("unpack data to struct failed: %v", err)
 		return
 	}
-	fmt.Printf("Gateway 收到消息: data: %v, route: %v\n", string(msg.Buffer), msg.Route)
+	log.Debugf("[Gateway] receive message route: %v, cid: %v, uid: %v,data: %v", msg.Route, conn.Cid(), conn.Uid(), string(msg.Buffer))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	fmt.Printf("路由: %v, id: %v, 用户id: %v\n", msg.Route, conn.Cid(), conn.Uid())
 
-	payload, err := g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
+	_, err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
 	if err != nil {
-		conn.Send([]byte("gateway send error"))
-	} else {
-		conn.Send(payload)
+		log.Errorf("GRPC push to node error: %v", err)
 	}
 }
 
 func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
-	fmt.Println(conn.RemoteAddr())
-	//log.Infof("[Gateway] connection closed: %v, err: %v", conn.RemoteAddr().String(), err.Error())
-	g.sessions.Delete(conn.Uid())
+	log.Debugf("[Gateway] user connection disconnected: %v, err: %v", conn.RemoteAddr(), err.Error())
+	g.sessionGroup.RemoveByUid(conn.Uid())
+	g.sessionGroup.RemoveByCid(conn.Cid())
 }
