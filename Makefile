@@ -2,6 +2,8 @@ VERSION:=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | t
 
 default:gen
 
+protofile ?= *.proto
+
 gen:
 	@protoc -I. --go_out=./protos \
 	 	    --go-grpc_out=./protos \
@@ -14,6 +16,10 @@ build:
 ## compress: Compress executable files
 compress: build
 	upx --brute social
+
+## ents: Ent generate
+ents:
+	@ent generate ./ent/schema --target ./ent
 
 test:
 	go test
@@ -34,7 +40,7 @@ help: Makefile
 	@echo ''
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
 	@echo ''
-	@echo 'make gen proto=[your proto filename]'
+	@echo 'make gen protofile=[your proto filename]'
 	@echo ''
 
 ## version: Display social version
