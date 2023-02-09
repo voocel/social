@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -52,7 +51,6 @@ type Gateway struct {
 	srv          *grpc.Server
 	protocol     message.Protocol
 	nodeConns    map[string]*grpc.ClientConn
-	sessions     *sync.Map
 	sessionGroup *SessionGroup
 }
 
@@ -77,7 +75,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 
 func (g *Gateway) Start() {
 	// 启动RPC客户端
-	g.newNodeClient("im")
+	g.startNodeClient("im")
 	g.proxy.newNodeClient("im")
 	// 启动RPC服务端
 	g.startRPCServer()
@@ -85,6 +83,18 @@ func (g *Gateway) Start() {
 	g.startGate()
 }
 
+func (g *Gateway) startGate() {
+	startupMessage(":9000", "Gateway")
+	g.opts.server.OnConnect(g.handleConnect)
+	g.opts.server.OnReceive(g.handleReceive)
+	g.opts.server.OnDisconnect(g.handleDisconnect)
+
+	if err := g.opts.server.Start(); err != nil {
+		panic(err)
+	}
+}
+
+// 启动rpc服务端
 func (g *Gateway) startRPCServer() {
 	lis, err := net.Listen("tcp", ":7400")
 	if err != nil {
@@ -105,18 +115,8 @@ func (g *Gateway) startRPCServer() {
 	}()
 }
 
-func (g *Gateway) startGate() {
-	startupMessage(":9000", "Gateway")
-	g.opts.server.OnConnect(g.handleConnect)
-	g.opts.server.OnReceive(g.handleReceive)
-	g.opts.server.OnDisconnect(g.handleDisconnect)
-
-	if err := g.opts.server.Start(); err != nil {
-		panic(err)
-	}
-}
-
-func (g *Gateway) newNodeClient(serviceName string) {
+// 启动rpc客户端
+func (g *Gateway) startNodeClient(serviceName string) {
 	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
 	if err != nil {
 		panic(err)

@@ -17,15 +17,15 @@ func newProxy(gate *Gateway) *proxy {
 }
 
 // Launch
-func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route int32) error {
-	_, err := p.nodeClient.Deliver(ctx, &node.DeliverRequest{
+func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route int32) ([]byte, error) {
+	reply, err := p.nodeClient.Deliver(ctx, &node.DeliverRequest{
 		GID:    "",
 		CID:    cid,
 		UID:    uid,
 		Route:  route,
 		Buffer: message,
 	})
-	return err
+	return reply.GetPayload(), err
 }
 
 func (p *proxy) newNodeClient(name string) {
