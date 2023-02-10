@@ -34,11 +34,15 @@ func (p *Proxy) SetDefaultRouteHandler(handler RouteHandler) {
 	p.node.defaultRouteHandler = handler
 }
 
+func (p *Proxy) AddEventListener(event Event, handler EventHandler) {
+	p.node.addEventListener(event, handler)
+}
+
 func (p *Proxy) BindGate(uid int64) {
 	c := p.getGateClient("")
 	c.client.Bind(context.Background(), &gate.BindRequest{
-		CID: 0,
-		UID: uid,
+		Cid: 0,
+		Uid: uid,
 	})
 }
 
@@ -56,9 +60,9 @@ func (p *Proxy) getGateClient(addr string) *gateClient {
 	return cc
 }
 
-func (p *Proxy) Response(ctx context.Context, msg []byte) {
+func (p *Proxy) Respond(ctx context.Context, target int64, msg []byte) {
 	c := p.getGateClient("")
-	r, err := c.client.Push(ctx, &gate.PushRequest{Buffer: msg})
+	r, err := c.client.Push(ctx, &gate.PushRequest{Target: target, Buffer: msg})
 	if err != nil {
 		log.Fatalf("could not gate: %v", err)
 	}
