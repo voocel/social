@@ -15,7 +15,7 @@ type endpoint struct {
 
 // Bind 将用户与当前网关进行绑定
 func (e endpoint) Bind(ctx context.Context, req *gate.BindRequest) (*gate.BindReply, error) {
-	if req.CID <= 0 || req.UID <= 0 {
+	if req.Cid <= 0 || req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
 	return &gate.BindReply{}, nil
