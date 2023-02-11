@@ -1,45 +1,56 @@
 package im
 
 import (
-	"fmt"
+	"context"
+	"encoding/json"
+	"social/internal/cmd"
+	"social/internal/entity"
 	"social/internal/node"
+	"social/pkg/log"
 )
 
 type core struct {
 	proxy *node.Proxy
 }
 
-func NewCore(proxy *node.Proxy) *core {
+func newCore(proxy *node.Proxy) *core {
 	return &core{proxy: proxy}
 }
 
 func (c *core) Init() {
-	c.proxy.AddRouteHandler(10, c.connect)
-	c.proxy.AddRouteHandler(11, c.chat)
+	c.proxy.AddRouteHandler(cmd.Connect, c.Connect)
+	c.proxy.AddRouteHandler(cmd.Chat, c.Chat)
 	c.proxy.SetDefaultRouteHandler(c.Default)
 }
 
 func (c *core) Default(req node.Request) {
-	fmt.Println("im 默认收到: ", req.Buffer)
+	var arg entity.Request
 	data := req.Buffer
-	b, ok := data.([]byte)
-	if ok {
-		fmt.Println(string(b))
+	if err := json.Unmarshal(data, &arg); err != nil {
+		log.Error(err)
+		return
 	}
+	log.Debugf("[im] default receive cmd: %v, params: %v", arg.Cmd, arg.Params)
 }
 
-func (c *core) connect(req node.Request) {
+func (c *core) Connect(req node.Request) {
+	var arg entity.Request
 	data := req.Buffer
-	b, ok := data.([]byte)
-	if ok {
-		fmt.Println(string(b))
+	if err := json.Unmarshal(data, &arg); err != nil {
+		log.Error(err)
+		return
 	}
+	log.Debugf("[im] connect receive cmd: %v, params: %v", arg.Cmd, arg.Params)
 }
 
-func (c *core) chat(req node.Request) {
+func (c *core) Chat(req node.Request) {
+	var arg entity.Request
 	data := req.Buffer
-	b, ok := data.([]byte)
-	if ok {
-		fmt.Println(string(b))
+	if err := json.Unmarshal(data, &arg); err != nil {
+		log.Error(err)
+		return
 	}
+	log.Debugf("[im] chat receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+
+	c.proxy.Respond(context.Background(), int64(arg.Params.Receiver), []byte(arg.Params.Content))
 }

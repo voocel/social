@@ -16,7 +16,7 @@ func Run() {
 		Host: viper.GetString("im.host"),
 		Port: viper.GetInt("im.port"),
 	})
-	core := NewCore(n.GetProxy())
+	core := newCore(n.GetProxy())
 	core.Init()
 	n.Start()
 
