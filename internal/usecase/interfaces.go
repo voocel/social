@@ -20,5 +20,9 @@ type (
 		AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error)
 	}
 
+	FriendRepo interface {
+		GetFriendsRepo(ctx context.Context, uid int64)
+	}
+
 	UserWebAPI interface{}
 )
