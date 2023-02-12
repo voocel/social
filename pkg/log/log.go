@@ -73,7 +73,8 @@ func Init(serviceName, filePath, level string) {
 		zap.AddCaller(),
 		zap.AddCallerSkip(1),
 		zap.Development(),
-		zap.Fields(zap.String("func", funcName())),
+		zap.AddStacktrace(zapcore.ErrorLevel),
+		//zap.Fields(zap.String("func", funcName())),
 		zap.Fields(zap.String("usecase", serviceName)),
 	)
 	logger = log.Sugar()
@@ -107,7 +108,7 @@ func newCore(filePath string, atomicLevel zap.AtomicLevel) zapcore.Core {
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeTime:     zapcore.RFC3339TimeEncoder,
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 		EncodeName:     zapcore.FullNameEncoder,
