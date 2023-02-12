@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option go_package = "./node";
+
+package node;
+
+service Node {
+  // 触发事件
+  rpc Trigger(TriggerRequest) returns (TriggerReply) {}
+  // 投递消息
+  rpc Deliver(DeliverRequest) returns (DeliverReply) {}
+}
+
+message TriggerRequest {
+  int32 event = 1; // 事件
+  string gid = 2; // 网关ID
+  int64 uid = 3; // 用户ID
+}
+
+message TriggerReply {
+  int32 status = 1;
+  bytes payload = 2;
+}
+
+message DeliverRequest {
+  string gid = 1; // 网关ID
+  string nid = 2; // 节点ID
+  int64 cid = 3; // 连接ID
+  int64 uid = 4; // 用户ID
+  int32 route = 5; // 路由ID
+  bytes buffer = 6; // 消息内容
+}
+
+message DeliverReply {
+  int32 status = 1;
+  bytes payload = 2;
+}
