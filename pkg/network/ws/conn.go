@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"fmt"
 	"net/url"
 	"sync"
 	"sync/atomic"
@@ -68,7 +67,6 @@ func (c *Conn) Close() error {
 	c.server.pool.Put(c)
 
 	if c.server.disconnectHandler != nil {
-		fmt.Println("开始断开连接")
 		c.server.disconnectHandler(c, err)
 	}
 	close(c.exitCh)

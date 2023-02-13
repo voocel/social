@@ -89,7 +89,7 @@ func generateToken(user *ent.User, aud string, expirationTime time.Time) (string
 func JWTMiddleware(userRepo *usecase.UserUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 跳过 auth, register
-		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/v1/user/register", "/v1/user/login") {
+		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/v1/user/register", "/v1/user/login", "/swagger") {
 			c.Next()
 			return
 		}

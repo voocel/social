@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	v1 "social/internal/delivery/http/v1"
+	"social/internal/app/http/handler"
 	"social/internal/usecase"
 )
 
@@ -11,14 +11,14 @@ type Router interface {
 }
 
 func getRouters(userUsecase *usecase.UserUseCase) (routers []Router) {
-	userHandler := v1.NewUserHandler(userUsecase)
-	ur := NewUserRouter(userHandler)
+	userHandler := handler.NewUserHandler(userUsecase)
+	ur := newUserRouter(userHandler)
 
-	friendHandler := v1.NewFriendHandler()
-	fr := NewFriendRouter(friendHandler)
+	friendHandler := handler.NewFriendHandler()
+	fr := newFriendRouter(friendHandler)
 
-	groupHandler := v1.NewGroupHandler()
-	gr := NewGroupRouter(groupHandler)
+	groupHandler := handler.NewGroupHandler()
+	gr := newGroupRouter(groupHandler)
 
 	routers = append(routers, ur, fr, gr)
 	return
@@ -26,10 +26,10 @@ func getRouters(userUsecase *usecase.UserUseCase) (routers []Router) {
 
 // ######################### User Router #########################
 type userRouter struct {
-	h *v1.UserHandler
+	h *handler.UserHandler
 }
 
-func NewUserRouter(h *v1.UserHandler) *userRouter {
+func newUserRouter(h *handler.UserHandler) *userRouter {
 	return &userRouter{h: h}
 }
 
@@ -44,10 +44,10 @@ func (r *userRouter) Load(g *gin.Engine) {
 
 // ######################### Friend Router #########################
 type friendRouter struct {
-	h *v1.FriendHandler
+	h *handler.FriendHandler
 }
 
-func NewFriendRouter(h *v1.FriendHandler) *friendRouter {
+func newFriendRouter(h *handler.FriendHandler) *friendRouter {
 	return &friendRouter{h: h}
 }
 
@@ -64,10 +64,10 @@ func (r *friendRouter) Load(g *gin.Engine) {
 
 // ######################### Group Router #########################
 type groupRouter struct {
-	h *v1.GroupHandler
+	h *handler.GroupHandler
 }
 
-func NewGroupRouter(h *v1.GroupHandler) *groupRouter {
+func newGroupRouter(h *handler.GroupHandler) *groupRouter {
 	return &groupRouter{h: h}
 }
 

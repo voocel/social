@@ -13,14 +13,17 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"social/ent"
+	"social/internal/app/http/handler"
 	"social/internal/app/http/middleware"
-	"social/internal/delivery/http/ping"
 	"social/internal/usecase"
 	"social/internal/usecase/repo"
 	"social/pkg/log"
 
 	_ "github.com/lib/pq"
+	_ "social/docs"
 )
 
 type Server struct {
@@ -54,8 +57,8 @@ func (s *Server) Run() {
 	g.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "404 not found!")
 	})
-	g.GET("/ping", ping.Ping())
-
+	g.GET("/ping", handler.Ping())
+	g.Group("/swagger").GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	s.routerLoad(g, getRouters(userUseCase)...)
 
 	srv := http.Server{
