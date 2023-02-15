@@ -38,10 +38,10 @@ func (p *Proxy) AddEventListener(event Event, handler EventHandler) {
 	p.node.addEventListener(event, handler)
 }
 
-func (p *Proxy) BindGate(uid int64) {
+func (p *Proxy) BindGate(gid string, cid, uid int64) {
 	c := p.getGateClient("")
 	c.client.Bind(context.Background(), &gate.BindRequest{
-		Cid: 0,
+		Cid: cid,
 		Uid: uid,
 	})
 }

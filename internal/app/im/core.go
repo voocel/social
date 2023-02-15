@@ -23,34 +23,35 @@ func (c *core) Init() {
 	c.proxy.SetDefaultRouteHandler(c.Default)
 }
 
-func (c *core) Default(req node.Request) {
+func (c *core) Default(req node.Request) error {
 	var arg entity.Request
 	data := req.Buffer
 	if err := json.Unmarshal(data, &arg); err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 	log.Debugf("[im] default receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	return nil
 }
 
-func (c *core) Connect(req node.Request) {
+func (c *core) Connect(req node.Request) error {
 	var arg entity.Request
 	data := req.Buffer
 	if err := json.Unmarshal(data, &arg); err != nil {
-		log.Error(err)
-		return
+		return err
 	}
+	c.proxy.BindGate(req.Gid, req.Cid, req.Uid)
 	log.Debugf("[im] connect receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	return nil
 }
 
-func (c *core) Chat(req node.Request) {
+func (c *core) Chat(req node.Request) error {
 	var arg entity.Request
 	data := req.Buffer
 	if err := json.Unmarshal(data, &arg); err != nil {
-		log.Error(err)
-		return
+		return err
 	}
 	log.Debugf("[im] chat receive cmd: %v, params: %v", arg.Cmd, arg.Params)
 
 	c.proxy.Respond(context.Background(), int64(arg.Params.Receiver), []byte(arg.Params.Content))
+	return nil
 }

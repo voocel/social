@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"social/pkg/log"
 	"social/protos/node"
 )
@@ -33,13 +34,14 @@ func (n nodeService) Deliver(ctx context.Context, req *node.DeliverRequest) (*no
 		Buffer: req.Buffer,
 		Node:   n.node,
 	}
+	var err error
 	if ok {
-		route.handler(r)
+		err = route.handler(r)
 	} else if n.node.defaultRouteHandler != nil {
-		n.node.defaultRouteHandler(r)
+		err = n.node.defaultRouteHandler(r)
 	} else {
-		log.Errorf("[node] the route does not match: %v", req.Route)
+		err = fmt.Errorf("the route does not match: %v", req.Route)
 	}
-
-	return &node.DeliverReply{}, nil
+	log.Debugf("[node] handle route err: %v", err)
+	return &node.DeliverReply{}, err
 }

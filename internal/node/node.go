@@ -14,7 +14,7 @@ import (
 	"social/protos/node"
 )
 
-type RouteHandler func(req Request)
+type RouteHandler func(req Request) error
 
 type Request struct {
 	Gid    string
