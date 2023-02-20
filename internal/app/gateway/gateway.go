@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"social/pkg/discovery"
 	"syscall"
 	"time"
 
@@ -48,10 +49,27 @@ func Run() {
 type Gateway struct {
 	opts         *options
 	proxy        *proxy
+	endpoints    *Endpoint
 	srv          *grpc.Server
+	registry     *etcd.Registry
 	protocol     message.Protocol
 	nodeConns    map[string]*grpc.ClientConn
 	sessionGroup *SessionGroup
+	instance     *discovery.Node
+}
+
+type Endpoint struct {
+	gateEndpoints map[string]string
+}
+
+func NewEndpoint() *Endpoint {
+	return &Endpoint{
+		gateEndpoints: make(map[string]string),
+	}
+}
+
+func (e *Endpoint) add(id, addr string) {
+	e.gateEndpoints[id] = addr
 }
 
 func NewGateway(opts ...OptionFunc) *Gateway {
@@ -64,9 +82,15 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 	}
 	g := &Gateway{
 		opts:         o,
+		endpoints:    NewEndpoint(),
 		sessionGroup: NewSessionGroup(),
 		nodeConns:    make(map[string]*grpc.ClientConn),
 		protocol:     message.NewDefaultProtocol(),
+		instance: &discovery.Node{
+			Name: "gate-inter-rpc-client",
+			Host: viper.GetString("gaterpc.host"),
+			Port: viper.GetInt("gaterpc.port"),
+		},
 	}
 	g.proxy = newProxy(g)
 
@@ -105,6 +129,16 @@ func (g *Gateway) startRPCServer() {
 	g.srv = s
 	//s.RegisterService(&gate.Gate_ServiceDesc, &endpoint{})
 	gate.RegisterGateServer(s, &endpoint{sessionGroup: g.sessionGroup})
+
+	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
+	if err != nil {
+		panic(err)
+	}
+	g.registry = r
+	err = g.registry.Register(context.Background(), g.instance, 60)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	go func() {
 		defer lis.Close()
