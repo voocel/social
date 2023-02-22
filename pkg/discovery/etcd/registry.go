@@ -16,7 +16,7 @@ import (
 	"social/pkg/discovery"
 )
 
-const defaultRefreshDuration = time.Second * 10
+const defaultRefreshDuration = time.Second * 60
 
 type Registry struct {
 	cc              resolver.ClientConn
@@ -112,6 +112,10 @@ func (r *Registry) Unregister(ctx context.Context, info *discovery.Node) error {
 	return err
 }
 
+func (r *Registry) Query(name string) *discovery.Node {
+	return r.serviceList[name]
+}
+
 func (r *Registry) QueryServices() []*discovery.Node {
 	addrs := make([]*discovery.Node, 0, 10)
 	for _, node := range r.serviceList {
@@ -122,7 +126,7 @@ func (r *Registry) QueryServices() []*discovery.Node {
 
 func (r *Registry) watch(keyPrefix string) error {
 	if keyPrefix == "" {
-		return errors.New("serviceName is empty")
+		return errors.New("service name is empty")
 	}
 
 	r.setServices(keyPrefix)

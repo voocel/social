@@ -14,6 +14,9 @@ type Discovery interface {
 	// Unregister 取消服务
 	Unregister(context.Context, *Node) error
 
+	// Query 查询指定服务
+	Query(string) *Node
+
 	// QueryServices 向注册中心查询所有服务
 	QueryServices() []*Node
 }
