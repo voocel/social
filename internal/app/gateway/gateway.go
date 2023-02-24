@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"social/pkg/discovery"
 	"syscall"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
 	"social/internal/app/gateway/packet"
+	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
 	"social/pkg/jwt"
 	"social/pkg/log"
@@ -47,15 +47,17 @@ func Run() {
 }
 
 type Gateway struct {
-	opts         *options
-	proxy        *proxy
-	endpoints    *Endpoint
-	srv          *grpc.Server
-	registry     *etcd.Registry
-	protocol     message.Protocol
-	nodeConns    map[string]*grpc.ClientConn
-	sessionGroup *SessionGroup
-	instance     *discovery.Node
+	opts          *options
+	proxy         *proxy
+	endpoints     *Endpoint
+	srv           *grpc.Server
+	registry      *etcd.Registry
+	protocol      message.Protocol
+	nodeConns     map[string]*grpc.ClientConn
+	sessionGroup  *SessionGroup
+	instance      *discovery.Node
+	done          chan struct{}
+	nodeEndpoints map[string]*discovery.Node
 }
 
 type Endpoint struct {
@@ -81,11 +83,13 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 		o.id = uuid.New().String()
 	}
 	g := &Gateway{
-		opts:         o,
-		endpoints:    NewEndpoint(),
-		sessionGroup: NewSessionGroup(),
-		nodeConns:    make(map[string]*grpc.ClientConn),
-		protocol:     message.NewDefaultProtocol(),
+		opts:          o,
+		endpoints:     NewEndpoint(),
+		sessionGroup:  NewSessionGroup(),
+		done:          make(chan struct{}),
+		nodeConns:     make(map[string]*grpc.ClientConn),
+		protocol:      message.NewDefaultProtocol(),
+		nodeEndpoints: make(map[string]*discovery.Node),
 		instance: &discovery.Node{
 			Name: "gate-inter-rpc-client",
 			Host: viper.GetString("gaterpc.host"),
@@ -116,6 +120,18 @@ func (g *Gateway) startGate() {
 	if err := g.opts.server.Start(); err != nil {
 		panic(err)
 	}
+
+	go func() {
+		t := time.NewTimer(time.Second * 10)
+		for {
+			select {
+			case <-g.done:
+				return
+			case <-t.C:
+				g.nodeEndpoints["node"] = g.registry.Query("node")
+			}
+		}
+	}()
 }
 
 // 启动rpc服务端
@@ -177,6 +193,7 @@ func (g *Gateway) Stop() {
 	if err := g.opts.server.Stop(); err != nil {
 		log.Errorf("gateway server stop failed: %v", err)
 	}
+	close(g.done)
 }
 
 func (g *Gateway) handleConnect(conn network.Conn) {
