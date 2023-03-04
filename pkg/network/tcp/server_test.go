@@ -21,7 +21,7 @@ func TestServer(t *testing.T) {
 		fmt.Println("connect")
 	})
 
-	s.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+	s.OnReceive(func(conn network.Conn, msg []byte) {
 		fmt.Println("msg: ", string(msg))
 	})
 

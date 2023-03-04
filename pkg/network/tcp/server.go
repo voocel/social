@@ -38,7 +38,7 @@ type server struct {
 	receiveHandler    network.ReceiveHandler
 }
 
-func NewServer(addr string, opts ...OptionFunc) *server {
+func NewServer(addr string, opts ...OptionFunc) network.Server {
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
