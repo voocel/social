@@ -121,6 +121,7 @@ func (g *Gateway) startGate() {
 		panic(err)
 	}
 
+	// get node service instance
 	go func() {
 		t := time.NewTimer(time.Second * 10)
 		for {
@@ -161,7 +162,7 @@ func (g *Gateway) startRPCServer() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %s", err)
 		}
-		log.Infof("[%s]gateway GRPC server stop success")
+		log.Infof("gateway GRPC server stop success")
 	}()
 }
 
