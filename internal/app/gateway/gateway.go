@@ -112,7 +112,7 @@ func (g *Gateway) Start() {
 }
 
 func (g *Gateway) startGate() {
-	startupMessage(":9000", "Gateway")
+	startupMessage(":8800", "Gateway")
 	g.opts.server.OnConnect(g.handleConnect)
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
@@ -235,7 +235,7 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 }
 
 func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
-	log.Debugf("[Gateway] user connection disconnected: %v, err: %v", conn.RemoteAddr(), err.Error())
+	log.Debugf("[Gateway] user connection disconnected: %v, err: %v", conn.RemoteAddr(), err)
 	g.sessionGroup.RemoveByUid(conn.Uid())
 	g.sessionGroup.RemoveByCid(conn.Cid())
 }
