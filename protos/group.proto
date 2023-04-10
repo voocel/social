@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "./group";
+
+package group;
+
+service Group {
+  rpc Create(CreateReq) returns (CreateReply){}
+}
+
+message CreateReq {
+  string name = 1;
+  int64 from_uid = 2;
+}
+
+message CreateReply {
+
+}
