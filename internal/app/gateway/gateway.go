@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,25 +22,11 @@ import (
 	"social/protos/gate"
 )
 
-func Run() {
+func Run() *Gateway {
 	srv := ws.NewServer(":8800")
 	gateway := NewGateway(WithServer(srv))
 	gateway.Start()
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
-	for {
-		sig := <-ch
-		switch sig {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			log.Sync()
-			gateway.Stop()
-			return
-		case syscall.SIGHUP:
-		default:
-			return
-		}
-	}
+	return gateway
 }
 
 type Gateway struct {
