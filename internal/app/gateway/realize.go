@@ -4,6 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"social/internal/entity"
 	"social/pkg/log"
 	"social/protos/gate"
 )
@@ -25,9 +26,17 @@ func (e endpoint) Unbind(ctx context.Context, req *gate.UnbindRequest) (*gate.Un
 	panic("implement me")
 }
 
+// Push send to user
 func (e endpoint) Push(ctx context.Context, req *gate.PushRequest) (*gate.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetBuffer()))
-	err := e.sessionGroup.PushByUid(req.Target, req.GetBuffer())
+	resp := new(entity.Response)
+	msg := entity.Message{
+		ID:          0,
+		Content:     string(req.GetBuffer()),
+		MsgType:     0,
+		ContentType: 0,
+	}
+	err := e.sessionGroup.PushByUid(req.Target, resp.Resp(msg))
 	if err != nil {
 		log.Errorf("[Gateway] push to user(%v) err: ", req.Target, err)
 	}

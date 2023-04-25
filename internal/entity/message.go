@@ -3,16 +3,43 @@ package entity
 import (
 	"encoding/json"
 	"io"
+	"social/pkg/log"
 	"sort"
 	"time"
 )
 
+type Response struct {
+	Code uint32  `json:"code"`
+	Msg  string  `json:"msg"`
+	Data Message `json:"data"`
+}
+
 type Message struct {
 	ID          int64  `json:"id"`
 	Content     string `json:"content"`
-	MsgType     int16  `json:"msg_type"`     // 1.单聊 2.群聊
+	MsgType     int16  `json:"msg_type"`     // 1.单聊 2.群聊 3.系统
 	ContentType int16  `json:"content_type"` // 1.文字 2.普通文件 3.图片 4.音频 5.视频 6.语音聊天 7.视频聊天
-	Pic         string `json:"pic"`
+}
+
+func (r *Response) Resp(data Message) []byte {
+	r.Code = 0
+	r.Msg = "ok"
+	r.Data = data
+	b, err := json.Marshal(r)
+	if err != nil {
+		log.Errorf("Resp marshal err: %v", err)
+	}
+	return b
+}
+
+func (r *Response) ErrResp(msg string) []byte {
+	r.Code = 1
+	r.Msg = msg
+	b, err := json.Marshal(r)
+	if err != nil {
+		log.Errorf("ErrResp marshal err: %v", err)
+	}
+	return b
 }
 
 //feed := &Feed{
@@ -77,12 +104,6 @@ type Author struct {
 	Name   string `json:"name,omitempty"`
 	Url    string `json:"url,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
-}
-
-type Response struct {
-	Code    uint32      `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"result"`
 }
 
 func (f *Feed) Add(item *Item) {
