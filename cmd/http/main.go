@@ -8,7 +8,7 @@ import (
 
 func main() {
 	config.LoadConfig()
-	log.Init("http", "log", "debug")
+	log.Init("http", "debug")
 	srv := http.NewServer()
 	srv.Run()
 }

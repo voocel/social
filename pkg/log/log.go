@@ -39,9 +39,19 @@ func toZapLevel(l string) zapcore.Level {
 	return zapcore.InfoLevel
 }
 
-func Init(serviceName, filePath, level string) {
+func Init(serviceName, level string, logPaths ...string) {
 	var atomicLevel = zap.NewAtomicLevel()
 	atomicLevel.SetLevel(toZapLevel(level))
+
+	var logPath string
+	if len(logPaths) == 0 {
+		_, logPath, _, _ = runtime.Caller(0)
+		logPath = filepath.Dir(filepath.Dir(filepath.Dir(logPath)))
+		logPath = filepath.Join(logPath, "logs", serviceName)
+	} else {
+		logPath = logPaths[0]
+	}
+
 	//mux := http.NewServeMux()
 	//mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
 	//srv = &http.Server{
@@ -67,7 +77,7 @@ func Init(serviceName, filePath, level string) {
 	//highCore := newCore(filePath, highLevel, "error.log")
 	//lowCore := newCore(filePath, lowLever, "info.log")
 
-	core := newCore(filePath, atomicLevel)
+	core := newCore(logPath, atomicLevel)
 	log := zap.New(
 		zapcore.NewTee(core),
 		zap.AddCaller(),
@@ -88,9 +98,9 @@ func funcName() string {
 	return filepath.Base(runtime.FuncForPC(pc).Name())
 }
 
-func newCore(filePath string, atomicLevel zap.AtomicLevel) zapcore.Core {
+func newCore(logPath string, atomicLevel zap.AtomicLevel) zapcore.Core {
 	filename := time.Now().Format("2006-01-02") + ".log"
-	logPath := filepath.Join(filepath.Dir(filePath), filename)
+	logPath = filepath.Join(logPath, filename)
 	fileWriteSyncer := &lumberjack.Logger{
 		Filename:   logPath, // 日志文件存放目录
 		MaxSize:    100,     // 文件大小限制,单位MB

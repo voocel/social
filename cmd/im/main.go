@@ -6,8 +6,8 @@ import (
 	"social/pkg/log"
 )
 
-func main()  {
+func main() {
 	config.LoadConfig()
-	log.Init("im_service", "log", "debug")
+	log.Init("im", "debug")
 	im.Run()
 }

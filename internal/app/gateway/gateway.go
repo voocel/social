@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
 	"social/internal/app/gateway/packet"
+	"social/internal/entity"
 	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
 	"social/pkg/jwt"
@@ -182,16 +183,19 @@ func (g *Gateway) Stop() {
 
 func (g *Gateway) handleConnect(conn network.Conn) {
 	log.Debugf("[Gateway] user connect successful: %v", conn.RemoteAddr())
+	resp := new(entity.Response)
 	token, ok := conn.Values()["token"]
 	if !ok {
-		conn.Send([]byte("token non-existent"))
+		conn.Send(resp.ErrResp("token non-existent"))
 		conn.Close()
+		log.Errorf("token non-existent: %v", token)
 		return
 	}
 	claims, err := jwt.ParseToken(token[0])
 	if err != nil {
-		conn.Send([]byte("token parse fail"))
+		conn.Send(resp.ErrResp("token parse fail: " + err.Error()))
 		conn.Close()
+		log.Errorf("token parse fail: %v", err)
 		return
 	}
 	uid := claims.User.ID

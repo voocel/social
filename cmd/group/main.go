@@ -8,6 +8,6 @@ import (
 
 func main() {
 	config.LoadConfig()
-	log.Init("group_service", "log", "debug")
+	log.Init("group", "debug")
 	group.Run()
 }

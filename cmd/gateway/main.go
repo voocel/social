@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config.LoadConfig()
-	log.Init("gateway", "log", "debug")
+	log.Init("gateway", "debug")
 	g := gateway.Run()
 
 	ch := make(chan os.Signal, 1)
