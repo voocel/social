@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
+
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
 	"social/pkg/discovery"
@@ -19,16 +20,8 @@ import (
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
-	"social/pkg/network/ws"
 	"social/protos/gate"
 )
-
-func Run() *Gateway {
-	srv := ws.NewServer(":8800")
-	gateway := NewGateway(WithServer(srv))
-	gateway.Start()
-	return gateway
-}
 
 type Gateway struct {
 	opts          *options
