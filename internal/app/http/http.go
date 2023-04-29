@@ -3,18 +3,13 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
 	"entgo.io/ent/dialect"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"net/http"
 	"social/ent"
 	"social/internal/app/http/handler"
 	"social/internal/app/http/middleware"
@@ -28,6 +23,7 @@ import (
 
 type Server struct {
 	ent *ent.Client
+	srv http.Server
 }
 
 func NewServer() *Server {
@@ -70,27 +66,6 @@ func (s *Server) Run() {
 			panic(err)
 		}
 	}()
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
-	for {
-		s := <-ch
-		log.Infof("[%v]Shutting down...", s)
-		switch s {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-			if err = srv.Shutdown(ctx); err != nil {
-				panic(err)
-			}
-			log.Sync()
-			cancel()
-			return
-		case syscall.SIGHUP:
-			return
-		default:
-			return
-		}
-	}
 }
 
 func (s *Server) initEnt() {
@@ -129,4 +104,8 @@ func (s *Server) initEnt() {
 	})
 
 	s.ent = client
+}
+
+func (s *Server) Stop(ctx context.Context) error {
+	return s.srv.Shutdown(ctx)
 }
