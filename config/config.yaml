@@ -50,6 +50,8 @@ mysql:
 
 gateway:
   name: gateway
+  host: 0.0.0.0
+  port: 8800
   endpoint:
     - name: ws_service
       proxy:
