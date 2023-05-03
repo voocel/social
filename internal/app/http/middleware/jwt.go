@@ -34,7 +34,7 @@ const (
 	// cookie的过期时间略早于jwt过期时间, 使得如果用户cookie过期，则会在使用过期的jwt前先注销
 	cookieExpDuration = refreshTokenDuration - 1*time.Minute
 
-	socialContextKey = "user"
+	socialContextKey = "jwt-user"
 )
 
 type Claims struct {

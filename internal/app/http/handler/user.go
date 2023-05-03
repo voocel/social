@@ -98,7 +98,8 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 func (h *UserHandler) Info(c *gin.Context) {
 	resp := new(ApiResponse)
-	user, exists := c.Get("user")
+	// Get userinfo from token
+	user, exists := c.Get("jwt-user")
 	if !exists {
 		resp.Code = 1
 		resp.Message = "user not exists"
