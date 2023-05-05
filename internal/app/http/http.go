@@ -42,7 +42,10 @@ func (s *Server) Run() {
 	gin.SetMode(gin.DebugMode)
 
 	s.initEnt()
+
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(s.ent))
+	friendUseCase := usecase.NewFriendUseCase(repo.NewFriendRepo(s.ent))
+
 	g.Use(
 		gin.Logger(),
 		gin.Recovery(),
@@ -55,7 +58,7 @@ func (s *Server) Run() {
 	})
 	g.GET("/ping", handler.Ping())
 	g.Group("/swagger").GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	s.routerLoad(g, getRouters(userUseCase)...)
+	s.routerLoad(g, getRouters(userUseCase, friendUseCase)...)
 
 	srv := http.Server{
 		Addr:    viper.GetString("http.addr"),

@@ -10,11 +10,11 @@ type Router interface {
 	Load(r *gin.Engine)
 }
 
-func getRouters(userUsecase *usecase.UserUseCase) (routers []Router) {
-	userHandler := handler.NewUserHandler(userUsecase)
+func getRouters(u *usecase.UserUseCase, f *usecase.FriendUseCase) (routers []Router) {
+	userHandler := handler.NewUserHandler(u)
 	ur := newUserRouter(userHandler)
 
-	friendHandler := handler.NewFriendHandler()
+	friendHandler := handler.NewFriendHandler(f)
 	fr := newFriendRouter(friendHandler)
 
 	groupHandler := handler.NewGroupHandler()
