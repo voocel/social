@@ -21,7 +21,7 @@ type (
 	}
 
 	FriendRepo interface {
-		GetFriendsRepo(ctx context.Context, uid int64)
+		GetFriendsRepo(ctx context.Context, uid int64) ([]*ent.Friend, error)
 	}
 
 	UserWebAPI interface{}
