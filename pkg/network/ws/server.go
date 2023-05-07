@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"golang.org/x/time/rate"
 	"net"
 	"net/http"
 	"sync"
@@ -150,6 +151,7 @@ func (s *server) wsHandle(w http.ResponseWriter, r *http.Request) {
 	c.sendCh = make(chan []byte, 1024)
 	c.exitCh = make(chan struct{})
 	c.server = s
+	c.rateLimiter = rate.NewLimiter(rate.Limit(10), 10)
 
 	if s.connectHandler != nil {
 		s.connectHandler(c)

@@ -1,26 +1,30 @@
 package ws
 
 import (
+	"context"
 	"net/url"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/time/rate"
 	"social/pkg/log"
 	"social/pkg/network"
 )
 
 type Conn struct {
-	rw     sync.RWMutex
-	cid    int64
-	uid    int64
-	state  int32
-	conn   *websocket.Conn
-	msgCh  chan []byte
-	sendCh chan []byte
-	exitCh chan struct{}
-	server *server
-	values url.Values
+	rw          sync.RWMutex
+	cid         int64
+	uid         int64
+	state       int32
+	conn        *websocket.Conn
+	msgCh       chan []byte
+	sendCh      chan []byte
+	exitCh      chan struct{}
+	server      *server
+	values      url.Values
+	rateLimiter *rate.Limiter
 }
 
 func (c *Conn) Cid() int64 {
@@ -140,4 +144,21 @@ func (c *Conn) writeLoop() {
 			}
 		}
 	}
+}
+
+func (c *Conn) openRateLimited(fn func() error) error {
+	var err error
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	start := time.Now()
+
+	if err = c.rateLimiter.Wait(ctx); err != nil {
+		return err
+	}
+
+	elapsed := time.Since(start)
+	if elapsed > time.Second*2 {
+		log.Debugf("rate limited: %s", elapsed)
+	}
+	return fn()
 }
