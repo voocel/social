@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package relation.v1;
+
+service RelationService {
+  rpc Follow(FollowRequest) returns (FollowReply){}
+  rpc Unfollow(UnfollowRequest) returns (UnfollowReply) {}
+  rpc GetFollowingUserList(GetFollowingUserListRequest) returns (GetFollowingUserListReply) {}
+  rpc GetFollowerUserList(GetFollowerUserListRequest) returns(GetFollowerUserListReply) {}
+}
+
+message FollowRequest {
+  // 被关注人uid
+  int64 user_id = 1;
+}
+
+message FollowReply {
+}
+
+message UnfollowRequest {
+  // 被取消关注人uid
+  int64 user_id = 1;
+}
+
+message UnfollowReply {
+}
+
+message GetFollowingUserListRequest {
+  string id = 1;
+  string last_id = 2;
+  string limit = 3;
+}
+
+message GetFollowingUserListReply {
+  int32 has_more = 1;
+  string last_id = 2;
+  repeated User items = 3;
+
+}
+
+enum StatusType {
+  NORMAL = 0;
+  DELETE = 1;
+  Ban = 2;
+}
+
+enum GenderType {
+  UNKNOWN = 0;
+  MALE = 1;
+  FEMALE = 2;
+};
+
+message User {
+  string id = 1;
+  string username = 2;
+  string email =3;
+  string phone = 4;
+  int64  login_at = 5;
+  StatusType status = 6;
+  string nickname = 7;
+  string avatar = 8;
+  GenderType gender = 9;
+  string birthday = 10;
+  string bio = 11;
+  int64 created_at = 12;
+}
+
+message GetFollowerUserListRequest {
+  string user_id = 1;
+  string last_id = 2;
+  string limit = 3;
+}
+
+message GetFollowerUserListReply {
+  int32 has_more = 1;
+  string last_id = 2;
+  repeated User items = 3;
+}
