@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"social/ent"
 	entFriend "social/ent/friend"
+	"social/internal/entity"
 )
 
 type FriendRepo struct {
@@ -21,4 +22,16 @@ func (r *FriendRepo) GetFriendsRepo(ctx context.Context, uid int64) ([]*ent.Frie
 		return nil, fmt.Errorf("FriendRepo - GetFriendsRepo query fail: %w", err)
 	}
 	return found, nil
+}
+
+func (r *FriendRepo) AddFriendRepo(ctx context.Context, info *entity.Friend) (*ent.Friend, error) {
+	create, err := r.ent.Friend.Create().
+		SetUID(info.Uid).
+		SetFriendID(info.FriendId).
+		SetRemark(info.Remark).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("FriendRepo - AddFriendRepo create fail: %w", err)
+	}
+	return create, nil
 }

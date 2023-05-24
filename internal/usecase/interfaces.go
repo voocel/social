@@ -22,6 +22,7 @@ type (
 
 	FriendRepo interface {
 		GetFriendsRepo(ctx context.Context, uid int64) ([]*ent.Friend, error)
+		AddFriendRepo(ctx context.Context, friend *entity.Friend) (*ent.Friend, error)
 	}
 
 	UserWebAPI interface{}
