@@ -52,18 +52,18 @@ func Init(serviceName, level string, logPaths ...string) {
 		logPath = logPaths[0]
 	}
 
-	//mux := http.NewServeMux()
-	//mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
-	//srv = &http.Server{
-	//	Addr:    endpoint,
-	//	Handler: mux,
-	//}
-	//
-	//go func() {
-	//	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-	//		panic(err)
-	//	}
-	//}()
+	mux := http.NewServeMux()
+	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
+	srv = &http.Server{
+		Addr:    endpoint,
+		Handler: mux,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
 
 	//// error, fatal, panic
 	//highLevel := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
