@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"social/ent/friend"
+	"social/ent/group"
 	"social/ent/user"
 
 	"entgo.io/ent"
@@ -31,6 +32,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		friend.Table: friend.ValidColumn,
+		group.Table:  group.ValidColumn,
 		user.Table:   user.ValidColumn,
 	}
 	check, ok := checks[table]
