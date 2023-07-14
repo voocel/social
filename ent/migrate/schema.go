@@ -25,6 +25,22 @@ var (
 		Columns:    FriendsColumns,
 		PrimaryKey: []*schema.Column{FriendsColumns[0]},
 	}
+	// GroupsColumns holds the columns for the "groups" table.
+	GroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "owner", Type: field.TypeInt64},
+		{Name: "notice", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+	}
+	// GroupsTable holds the schema information for the "groups" table.
+	GroupsTable = &schema.Table{
+		Name:       "groups",
+		Columns:    GroupsColumns,
+		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -51,6 +67,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		FriendsTable,
+		GroupsTable,
 		UsersTable,
 	}
 )
