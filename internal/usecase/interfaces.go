@@ -25,5 +25,10 @@ type (
 		AddFriendRepo(ctx context.Context, friend *entity.Friend) (*ent.Friend, error)
 	}
 
+	GroupRepo interface {
+		GetGroupsRepo(ctx context.Context, uid int64) ([]*ent.Group, error)
+		CreateGroupRepo(ctx context.Context, group *entity.Group) (*ent.Group, error)
+	}
+
 	UserWebAPI interface{}
 )

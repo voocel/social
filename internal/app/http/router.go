@@ -74,7 +74,7 @@ func newGroupRouter(h *handler.GroupHandler) *groupRouter {
 func (r *groupRouter) Load(g *gin.Engine) {
 	gr := g.Group("/v1/group")
 	{
-		gr.GET("/getGroups")
+		gr.GET("/getGroups", r.h.GetGroups)
 		gr.POST("/createGroup")
 	}
 }
