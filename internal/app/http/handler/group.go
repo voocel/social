@@ -11,8 +11,8 @@ type GroupHandler struct {
 	groupUsecase *usecase.GroupUseCase
 }
 
-func NewGroupHandler() *GroupHandler {
-	return &GroupHandler{}
+func NewGroupHandler(g *usecase.GroupUseCase) *GroupHandler {
+	return &GroupHandler{groupUsecase: g}
 }
 
 func (h *GroupHandler) GetGroups(c *gin.Context) {
