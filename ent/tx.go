@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Friend is the client for interacting with the Friend builders.
 	Friend *FriendClient
+	// FriendApply is the client for interacting with the FriendApply builders.
+	FriendApply *FriendApplyClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// User is the client for interacting with the User builders.
@@ -154,6 +156,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Friend = NewFriendClient(tx.config)
+	tx.FriendApply = NewFriendApplyClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

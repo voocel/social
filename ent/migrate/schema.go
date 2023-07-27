@@ -25,6 +25,23 @@ var (
 		Columns:    FriendsColumns,
 		PrimaryKey: []*schema.Column{FriendsColumns[0]},
 	}
+	// FriendAppliesColumns holds the columns for the "friend_applies" table.
+	FriendAppliesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "from_id", Type: field.TypeInt64},
+		{Name: "to_id", Type: field.TypeInt64},
+		{Name: "remark", Type: field.TypeString},
+		{Name: "status", Type: field.TypeInt8},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+	}
+	// FriendAppliesTable holds the schema information for the "friend_applies" table.
+	FriendAppliesTable = &schema.Table{
+		Name:       "friend_applies",
+		Columns:    FriendAppliesColumns,
+		PrimaryKey: []*schema.Column{FriendAppliesColumns[0]},
+	}
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -67,6 +84,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		FriendsTable,
+		FriendAppliesTable,
 		GroupsTable,
 		UsersTable,
 	}

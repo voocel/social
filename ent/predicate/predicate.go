@@ -9,6 +9,9 @@ import (
 // Friend is the predicate function for friend builders.
 type Friend func(*sql.Selector)
 
+// FriendApply is the predicate function for friendapply builders.
+type FriendApply func(*sql.Selector)
+
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 

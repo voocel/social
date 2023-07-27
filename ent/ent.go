@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"social/ent/friend"
+	"social/ent/friendapply"
 	"social/ent/group"
 	"social/ent/user"
 
@@ -31,9 +32,10 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		friend.Table: friend.ValidColumn,
-		group.Table:  group.ValidColumn,
-		user.Table:   user.ValidColumn,
+		friend.Table:      friend.ValidColumn,
+		friendapply.Table: friendapply.ValidColumn,
+		group.Table:       group.ValidColumn,
+		user.Table:        user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

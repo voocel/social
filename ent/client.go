@@ -10,6 +10,7 @@ import (
 	"social/ent/migrate"
 
 	"social/ent/friend"
+	"social/ent/friendapply"
 	"social/ent/group"
 	"social/ent/user"
 
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Friend is the client for interacting with the Friend builders.
 	Friend *FriendClient
+	// FriendApply is the client for interacting with the FriendApply builders.
+	FriendApply *FriendApplyClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
 	// User is the client for interacting with the User builders.
@@ -42,6 +45,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Friend = NewFriendClient(c.config)
+	c.FriendApply = NewFriendApplyClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -75,11 +79,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Friend: NewFriendClient(cfg),
-		Group:  NewGroupClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Friend:      NewFriendClient(cfg),
+		FriendApply: NewFriendApplyClient(cfg),
+		Group:       NewGroupClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -97,11 +102,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Friend: NewFriendClient(cfg),
-		Group:  NewGroupClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Friend:      NewFriendClient(cfg),
+		FriendApply: NewFriendApplyClient(cfg),
+		Group:       NewGroupClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -131,6 +137,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Friend.Use(hooks...)
+	c.FriendApply.Use(hooks...)
 	c.Group.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -223,6 +230,96 @@ func (c *FriendClient) GetX(ctx context.Context, id int64) *Friend {
 // Hooks returns the client hooks.
 func (c *FriendClient) Hooks() []Hook {
 	return c.hooks.Friend
+}
+
+// FriendApplyClient is a client for the FriendApply schema.
+type FriendApplyClient struct {
+	config
+}
+
+// NewFriendApplyClient returns a client for the FriendApply from the given config.
+func NewFriendApplyClient(c config) *FriendApplyClient {
+	return &FriendApplyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `friendapply.Hooks(f(g(h())))`.
+func (c *FriendApplyClient) Use(hooks ...Hook) {
+	c.hooks.FriendApply = append(c.hooks.FriendApply, hooks...)
+}
+
+// Create returns a create builder for FriendApply.
+func (c *FriendApplyClient) Create() *FriendApplyCreate {
+	mutation := newFriendApplyMutation(c.config, OpCreate)
+	return &FriendApplyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of FriendApply entities.
+func (c *FriendApplyClient) CreateBulk(builders ...*FriendApplyCreate) *FriendApplyCreateBulk {
+	return &FriendApplyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for FriendApply.
+func (c *FriendApplyClient) Update() *FriendApplyUpdate {
+	mutation := newFriendApplyMutation(c.config, OpUpdate)
+	return &FriendApplyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FriendApplyClient) UpdateOne(fa *FriendApply) *FriendApplyUpdateOne {
+	mutation := newFriendApplyMutation(c.config, OpUpdateOne, withFriendApply(fa))
+	return &FriendApplyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FriendApplyClient) UpdateOneID(id int64) *FriendApplyUpdateOne {
+	mutation := newFriendApplyMutation(c.config, OpUpdateOne, withFriendApplyID(id))
+	return &FriendApplyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for FriendApply.
+func (c *FriendApplyClient) Delete() *FriendApplyDelete {
+	mutation := newFriendApplyMutation(c.config, OpDelete)
+	return &FriendApplyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *FriendApplyClient) DeleteOne(fa *FriendApply) *FriendApplyDeleteOne {
+	return c.DeleteOneID(fa.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *FriendApplyClient) DeleteOneID(id int64) *FriendApplyDeleteOne {
+	builder := c.Delete().Where(friendapply.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FriendApplyDeleteOne{builder}
+}
+
+// Query returns a query builder for FriendApply.
+func (c *FriendApplyClient) Query() *FriendApplyQuery {
+	return &FriendApplyQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a FriendApply entity by its id.
+func (c *FriendApplyClient) Get(ctx context.Context, id int64) (*FriendApply, error) {
+	return c.Query().Where(friendapply.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FriendApplyClient) GetX(ctx context.Context, id int64) *FriendApply {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FriendApplyClient) Hooks() []Hook {
+	return c.hooks.FriendApply
 }
 
 // GroupClient is a client for the Group schema.
