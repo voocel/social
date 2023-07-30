@@ -16,13 +16,18 @@ type (
 		GetUserByNameRepo(ctx context.Context, name string) (*ent.User, error)
 		GetUserByNameExistRepo(ctx context.Context, name string) (bool, error)
 		GetUsersRepo(ctx context.Context) ([]*ent.User, int, error)
-
 		AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error)
 	}
 
 	FriendRepo interface {
 		GetFriendsRepo(ctx context.Context, uid int64) ([]*ent.Friend, error)
 		AddFriendRepo(ctx context.Context, friend *entity.Friend) (*ent.Friend, error)
+	}
+
+	FriendApplyRepo interface {
+		AddFriendApplyRepo(ctx context.Context, req *entity.FriendApply) (*ent.FriendApply, error)
+		GetFriendApplyRepo(ctx context.Context, uid int64) ([]*ent.FriendApply, error)
+		AgreeFriendApplyRepo(ctx context.Context, applyId int64) error
 	}
 
 	GroupRepo interface {
