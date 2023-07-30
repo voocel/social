@@ -65,8 +65,5 @@ func (r *UserRepo) AddUserRepo(ctx context.Context, user *entity.User) (*ent.Use
 		SetNickname(user.Nickname).
 		SetEmail("").
 		Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return create, nil
+	return create, err
 }
