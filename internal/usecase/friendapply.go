@@ -10,8 +10,8 @@ type FriendApplyUseCase struct {
 	repo FriendApplyRepo
 }
 
-func NewApplyFriendUseCase() *FriendApplyUseCase {
-	return &FriendApplyUseCase{}
+func NewFriendApplyUseCase(fa FriendApplyRepo) *FriendApplyUseCase {
+	return &FriendApplyUseCase{repo: fa}
 }
 
 func (f *FriendApplyUseCase) AddFriendApply(ctx context.Context, req *entity.FriendApply) (*ent.FriendApply, error) {

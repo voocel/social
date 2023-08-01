@@ -10,17 +10,20 @@ type Router interface {
 	Load(r *gin.Engine)
 }
 
-func getRouters(u *usecase.UserUseCase, f *usecase.FriendUseCase, g *usecase.GroupUseCase) (routers []Router) {
+func getRouters(u *usecase.UserUseCase, f *usecase.FriendUseCase, fa *usecase.FriendApplyUseCase, g *usecase.GroupUseCase) (routers []Router) {
 	userHandler := handler.NewUserHandler(u)
 	ur := newUserRouter(userHandler)
 
 	friendHandler := handler.NewFriendHandler(f)
 	fr := newFriendRouter(friendHandler)
 
+	friendApplyHandler := handler.NewFriendApplyHandle(fa)
+	far := newFriendApplyRouter(friendApplyHandler)
+
 	groupHandler := handler.NewGroupHandler(g)
 	gr := newGroupRouter(groupHandler)
 
-	routers = append(routers, ur, fr, gr)
+	routers = append(routers, ur, fr, far, gr)
 	return
 }
 
@@ -55,6 +58,26 @@ func (r *friendRouter) Load(g *gin.Engine) {
 	fr := g.Group("/v1/friend")
 	{
 		fr.GET("/getFriends", r.h.GetFriends)
+		fr.POST("/addFriendApply")
+		fr.GET("/getFriendApply")
+		fr.GET("/agreeFriendApply")
+		fr.GET("/refuseFriendApply")
+	}
+}
+
+// ######################### Friend Router #########################
+type friendApplyRouter struct {
+	h *handler.FriendApplyHandler
+}
+
+func newFriendApplyRouter(h *handler.FriendApplyHandler) *friendApplyRouter {
+	return &friendApplyRouter{h: h}
+}
+
+func (r *friendApplyRouter) Load(g *gin.Engine) {
+	fr := g.Group("/v1/friend")
+	{
+		fr.GET("/getFriends", r.h.GetFriendApply)
 		fr.POST("/addFriendApply")
 		fr.GET("/getFriendApply")
 		fr.GET("/agreeFriendApply")

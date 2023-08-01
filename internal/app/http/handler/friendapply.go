@@ -5,22 +5,22 @@ import (
 	"social/internal/usecase"
 )
 
-type FriendApplyHandle struct {
+type FriendApplyHandler struct {
 	faUseCase *usecase.FriendApplyUseCase
 }
 
-func NewFriendApplyHandle(f *usecase.FriendApplyUseCase) *FriendApplyHandle {
-	return &FriendApplyHandle{faUseCase: f}
+func NewFriendApplyHandle(f *usecase.FriendApplyUseCase) *FriendApplyHandler {
+	return &FriendApplyHandler{faUseCase: f}
 }
 
-func (h *FriendApplyHandle) AddFriendApply(c *gin.Context) {
-
-}
-
-func (h *FriendApplyHandle) GetFriendApply(c *gin.Context) {
+func (h *FriendApplyHandler) AddFriendApply(c *gin.Context) {
 
 }
 
-func (h *FriendApplyHandle) AgreeFriendApply(c *gin.Context) {
+func (h *FriendApplyHandler) GetFriendApply(c *gin.Context) {
+
+}
+
+func (h *FriendApplyHandler) AgreeFriendApply(c *gin.Context) {
 
 }
