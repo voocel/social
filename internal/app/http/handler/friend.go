@@ -27,7 +27,7 @@ func (f *FriendHandler) GetFriends(c *gin.Context) {
 		return
 	}
 
-	result, err := f.friendUsecase.GetFriendsRepo(c, u.ID)
+	result, err := f.friendUsecase.GetFriends(c, u.ID)
 	if err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
@@ -60,7 +60,7 @@ func (f *FriendHandler) AddFriend(c *gin.Context) {
 	}
 	req.Uid = u.ID
 
-	if err := f.friendUsecase.AddFriend(c, req); err != nil {
+	if _, err := f.friendUsecase.AddFriend(c, req); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
