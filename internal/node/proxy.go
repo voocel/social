@@ -39,7 +39,7 @@ func (p *Proxy) AddEventListener(event Event, handler EventHandler) {
 }
 
 func (p *Proxy) BindGate(gid string, cid, uid int64) {
-	c := p.getGateClient("")
+	c := p.getGateClient("127.0.0.1:7400")
 	c.client.Bind(context.Background(), &gate.BindRequest{
 		Cid: cid,
 		Uid: uid,
@@ -51,7 +51,7 @@ func (p *Proxy) getGateClient(addr string) *gateClient {
 	if ok {
 		return c.(*gateClient)
 	}
-	conn, err := grpc.Dial("127.0.0.1:7400", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
@@ -60,8 +60,12 @@ func (p *Proxy) getGateClient(addr string) *gateClient {
 	return cc
 }
 
+func (p *Proxy) getGateClientByGid(gid string) *gateClient {
+	return nil
+}
+
 func (p *Proxy) Respond(ctx context.Context, target int64, msg []byte) {
-	c := p.getGateClient("")
+	c := p.getGateClient("127.0.0.1:7400")
 	r, err := c.client.Push(ctx, &gate.PushRequest{Target: target, Buffer: msg})
 	if err != nil {
 		log.Fatalf("could not gate: %v", err)

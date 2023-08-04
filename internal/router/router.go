@@ -1,6 +1,15 @@
 package router
 
-import "sync"
+import (
+	"errors"
+	"social/pkg/discovery"
+	"sync"
+)
+
+var (
+	ErrNotFoundRoute    = errors.New("not found route")
+	ErrNotFoundEndpoint = errors.New("not found endpoint")
+)
 
 type Route struct {
 	id              int32    // 路由ID
@@ -22,4 +31,20 @@ func NewRouter() *Router {
 		gateEndpoints: make(map[string]string),
 		nodeEndpoints: make(map[string]string),
 	}
+}
+
+func (r *Router) AddService(service *discovery.Node) {
+
+}
+
+func (r *Router) FindGateEndpoint(gid string) (string, error) {
+	r.rw.RLock()
+	defer r.rw.RUnlock()
+
+	ep, ok := r.gateEndpoints[gid]
+	if !ok {
+		return "", ErrNotFoundEndpoint
+	}
+
+	return ep, nil
 }
