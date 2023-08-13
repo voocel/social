@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "./gate";
+option go_package = "./gate;gate";
 
 package Gate;
 
@@ -11,6 +11,12 @@ service Gate {
   rpc Unbind(UnbindRequest) returns (UnbindReply) {}
   // 推送消息
   rpc Push(PushRequest) returns (PushReply) {}
+}
+
+message Message {
+  int32 Seq = 1; // 序列号
+  int32 Route = 2;  // 路由
+  bytes Buffer = 3; // 消息内容
 }
 
 message BindRequest {
@@ -28,10 +34,9 @@ message UnbindRequest {
 message UnbindReply {}
 
 message PushRequest {
-  string nid = 1; // 节点ID
+
   int64 target = 3; // 推送目标
-  int32 route = 4;  // 路由
-  bytes buffer = 5; // 消息内容
+  Message Message = 5; // 消息
 }
 
 message PushReply {}

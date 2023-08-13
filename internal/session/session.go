@@ -1,4 +1,4 @@
-package gateway
+package session
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ type Session struct {
 	rw   sync.RWMutex
 }
 
-func newSession(conn network.Conn) *Session {
+func NewSession(conn network.Conn) *Session {
 	return &Session{
 		sid:  uuid.New().String(),
 		conn: conn,
@@ -113,31 +113,31 @@ func (s *Session) Push(msg []byte) error {
 
 type SessionGroup struct {
 	rw         sync.RWMutex
-	uidSession map[int64]*Session
-	cidSession map[int64]*Session
+	UidSession map[int64]*Session
+	CidSession map[int64]*Session
 }
 
 func NewSessionGroup() *SessionGroup {
 	return &SessionGroup{
 		rw:         sync.RWMutex{},
-		uidSession: make(map[int64]*Session),
-		cidSession: make(map[int64]*Session),
+		UidSession: make(map[int64]*Session),
+		CidSession: make(map[int64]*Session),
 	}
 }
 
 func (g *SessionGroup) AddSession(s *Session) {
 	g.rw.Lock()
 	defer g.rw.Unlock()
-	g.cidSession[s.CID()] = s
+	g.CidSession[s.CID()] = s
 	if uid := s.UID(); uid > 0 {
-		g.uidSession[uid] = s
+		g.UidSession[uid] = s
 	}
 }
 
 func (g *SessionGroup) GetSessionByCid(cid int64) (*Session, error) {
 	g.rw.RLock()
 	defer g.rw.RUnlock()
-	sess, ok := g.cidSession[cid]
+	sess, ok := g.CidSession[cid]
 	if !ok {
 		return nil, errors.New("cid session not found")
 	}
@@ -147,7 +147,7 @@ func (g *SessionGroup) GetSessionByCid(cid int64) (*Session, error) {
 func (g *SessionGroup) GetSessionByUid(uid int64) (*Session, error) {
 	g.rw.RLock()
 	defer g.rw.RUnlock()
-	sess, ok := g.uidSession[uid]
+	sess, ok := g.UidSession[uid]
 	if !ok {
 		return nil, errors.New("uid session not found")
 	}
@@ -172,7 +172,7 @@ func (g *SessionGroup) PushByCid(cid int64, msg []byte) error {
 
 func (g *SessionGroup) Broadcast(msg []byte) int {
 	var n int
-	for _, session := range g.cidSession {
+	for _, session := range g.CidSession {
 		err := session.Push(msg)
 		if err != nil {
 			log.Errorf("Broadcast push err: %v", err)
@@ -186,25 +186,25 @@ func (g *SessionGroup) Broadcast(msg []byte) int {
 func (g *SessionGroup) RemoveByCid(cid int64) error {
 	g.rw.Lock()
 	defer g.rw.Unlock()
-	sess, ok := g.cidSession[cid]
+	sess, ok := g.CidSession[cid]
 	if !ok {
 		return errors.New("cid session not found")
 	}
 	if uid := sess.UID(); uid > 0 {
-		delete(g.uidSession, uid)
+		delete(g.UidSession, uid)
 	}
-	delete(g.cidSession, cid)
+	delete(g.CidSession, cid)
 	return nil
 }
 
 func (g *SessionGroup) RemoveByUid(uid int64) error {
 	g.rw.Lock()
 	defer g.rw.Unlock()
-	sess, ok := g.uidSession[uid]
+	sess, ok := g.UidSession[uid]
 	if !ok {
 		return errors.New("uid session not found")
 	}
-	delete(g.cidSession, sess.CID())
-	delete(g.uidSession, uid)
+	delete(g.CidSession, sess.CID())
+	delete(g.UidSession, uid)
 	return nil
 }
