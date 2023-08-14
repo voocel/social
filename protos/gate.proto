@@ -1,8 +1,10 @@
 syntax = "proto3";
 
-option go_package = "./gate;gate";
+option go_package = "./pb;pb";
 
-package Gate;
+package pb;
+
+import "message.proto";
 
 service Gate {
   // 绑定用户与连接
@@ -11,12 +13,6 @@ service Gate {
   rpc Unbind(UnbindRequest) returns (UnbindReply) {}
   // 推送消息
   rpc Push(PushRequest) returns (PushReply) {}
-}
-
-message Message {
-  int32 Seq = 1; // 序列号
-  int32 Route = 2;  // 路由
-  bytes Buffer = 3; // 消息内容
 }
 
 message BindRequest {
