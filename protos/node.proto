@@ -1,8 +1,10 @@
 syntax = "proto3";
 
-option go_package = "./node";
+option go_package = "./pb";
 
-package node;
+package pb;
+
+import "message.proto";
 
 service Node {
   // 触发事件
@@ -27,8 +29,7 @@ message DeliverRequest {
   string nid = 2; // 节点ID
   int64 cid = 3; // 连接ID
   int64 uid = 4; // 用户ID
-  int32 route = 5; // 路由ID
-  bytes buffer = 6; // 消息内容
+  Message Message = 5; // 消息
 }
 
 message DeliverReply {
