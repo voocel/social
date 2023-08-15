@@ -3,7 +3,6 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,24 +13,27 @@ import (
 
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
+	"social/internal/session"
+	"social/internal/transport"
+	grpcGate "social/internal/transport/grpc/gate"
 	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
 	"social/pkg/jwt"
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
-	"social/protos/gate"
+	"social/protos/pb"
 )
 
 type Gateway struct {
 	opts          *options
 	proxy         *proxy
 	endpoints     *Endpoint
-	srv           *grpc.Server
+	srv           transport.Server
 	registry      *etcd.Registry
 	protocol      message.Protocol
 	nodeConns     map[string]*grpc.ClientConn
-	sessionGroup  *SessionGroup
+	sessionGroup  *session.SessionGroup
 	instance      *discovery.Node
 	done          chan struct{}
 	nodeEndpoints map[string]*discovery.Node
@@ -62,7 +64,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 	g := &Gateway{
 		opts:          o,
 		endpoints:     NewEndpoint(),
-		sessionGroup:  NewSessionGroup(),
+		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
 		nodeConns:     make(map[string]*grpc.ClientConn),
 		protocol:      message.NewDefaultProtocol(),
@@ -79,7 +81,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 }
 
 func (g *Gateway) Start() {
-	// 启动RPC客户端
+	// 启动node RPC客户端
 	g.startNodeClient("im")
 	g.proxy.newNodeClient("im")
 	// 启动RPC服务端
@@ -114,15 +116,13 @@ func (g *Gateway) startGate() {
 
 // 启动rpc服务端
 func (g *Gateway) startRPCServer() {
-	lis, err := net.Listen("tcp", ":7400")
-	if err != nil {
-		log.Fatalf("failed to listen: %s", err)
-	}
+	s := grpcGate.NewServer(":7400")
+	s.RegisterService(func(server *grpc.Server) {
+		pb.RegisterGateServer(server, &grpcGate.Endpoint{SessionGroup: g.sessionGroup})
+	})
 
-	s := grpc.NewServer()
 	g.srv = s
-	//s.RegisterService(&gate.Gate_ServiceDesc, &endpoint{})
-	gate.RegisterGateServer(s, &endpoint{sessionGroup: g.sessionGroup})
+	//s.RegisterService(&pb.Gate_ServiceDesc, &endpoint{})
 
 	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
 	if err != nil {
@@ -135,9 +135,8 @@ func (g *Gateway) startRPCServer() {
 	}
 
 	go func() {
-		defer lis.Close()
-		if err := s.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %s", err)
+		if err := s.Start(); err != nil {
+			log.Fatalf("GRPC failed to start: %s", err)
 		}
 		log.Infof("gateway GRPC server stop success")
 	}()
@@ -167,7 +166,7 @@ func (g *Gateway) startNodeClient(serviceName string) {
 }
 
 func (g *Gateway) Stop() {
-	g.srv.GracefulStop()
+	g.srv.Stop()
 	if err := g.opts.server.Stop(); err != nil {
 		log.Errorf("gateway server stop failed: %v", err)
 	}
@@ -192,9 +191,9 @@ func (g *Gateway) handleConnect(conn network.Conn) {
 		return
 	}
 	uid := claims.User.ID
-	s := newSession(conn)
-	g.sessionGroup.uidSession[uid] = s
-	g.sessionGroup.cidSession[conn.Cid()] = s
+	s := session.NewSession(conn)
+	g.sessionGroup.UidSession[uid] = s
+	g.sessionGroup.CidSession[conn.Cid()] = s
 	conn.Bind(uid)
 }
 

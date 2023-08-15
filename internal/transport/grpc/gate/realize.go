@@ -7,16 +7,16 @@ import (
 	"social/internal/entity"
 	"social/internal/session"
 	"social/pkg/log"
-	"social/protos/gate"
+	"social/protos/pb"
 )
 
 type Endpoint struct {
 	SessionGroup *session.SessionGroup
-	gate.UnimplementedGateServer
+	pb.UnimplementedGateServer
 }
 
 // Bind 将用户与当前网关进行绑定
-func (e *Endpoint) Bind(ctx context.Context, req *gate.BindRequest) (*gate.BindReply, error) {
+func (e *Endpoint) Bind(ctx context.Context, req *pb.BindRequest) (*pb.BindReply, error) {
 	if req.Cid <= 0 || req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -26,10 +26,10 @@ func (e *Endpoint) Bind(ctx context.Context, req *gate.BindRequest) (*gate.BindR
 	}
 	s.Bind(req.GetUid())
 
-	return &gate.BindReply{}, nil
+	return &pb.BindReply{}, nil
 }
 
-func (e *Endpoint) Unbind(ctx context.Context, req *gate.UnbindRequest) (*gate.UnbindReply, error) {
+func (e *Endpoint) Unbind(ctx context.Context, req *pb.UnbindRequest) (*pb.UnbindReply, error) {
 	if req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -39,11 +39,11 @@ func (e *Endpoint) Unbind(ctx context.Context, req *gate.UnbindRequest) (*gate.U
 	}
 	s.Unbind(req.Uid)
 
-	return &gate.UnbindReply{}, nil
+	return &pb.UnbindReply{}, nil
 }
 
 // Push send to user
-func (e *Endpoint) Push(ctx context.Context, req *gate.PushRequest) (*gate.PushReply, error) {
+func (e *Endpoint) Push(ctx context.Context, req *pb.PushRequest) (*pb.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
 	resp := new(entity.Response)
 	msg := entity.Message{
@@ -56,5 +56,5 @@ func (e *Endpoint) Push(ctx context.Context, req *gate.PushRequest) (*gate.PushR
 	if err != nil {
 		log.Errorf("[Gateway] push to user(%v) err: ", req.Target, err)
 	}
-	return &gate.PushReply{}, nil
+	return &pb.PushReply{}, nil
 }

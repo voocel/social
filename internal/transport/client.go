@@ -2,14 +2,14 @@ package transport
 
 import (
 	"context"
-	"social/pkg/event"
+	"social/internal/node"
 )
 
 type NodeClient interface {
 	// Trigger 触发事件
-	Trigger(ctx context.Context, event event.Event, gid string, uid int64) (miss bool, err error)
+	Trigger(ctx context.Context, event node.Event, gid string, uid int64) (err error)
 	// Deliver 投递消息
-	Deliver(ctx context.Context, gid, nid string, cid, uid int64, message *Message) (miss bool, err error)
+	Deliver(ctx context.Context, gid, nid string, cid, uid int64, message *Message) (err error)
 }
 
 type GateClient interface {
@@ -20,7 +20,7 @@ type GateClient interface {
 	// GetIP 获取客户端IP
 	GetIP(ctx context.Context, target int64) (ip string, err error)
 	// Disconnect 断开连接
-	Disconnect(ctx context.Context, target int64, isForce bool) (err error)
+	Disconnect(ctx context.Context, target int64) (err error)
 	// Push 推送消息
 	Push(ctx context.Context, target int64, message *Message) (err error)
 	// Multicast 推送组播消息
