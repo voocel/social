@@ -41,7 +41,11 @@ func (s *server) Start() error {
 	return s.srv.Serve(s.lis)
 }
 
+func (s *server) RegisterService(reg func(*grpc.Server)) {
+	reg(s.srv)
+}
+
 func (s *server) Stop() error {
-	s.srv.Stop()
+	s.srv.GracefulStop()
 	return s.lis.Close()
 }

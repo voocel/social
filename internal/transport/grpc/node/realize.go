@@ -5,34 +5,34 @@ import (
 	"fmt"
 	node2 "social/internal/node"
 	"social/pkg/log"
-	"social/protos/node"
+	"social/protos/pb"
 )
 
 // NodeService implemented grpc node server
 type NodeService struct {
-	node.UnimplementedNodeServer
+	pb.UnimplementedNodeServer
 	Node *node2.Node
 }
 
 // Trigger Events triggered from the gateway
-func (n NodeService) Trigger(ctx context.Context, req *node.TriggerRequest) (*node.TriggerReply, error) {
+func (n NodeService) Trigger(ctx context.Context, req *pb.TriggerRequest) (*pb.TriggerReply, error) {
 	n.Node.TriggerEvent(node2.Event(req.Event), req.GetGid(), req.GetUid())
 
-	return &node.TriggerReply{}, nil
+	return &pb.TriggerReply{}, nil
 }
 
 // Deliver Messages sent from the gateway
-func (n NodeService) Deliver(ctx context.Context, req *node.DeliverRequest) (*node.DeliverReply, error) {
+func (n NodeService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverReply, error) {
 	n.Node.RLock()
-	route, ok := n.Node.Routes[req.Route]
+	route, ok := n.Node.Routes[req.Message.Route]
 	n.Node.RUnlock()
 	r := node2.Request{
 		Gid:    req.Gid,
 		Nid:    req.Nid,
 		Cid:    req.Cid,
 		Uid:    req.Uid,
-		Route:  req.Route,
-		Buffer: req.Buffer,
+		Route:  req.Message.Route,
+		Buffer: req.Message.Buffer,
 		Node:   n.Node,
 	}
 	var err error
@@ -41,8 +41,8 @@ func (n NodeService) Deliver(ctx context.Context, req *node.DeliverRequest) (*no
 	} else if n.Node.DefaultRouteHandler != nil {
 		err = n.Node.DefaultRouteHandler(r)
 	} else {
-		err = fmt.Errorf("the route does not match: %v", req.Route)
+		err = fmt.Errorf("the route does not match: %v", req.Message.Route)
 	}
 	log.Debugf("[node] handle route err: %v", err)
-	return &node.DeliverReply{}, err
+	return &pb.DeliverReply{}, err
 }
