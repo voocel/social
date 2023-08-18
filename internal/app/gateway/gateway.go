@@ -15,7 +15,6 @@ import (
 	"social/internal/entity"
 	"social/internal/session"
 	"social/internal/transport"
-	grpcGate "social/internal/transport/grpc/gate"
 	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
 	"social/pkg/jwt"
@@ -32,9 +31,8 @@ type Gateway struct {
 	srv           transport.Server
 	registry      *etcd.Registry
 	protocol      message.Protocol
-	nodeConns     map[string]*grpc.ClientConn
+	nodeClient    map[string]pb.NodeClient
 	sessionGroup  *session.SessionGroup
-	instance      *discovery.Node
 	done          chan struct{}
 	nodeEndpoints map[string]*discovery.Node
 }
@@ -66,14 +64,9 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 		endpoints:     NewEndpoint(),
 		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
-		nodeConns:     make(map[string]*grpc.ClientConn),
+		nodeClient:    make(map[string]pb.NodeClient),
 		protocol:      message.NewDefaultProtocol(),
 		nodeEndpoints: make(map[string]*discovery.Node),
-		instance: &discovery.Node{
-			Name: "gate-inter-rpc-client",
-			Host: viper.GetString("gaterpc.host"),
-			Port: viper.GetInt("gaterpc.port"),
-		},
 	}
 	g.proxy = newProxy(g)
 
@@ -83,7 +76,6 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 func (g *Gateway) Start() {
 	// 启动node RPC客户端
 	g.startNodeClient("im")
-	g.proxy.newNodeClient("im")
 	// 启动RPC服务端
 	g.startRPCServer()
 	// 启动网关
@@ -116,26 +108,26 @@ func (g *Gateway) startGate() {
 
 // 启动rpc服务端
 func (g *Gateway) startRPCServer() {
-	s := grpcGate.NewServer(":7400")
-	s.RegisterService(func(server *grpc.Server) {
-		pb.RegisterGateServer(server, &grpcGate.Endpoint{SessionGroup: g.sessionGroup})
-	})
-
-	g.srv = s
-	//s.RegisterService(&pb.Gate_ServiceDesc, &endpoint{})
+	g.srv = g.opts.transporter.NewGateServer(&provider{g})
 
 	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
 	if err != nil {
 		panic(err)
 	}
+
+	instance := &discovery.Node{
+		Name: "gate-inter-rpc-client",
+		Host: viper.GetString("gaterpc.host"),
+		Port: viper.GetInt("gaterpc.port"),
+	}
 	g.registry = r
-	err = g.registry.Register(context.Background(), g.instance, 60)
+	err = r.Register(context.Background(), instance, 60)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	go func() {
-		if err := s.Start(); err != nil {
+		if err := g.srv.Start(); err != nil {
 			log.Fatalf("GRPC failed to start: %s", err)
 		}
 		log.Infof("gateway GRPC server stop success")
@@ -162,7 +154,7 @@ func (g *Gateway) startNodeClient(serviceName string) {
 	}
 
 	log.Infof("[Gateway] grpc client connect to [%s] is successful!", serviceName)
-	g.nodeConns[serviceName] = conn
+	g.nodeClient[serviceName] = pb.NewNodeClient(conn)
 }
 
 func (g *Gateway) Stop() {

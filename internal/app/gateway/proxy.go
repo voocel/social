@@ -6,8 +6,8 @@ import (
 )
 
 type proxy struct {
-	gate       *Gateway
-	nodeClient pb.NodeClient
+	gate *Gateway
+	bind map[int64]string
 }
 
 func newProxy(gate *Gateway) *proxy {
@@ -18,7 +18,7 @@ func newProxy(gate *Gateway) *proxy {
 
 // Launch send to node
 func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route int32) ([]byte, error) {
-	reply, err := p.nodeClient.Deliver(ctx, &pb.DeliverRequest{
+	reply, err := p.gate.nodeClient["im"].Deliver(ctx, &pb.DeliverRequest{
 		Gid: p.gate.opts.id,
 		Cid: cid,
 		Uid: uid,
@@ -31,11 +31,11 @@ func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route 
 	return reply.GetPayload(), err
 }
 
-// 解绑用户与网关间的关系
-func (p *proxy) unbindGate() {
-
+func (p *proxy) bindGate(ctx context.Context, uid int64) {
+	p.bind[uid] = p.gate.opts.id
 }
 
-func (p *proxy) newNodeClient(name string) {
-	p.nodeClient = pb.NewNodeClient(p.gate.nodeConns[name])
+// 解绑用户与网关间的关系
+func (p *proxy) unbindGate(ctx context.Context, uid int64) {
+	delete(p.bind, uid)
 }
