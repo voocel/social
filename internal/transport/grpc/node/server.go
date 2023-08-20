@@ -3,6 +3,9 @@ package node
 import (
 	"google.golang.org/grpc"
 	"net"
+	"social/internal/transport"
+	tgrpc "social/internal/transport/grpc"
+	"social/protos/pb"
 )
 
 const name = "grpc"
@@ -14,10 +17,13 @@ type server struct {
 	lis  net.Listener
 }
 
-func NewServer(addr string) *server {
+func NewServer(provider transport.NodeProvider, opts *tgrpc.Options) *server {
 	s := grpc.NewServer()
+	pb.RegisterNodeServer(s, &nodeService{
+		provider: provider,
+	})
 	return &server{
-		addr: addr,
+		addr: opts.Server.Addr,
 		srv:  s,
 		name: name,
 	}
@@ -46,6 +52,6 @@ func (s *server) RegisterService(reg func(*grpc.Server)) {
 }
 
 func (s *server) Stop() error {
-	s.srv.Stop()
+	s.srv.GracefulStop()
 	return s.lis.Close()
 }

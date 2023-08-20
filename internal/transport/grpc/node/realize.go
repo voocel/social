@@ -2,47 +2,40 @@ package node
 
 import (
 	"context"
-	"fmt"
-	node2 "social/internal/node"
-	"social/pkg/log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"social/internal/node"
+	"social/internal/transport"
 	"social/protos/pb"
 )
 
 // NodeService implemented grpc node server
-type NodeService struct {
+type nodeService struct {
 	pb.UnimplementedNodeServer
-	Node *node2.Node
+	provider transport.NodeProvider
 }
 
 // Trigger Events triggered from the gateway
-func (n NodeService) Trigger(ctx context.Context, req *pb.TriggerRequest) (*pb.TriggerReply, error) {
-	n.Node.TriggerEvent(node2.Event(req.Event), req.GetGid(), req.GetUid())
+func (n nodeService) Trigger(ctx context.Context, req *pb.TriggerRequest) (*pb.TriggerReply, error) {
+	if req.Uid <= 0 {
+		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
+	}
+
+	n.provider.Trigger(node.Event(req.Event), req.Gid, req.Uid)
 
 	return &pb.TriggerReply{}, nil
 }
 
 // Deliver Messages sent from the gateway
-func (n NodeService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverReply, error) {
-	n.Node.RLock()
-	route, ok := n.Node.Routes[req.Message.Route]
-	n.Node.RUnlock()
-	r := node2.Request{
-		Gid:    req.Gid,
-		Nid:    req.Nid,
-		Cid:    req.Cid,
-		Uid:    req.Uid,
+func (n nodeService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverReply, error) {
+	if req.Uid <= 0 {
+		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
+	}
+	n.provider.Deliver(req.Gid, req.Nid, req.Cid, req.Uid, &transport.Message{
+		Seq:    req.Message.Seq,
 		Route:  req.Message.Route,
 		Buffer: req.Message.Buffer,
-		Node:   n.Node,
-	}
-	var err error
-	if ok {
-		err = route.Handler(r)
-	} else if n.Node.DefaultRouteHandler != nil {
-		err = n.Node.DefaultRouteHandler(r)
-	} else {
-		err = fmt.Errorf("the route does not match: %v", req.Message.Route)
-	}
-	log.Debugf("[node] handle route err: %v", err)
-	return &pb.DeliverReply{}, err
+	})
+
+	return &pb.DeliverReply{}, nil
 }
