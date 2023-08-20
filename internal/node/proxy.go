@@ -2,19 +2,10 @@ package node
 
 import (
 	"context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"social/internal/transport"
-	"social/protos/pb"
 	"sync"
 )
-
-var gateClients sync.Map
-
-type gateClient struct {
-	client pb.GateClient
-}
 
 type Proxy struct {
 	node       *Node
@@ -40,11 +31,8 @@ func (p *Proxy) AddEventListener(event Event, handler EventHandler) {
 }
 
 func (p *Proxy) BindGate(gid string, cid, uid int64) error {
-	c := p.getGateClient("127.0.0.1:7400")
-	_, err := c.client.Bind(context.Background(), &pb.BindRequest{
-		Cid: cid,
-		Uid: uid,
-	})
+	c, err := p.getGateClientByGid(gid)
+	err = c.Bind(context.Background(), cid, uid)
 	p.sourceGate.Store(uid, gid)
 	return err
 }
@@ -56,20 +44,6 @@ func (p *Proxy) GetGidByUid(uid int64) string {
 		}
 	}
 	return ""
-}
-
-func (p *Proxy) getGateClient(addr string) *gateClient {
-	c, ok := gateClients.Load(addr)
-	if ok {
-		return c.(*gateClient)
-	}
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
-	}
-	cc := &gateClient{client: pb.NewGateClient(conn)}
-	gateClients.Store(addr, cc)
-	return cc
 }
 
 func (p *Proxy) getGateClientByGid(gid string) (transport.GateClient, error) {

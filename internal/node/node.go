@@ -2,19 +2,14 @@ package node
 
 import (
 	"context"
-	"fmt"
-	"net"
 	"sync"
 
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 	"social/internal/router"
 	"social/internal/transport"
-	"social/internal/transport/grpc/node"
 	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
 	"social/pkg/log"
-	"social/protos/pb"
 )
 
 type RouteHandler func(req Request) error
@@ -46,7 +41,7 @@ type Node struct {
 	Routes              map[int32]routeEntity
 	events              map[Event]EventHandler
 	instance            *discovery.Node
-	rpcSrv              *grpc.Server
+	rpcSrv              transport.Server
 	transporter         transport.Transporter
 	DefaultRouteHandler RouteHandler
 	sync.RWMutex
@@ -98,22 +93,14 @@ func (n *Node) Stop() {
 	if err := n.registry.Unregister(n.ctx, n.instance); err != nil {
 		log.Errorf("[%s]registry unregister err: %v", n.instance.Name, err)
 	}
-	n.rpcSrv.GracefulStop()
+	n.rpcSrv.Stop()
 	close(n.eventCh)
 	n.cancel()
 	log.Infof("[node] stop and unregister successful: %v", n.instance.Name)
 }
 
 func (n *Node) startRPCServer() {
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", n.instance.Host, n.instance.Port))
-	if err != nil {
-		log.Fatalf("failed to listen: %s", err)
-	}
-	defer lis.Close()
-
-	s := grpc.NewServer()
-	n.rpcSrv = s
-	pb.RegisterNodeServer(s, &node.NodeService{Node: n})
+	n.rpcSrv = n.opts.transporter.NewNodeServer(&provider{n})
 
 	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
 	if err != nil {
@@ -121,12 +108,18 @@ func (n *Node) startRPCServer() {
 	}
 	n.registry = r
 
-	err = n.registry.Register(n.ctx, n.instance, 60)
+	instance := &discovery.Node{
+		Name: "node-inter-rpc-client",
+		Host: viper.GetString("noderpc.host"),
+		Port: viper.GetInt("noderpc.port"),
+	}
+
+	err = n.registry.Register(n.ctx, instance, 60)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := s.Serve(lis); err != nil {
+	if err := n.rpcSrv.Start(); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
 	log.Infof("[%s]node rpc server stop successful", n.instance.Name)
@@ -146,7 +139,7 @@ func (n *Node) addEventListener(event Event, handler EventHandler) {
 	n.events[event] = handler
 }
 
-func (n *Node) TriggerEvent(event Event, gid string, uid int64) {
+func (n *Node) triggerEvent(event Event, gid string, uid int64) {
 	n.eventCh <- &eventEntity{
 		event: event,
 		gid:   gid,

@@ -1,15 +1,17 @@
 package node
 
 import (
+	"social/internal/transport"
 	"social/pkg/discovery"
 	"social/pkg/network"
 )
 
 type options struct {
-	id        string
-	name      string
-	server    network.Server
-	discovery discovery.Discovery
+	id          string
+	name        string
+	server      network.Server
+	discovery   discovery.Discovery
+	transporter transport.Transporter
 }
 
 type OptionFunc func(o *options)
@@ -18,8 +20,18 @@ func defaultOptions() *options {
 	return &options{}
 }
 
-func WithID(id string) OptionFunc { return func(o *options) { o.id = id } }
+func WithID(id string) OptionFunc {
+	return func(o *options) { o.id = id }
+}
 
-func WithName(name string) OptionFunc { return func(o *options) { o.name = name } }
+func WithName(name string) OptionFunc {
+	return func(o *options) { o.name = name }
+}
 
-func WithServer(s network.Server) OptionFunc { return func(o *options) { o.server = s } }
+func WithServer(s network.Server) OptionFunc {
+	return func(o *options) { o.server = s }
+}
+
+func WithTransporter(transporter transport.Transporter) OptionFunc {
+	return func(o *options) { o.transporter = transporter }
+}
