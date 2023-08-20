@@ -3,6 +3,9 @@ package gate
 import (
 	"google.golang.org/grpc"
 	"net"
+	"social/internal/transport"
+	g "social/internal/transport/grpc"
+	"social/protos/pb"
 )
 
 const name = "grpc"
@@ -14,10 +17,13 @@ type server struct {
 	lis  net.Listener
 }
 
-func NewServer(addr string) *server {
+func NewServer(provider transport.GateProvider, opts *g.Options) *server {
 	s := grpc.NewServer()
+	s.RegisterService(&pb.Gate_ServiceDesc, &gateService{
+		provider: provider,
+	})
 	return &server{
-		addr: addr,
+		addr: opts.Server.Addr,
 		srv:  s,
 		name: name,
 	}
