@@ -1,0 +1,13 @@
+mode: debug
+log_level: info
+log_path: log
+
+app:
+  prefix_url: http://127.0.0.1:8100
+  avatar_save_path: static/uploads/avatar/
+  runtime_root_path: runtime/
+  image_allow_exts: .jpg,.jpeg,.png
+  image_max_size: 5
+  heartbeat: 1000
+  jwt_time: 7200
+  jwt_secret: social-key

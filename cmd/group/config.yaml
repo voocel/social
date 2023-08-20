@@ -1,0 +1,31 @@
+mode: debug
+log_level: info
+log_path: log
+
+etcd:
+  addr: 127.0.0.1:2379
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: 123456
+  db: 0
+  pool_size: 30
+  min_idle_conn: 30
+
+postgres:
+  host: 127.0.0.1
+  port: 5433
+  username: postgres
+  password: 123456
+  database: social
+  sslmode: disable
+
+mysql:
+  host: 127.0.0.1
+  port: 6555
+  dbname: social
+  username: root
+  password: 123456
+  maximum_pool_size: 50
+  maximum_idle_size: 10

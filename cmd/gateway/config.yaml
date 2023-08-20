@@ -1,0 +1,34 @@
+mode: debug
+log_level: info
+log_path: log
+
+etcd:
+  addr: 127.0.0.1:2379
+
+gateway:
+  name: gateway
+  host: 0.0.0.0
+  port: 8800
+  transport:
+    grpc:
+      - server:
+        addr: ":7400"
+        name: "gate-inter-rpc-server"
+      - client:
+  endpoint:
+    - name: ws_service
+      proxy:
+        balance: random
+        targets:
+          - target: "127.0.0.1:6660"
+          - target: "127.0.0.1:6661"
+          - target: "127.0.0.1:6662"
+      rate_limit: false
+    - name: im_service
+      proxy:
+        balance: random
+        targets:
+          - target: "127.0.0.1:6660"
+          - target: "127.0.0.1:6661"
+          - target: "127.0.0.1:6662"
+      rate_limit: false
