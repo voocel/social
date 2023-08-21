@@ -88,9 +88,12 @@ func (g *Gateway) startGate() {
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
 
+	fmt.Println("启动ws")
+	fmt.Println(g.opts)
 	if err := g.opts.server.Start(); err != nil {
 		panic(err)
 	}
+	fmt.Println("ws ok")
 
 	// get node service instance
 	go func() {
@@ -117,8 +120,7 @@ func (g *Gateway) startRPCServer() {
 
 	instance := &discovery.Node{
 		Name: "gate-inter-rpc-client",
-		Host: viper.GetString("gaterpc.host"),
-		Port: viper.GetInt("gaterpc.port"),
+		Addr: viper.GetString("gaterpc.addr"),
 	}
 	g.registry = r
 	err = r.Register(context.Background(), instance, 60)

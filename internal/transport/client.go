@@ -2,12 +2,12 @@ package transport
 
 import (
 	"context"
-	"social/internal/node"
+	"social/internal/event"
 )
 
 type NodeClient interface {
 	// Trigger 触发事件
-	Trigger(ctx context.Context, event node.Event, gid string, uid int64) (err error)
+	Trigger(ctx context.Context, event event.Event, gid string, uid int64) (err error)
 	// Deliver 投递消息
 	Deliver(ctx context.Context, gid, nid string, cid, uid int64, message *Message) (err error)
 }

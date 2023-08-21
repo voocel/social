@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"social/internal/node"
+	"social/internal/event"
 	"social/internal/transport"
 	"social/protos/pb"
 	"sync"
@@ -30,7 +30,7 @@ func NewClient(addr string) (*client, error) {
 	return cc, nil
 }
 
-func (c client) Trigger(ctx context.Context, event node.Event, gid string, uid int64) (err error) {
+func (c client) Trigger(ctx context.Context, event event.Event, gid string, uid int64) (err error) {
 	_, err = c.client.Trigger(ctx, &pb.TriggerRequest{
 		Event: int32(event),
 		Gid:   gid,

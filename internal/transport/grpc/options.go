@@ -1,6 +1,8 @@
 package grpc
 
-import "google.golang.org/grpc"
+import (
+	"google.golang.org/grpc"
+)
 
 const (
 	defaultServerAddr = ":7400" // 默认服务器地址
