@@ -20,11 +20,19 @@ func NewTransporter(opts ...Option) *Transporter {
 }
 
 func (t *Transporter) NewGateServer(provider transport.GateProvider) transport.Server {
-	return gate.NewServer(provider, t.opts)
+	return gate.NewServer(provider, &gate.Options{
+		Addr:       t.opts.Server.Addr,
+		CertFile:   t.opts.Server.CertFile,
+		ServerName: t.opts.Server.KeyFile,
+	})
 }
 
 func (t *Transporter) NewNodeServer(provider transport.NodeProvider) transport.Server {
-	return node.NewServer(provider, t.opts)
+	return node.NewServer(provider, &node.Options{
+		Addr:       t.opts.Server.Addr,
+		CertFile:   t.opts.Server.CertFile,
+		ServerName: t.opts.Server.KeyFile,
+	})
 }
 
 func (t *Transporter) NewGateClient(addr string) (transport.GateClient, error) {
@@ -32,6 +40,5 @@ func (t *Transporter) NewGateClient(addr string) (transport.GateClient, error) {
 }
 
 func (t *Transporter) NewNodeClient(addr string) (transport.NodeClient, error) {
-	//TODO implement me
-	panic("implement me")
+	return node.NewClient(addr)
 }

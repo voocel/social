@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"social/internal/event"
 	"social/internal/transport"
 	"social/pkg/log"
 )
@@ -10,7 +11,7 @@ type provider struct {
 	node *Node
 }
 
-func (p provider) Trigger(event Event, gid string, uid int64) {
+func (p provider) Trigger(event event.Event, gid string, uid int64) {
 	p.node.triggerEvent(event, gid, uid)
 }
 

@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"log"
+	"social/internal/event"
 	"social/internal/transport"
 	"sync"
 )
@@ -26,7 +27,7 @@ func (p *Proxy) SetDefaultRouteHandler(handler RouteHandler) {
 	p.node.DefaultRouteHandler = handler
 }
 
-func (p *Proxy) AddEventListener(event Event, handler EventHandler) {
+func (p *Proxy) AddEventListener(event event.Event, handler event.EventHandler) {
 	p.node.addEventListener(event, handler)
 }
 

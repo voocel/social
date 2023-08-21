@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/spf13/viper"
+	"social/internal/event"
 	"social/internal/router"
 	"social/internal/transport"
 	"social/pkg/discovery"
@@ -36,10 +37,10 @@ type Node struct {
 	proxy               *Proxy
 	opts                *options
 	registry            *etcd.Registry
-	eventCh             chan *eventEntity
+	eventCh             chan *event.EventEntity
 	router              *router.Router
 	Routes              map[int32]routeEntity
-	events              map[Event]EventHandler
+	events              map[event.Event]event.EventHandler
 	instance            *discovery.Node
 	rpcSrv              transport.Server
 	transporter         transport.Transporter
@@ -53,12 +54,13 @@ func NewNode(instance *discovery.Node, opts ...OptionFunc) *Node {
 		opt(o)
 	}
 	n := &Node{}
+	n.opts = o
 	n.proxy = newProxy(n)
 	n.instance = instance
 	n.router = router.NewRouter()
 	n.Routes = make(map[int32]routeEntity)
-	n.events = make(map[Event]EventHandler)
-	n.eventCh = make(chan *eventEntity, 1024)
+	n.events = make(map[event.Event]event.EventHandler)
+	n.eventCh = make(chan *event.EventEntity, 1024)
 	n.ctx, n.cancel = context.WithCancel(context.Background())
 	return n
 }
@@ -79,12 +81,12 @@ func (n *Node) dispatch() {
 			if !ok {
 				return
 			}
-			handler, ok := n.events[entity.event]
+			handler, ok := n.events[entity.Event]
 			if !ok {
-				log.Warnf("event does not register handler function, event: %v", entity.event)
+				log.Warnf("event does not register handler function, event: %v", entity.Event)
 				continue
 			}
-			handler(entity.gid, entity.uid)
+			handler(entity.Gid, entity.Uid)
 		}
 	}
 }
@@ -110,8 +112,7 @@ func (n *Node) startRPCServer() {
 
 	instance := &discovery.Node{
 		Name: "node-inter-rpc-client",
-		Host: viper.GetString("noderpc.host"),
-		Port: viper.GetInt("noderpc.port"),
+		Addr: viper.GetString("noderpc.addr"),
 	}
 
 	err = n.registry.Register(n.ctx, instance, 60)
@@ -135,14 +136,14 @@ func (n *Node) addRouteHandler(route int32, handler RouteHandler) {
 	}
 }
 
-func (n *Node) addEventListener(event Event, handler EventHandler) {
+func (n *Node) addEventListener(event event.Event, handler event.EventHandler) {
 	n.events[event] = handler
 }
 
-func (n *Node) triggerEvent(event Event, gid string, uid int64) {
-	n.eventCh <- &eventEntity{
-		event: event,
-		gid:   gid,
-		uid:   uid,
+func (n *Node) triggerEvent(e event.Event, gid string, uid int64) {
+	n.eventCh <- &event.EventEntity{
+		Event: e,
+		Gid:   gid,
+		Uid:   uid,
 	}
 }
