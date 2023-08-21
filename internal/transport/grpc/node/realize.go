@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"social/internal/node"
+	"social/internal/event"
 	"social/internal/transport"
 	"social/protos/pb"
 )
@@ -21,7 +21,7 @@ func (n nodeService) Trigger(ctx context.Context, req *pb.TriggerRequest) (*pb.T
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
 
-	n.provider.Trigger(node.Event(req.Event), req.Gid, req.Uid)
+	n.provider.Trigger(event.Event(req.Event), req.Gid, req.Uid)
 
 	return &pb.TriggerReply{}, nil
 }

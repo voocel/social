@@ -4,7 +4,6 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"social/internal/transport"
-	tgrpc "social/internal/transport/grpc"
 	"social/protos/pb"
 )
 
@@ -17,13 +16,13 @@ type server struct {
 	lis  net.Listener
 }
 
-func NewServer(provider transport.NodeProvider, opts *tgrpc.Options) *server {
+func NewServer(provider transport.NodeProvider, opts *Options) *server {
 	s := grpc.NewServer()
 	pb.RegisterNodeServer(s, &nodeService{
 		provider: provider,
 	})
 	return &server{
-		addr: opts.Server.Addr,
+		addr: opts.Addr,
 		srv:  s,
 		name: name,
 	}
