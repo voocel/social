@@ -1,16 +1,17 @@
-package grpc
+package transport
 
 import (
 	"google.golang.org/grpc"
 )
 
 const (
-	defaultServerAddr = ":7400" // 默认服务器地址
+	defaultServerAddr = ":7000"
 )
 
 type Option func(o *Options)
 
 type Options struct {
+	Name   string
 	Server struct {
 		Addr       string
 		CertFile   string
@@ -23,10 +24,16 @@ type Options struct {
 	}
 }
 
-func defaultOptions() *Options {
+func DefaultOptions() *Options {
 	opts := &Options{}
 	opts.Server.Addr = defaultServerAddr
 	return opts
+}
+
+func WithName(name string) Option {
+	return func(o *Options) {
+		o.Name = name
+	}
 }
 
 func WithAddr(addr string) Option {

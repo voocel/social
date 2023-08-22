@@ -1,4 +1,4 @@
-package node
+package event
 
 // Event 事件
 type Event int
@@ -10,8 +10,8 @@ const (
 
 type EventHandler func(gid string, uid int64)
 
-type eventEntity struct {
-	event Event
-	gid   string
-	uid   int64
+type EventEntity struct {
+	Event Event
+	Gid   string
+	Uid   int64
 }
