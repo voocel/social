@@ -28,6 +28,7 @@ type Gateway struct {
 	opts          *options
 	proxy         *proxy
 	endpoints     *Endpoint
+	instance      *discovery.Node
 	srv           transport.Server
 	registry      *etcd.Registry
 	protocol      message.Protocol
@@ -88,12 +89,9 @@ func (g *Gateway) startGate() {
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
 
-	fmt.Println("启动ws")
-	fmt.Println(g.opts)
 	if err := g.opts.server.Start(); err != nil {
 		panic(err)
 	}
-	fmt.Println("ws ok")
 
 	// get node service instance
 	go func() {
@@ -117,12 +115,14 @@ func (g *Gateway) startRPCServer() {
 	if err != nil {
 		panic(err)
 	}
+	g.registry = r
 
 	instance := &discovery.Node{
-		Name: "gate-inter-rpc-client",
-		Addr: viper.GetString("gaterpc.addr"),
+		Name: g.opts.transporter.Options().Name,
+		Addr: g.opts.transporter.Options().Server.Addr,
 	}
-	g.registry = r
+	g.instance = instance
+
 	err = r.Register(context.Background(), instance, 60)
 	if err != nil {
 		log.Fatal(err)
@@ -155,16 +155,20 @@ func (g *Gateway) startNodeClient(serviceName string) {
 		return
 	}
 
-	log.Infof("[Gateway] grpc client connect to [%s] is successful!", serviceName)
+	log.Infof("[Gateway] grpc client connect to node [%s] is successful!", serviceName)
 	g.nodeClient[serviceName] = pb.NewNodeClient(conn)
 }
 
 func (g *Gateway) Stop() {
+	if err := g.registry.Unregister(context.Background(), g.instance); err != nil {
+		log.Errorf("[%s]gateway registry unregister err: %v", g.instance.Name, err)
+	}
 	g.srv.Stop()
 	if err := g.opts.server.Stop(); err != nil {
 		log.Errorf("gateway server stop failed: %v", err)
 	}
 	close(g.done)
+	log.Infof("[Gateway] stop and unregister successful: %v", g.instance.Name)
 }
 
 func (g *Gateway) handleConnect(conn network.Conn) {

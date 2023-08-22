@@ -1,6 +1,7 @@
 mode: debug
 log_level: info
 log_path: log
+atomic_level_addr: :4241
 
 app:
   prefix_url: http://127.0.0.1:8100
@@ -11,3 +12,14 @@ app:
   heartbeat: 1000
   jwt_time: 7200
   jwt_secret: social-key
+
+http:
+  addr: :8100
+
+postgres:
+  host: 127.0.0.1
+  port: 5433
+  username: postgres
+  password: 123456
+  database: social
+  sslmode: disable

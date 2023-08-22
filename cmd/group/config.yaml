@@ -1,9 +1,15 @@
 mode: debug
 log_level: info
 log_path: log
+atomic_level_addr: :4243
 
 etcd:
   addr: 127.0.0.1:2379
+
+transport:
+  grpc:
+    service_name: "group"
+    addr: "127.0.0.1:7400"
 
 redis:
   host: 127.0.0.1

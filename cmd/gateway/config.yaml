@@ -1,20 +1,19 @@
 mode: debug
 log_level: info
 log_path: log
+atomic_level_addr: :4240
 
 etcd:
   addr: 127.0.0.1:2379
 
+transport:
+  grpc:
+    service_name: "gate-inter-rpc-server"
+    addr: "127.0.0.1:7200"
+
 gateway:
   name: gateway
-  host: 0.0.0.0
-  port: 8800
-  transport:
-    grpc:
-      - server:
-        addr: ":7400"
-        name: "gate-inter-rpc-server"
-      - client:
+  addr: :8800
   endpoint:
     - name: ws_service
       proxy:

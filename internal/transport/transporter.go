@@ -1,6 +1,7 @@
 package transport
 
 type Transporter interface {
+	Options() *Options
 	// NewGateServer 新建网关服务器
 	NewGateServer(provider GateProvider) Server
 	// NewNodeServer 新建节点服务器

@@ -1,16 +1,16 @@
 mode: debug
 log_level: info
 log_path: log
-
-transport:
-  grpc:
-    - server:
-      addr: ":7500"
-      name: "node-inter-rpc-server-im"
-    - client:
+atomic_level_addr: :4242
 
 etcd:
   addr: 127.0.0.1:2379
+
+transport:
+  grpc:
+    # node-inter-rpc-server-im
+    service_name: "im"
+    addr: "127.0.0.1:7300"
 
 redis:
   host: 127.0.0.1

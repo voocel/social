@@ -16,13 +16,13 @@ type server struct {
 	lis  net.Listener
 }
 
-func NewServer(provider transport.NodeProvider, opts *Options) *server {
+func NewServer(provider transport.NodeProvider, opts *transport.Options) *server {
 	s := grpc.NewServer()
 	pb.RegisterNodeServer(s, &nodeService{
 		provider: provider,
 	})
 	return &server{
-		addr: opts.Addr,
+		addr: opts.Server.Addr,
 		srv:  s,
 		name: name,
 	}

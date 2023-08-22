@@ -16,13 +16,13 @@ type server struct {
 	lis  net.Listener
 }
 
-func NewServer(provider transport.GateProvider, opts *Options) *server {
+func NewServer(provider transport.GateProvider, opts *transport.Options) *server {
 	s := grpc.NewServer()
 	s.RegisterService(&pb.Gate_ServiceDesc, &gateService{
 		provider: provider,
 	})
 	return &server{
-		addr: opts.Addr,
+		addr: opts.Server.Addr,
 		srv:  s,
 		name: name,
 	}

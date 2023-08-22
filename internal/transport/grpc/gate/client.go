@@ -2,6 +2,7 @@ package gate
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"social/internal/transport"
@@ -56,6 +57,7 @@ func (c *client) Disconnect(ctx context.Context, target int64) (err error) {
 }
 
 func (c *client) Push(ctx context.Context, target int64, message *transport.Message) (err error) {
+	fmt.Println("node客户端发送")
 	_, err = c.client.Push(ctx, &pb.PushRequest{
 		Target: target,
 		Message: &pb.Message{

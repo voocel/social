@@ -7,11 +7,11 @@ import (
 )
 
 type Transporter struct {
-	opts *Options
+	opts *transport.Options
 }
 
-func NewTransporter(opts ...Option) *Transporter {
-	o := defaultOptions()
+func NewTransporter(opts ...transport.Option) *Transporter {
+	o := transport.DefaultOptions()
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -19,20 +19,16 @@ func NewTransporter(opts ...Option) *Transporter {
 	return &Transporter{opts: o}
 }
 
+func (t *Transporter) Options() *transport.Options {
+	return t.opts
+}
+
 func (t *Transporter) NewGateServer(provider transport.GateProvider) transport.Server {
-	return gate.NewServer(provider, &gate.Options{
-		Addr:       t.opts.Server.Addr,
-		CertFile:   t.opts.Server.CertFile,
-		ServerName: t.opts.Server.KeyFile,
-	})
+	return gate.NewServer(provider, t.opts)
 }
 
 func (t *Transporter) NewNodeServer(provider transport.NodeProvider) transport.Server {
-	return node.NewServer(provider, &node.Options{
-		Addr:       t.opts.Server.Addr,
-		CertFile:   t.opts.Server.CertFile,
-		ServerName: t.opts.Server.KeyFile,
-	})
+	return node.NewServer(provider, t.opts)
 }
 
 func (t *Transporter) NewGateClient(addr string) (transport.GateClient, error) {
