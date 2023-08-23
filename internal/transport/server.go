@@ -35,5 +35,5 @@ type NodeProvider interface {
 	// Trigger 触发事件
 	Trigger(event event.Event, gid string, uid int64)
 	// Deliver 投递消息
-	Deliver(gid, nid string, cid, uid int64, message *Message)
+	Deliver(gid, nid string, cid, uid int64, message *Message) error
 }

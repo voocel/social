@@ -48,7 +48,7 @@ type Node struct {
 	sync.RWMutex
 }
 
-func NewNode(instance *discovery.Node, opts ...OptionFunc) *Node {
+func NewNode(opts ...OptionFunc) *Node {
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
@@ -56,7 +56,6 @@ func NewNode(instance *discovery.Node, opts ...OptionFunc) *Node {
 	n := &Node{}
 	n.opts = o
 	n.proxy = newProxy(n)
-	n.instance = instance
 	n.router = router.NewRouter()
 	n.Routes = make(map[int32]routeEntity)
 	n.events = make(map[event.Event]event.EventHandler)
@@ -111,9 +110,10 @@ func (n *Node) startRPCServer() {
 	n.registry = r
 
 	instance := &discovery.Node{
-		Name: "node-inter-rpc-client",
-		Addr: viper.GetString("noderpc.addr"),
+		Name: n.opts.transporter.Options().Name,
+		Addr: n.opts.transporter.Options().Server.Addr,
 	}
+	n.instance = instance
 
 	err = n.registry.Register(n.ctx, instance, 60)
 	if err != nil {
