@@ -10,8 +10,7 @@ type provider struct {
 }
 
 func (p provider) Session(target int64) (*session.Session, error) {
-	//TODO implement me
-	panic("implement me")
+	return p.gate.sessionGroup.GetSessionByUid(target)
 }
 
 func (p provider) Bind(ctx context.Context, uid int64) error {

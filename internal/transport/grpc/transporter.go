@@ -31,8 +31,8 @@ func (t *Transporter) NewNodeServer(provider transport.NodeProvider) transport.S
 	return node.NewServer(provider, t.opts)
 }
 
-func (t *Transporter) NewGateClient(addr string) (transport.GateClient, error) {
-	return gate.NewClient(addr)
+func (t *Transporter) NewGateClient(serviceName string) (transport.GateClient, error) {
+	return gate.NewClient(serviceName)
 }
 
 func (t *Transporter) NewNodeClient(addr string) (transport.NodeClient, error) {

@@ -3,11 +3,19 @@ package gate
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"social/internal/transport"
-	"social/protos/pb"
 	"sync"
+	"time"
+
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/resolver"
+
+	"social/internal/transport"
+	"social/pkg/discovery/etcd"
+	"social/pkg/log"
+	"social/protos/pb"
 )
 
 var clients sync.Map
@@ -16,17 +24,31 @@ type client struct {
 	client pb.GateClient
 }
 
-func NewClient(addr string) (*client, error) {
-	c, ok := clients.Load(addr)
+func NewClient(serviceName string) (*client, error) {
+	c, ok := clients.Load(serviceName)
 	if ok {
 		return c.(*client), nil
 	}
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
 	if err != nil {
+		panic(err)
+	}
+	resolver.Register(reg)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	log.Infof("[Gateway] grpc client trying to connect to node [%s]...", serviceName)
+
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:///%s", reg.Scheme(), serviceName), grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithBlock())
+	if err != nil {
+		log.Warnf("[Gateway] the node[%s] grpc server not ready yet: %v", serviceName, err)
 		return nil, err
 	}
+
 	cc := &client{client: pb.NewGateClient(conn)}
-	clients.Store(addr, cc)
+	clients.Store(serviceName, cc)
 	return cc, nil
 }
 
@@ -47,12 +69,10 @@ func (c *client) Unbind(ctx context.Context, uid int64) (err error) {
 }
 
 func (c *client) GetIP(ctx context.Context, target int64) (ip string, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (c *client) Disconnect(ctx context.Context, target int64) (err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
@@ -70,11 +90,9 @@ func (c *client) Push(ctx context.Context, target int64, message *transport.Mess
 }
 
 func (c *client) Multicast(ctx context.Context, targets []int64, message *transport.Message) (total int64, err error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (c *client) Broadcast(ctx context.Context, message *transport.Message) (total int64, err error) {
-	//TODO implement me
 	panic("implement me")
 }
