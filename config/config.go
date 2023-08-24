@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	LogLevel string
-	LogPath  string
-	Mode     string
+	Mode            string
+	LogLevel        string
+	LogPath         string
+	AtomicLevelAddr string
 
 	Http  HttpConfig
 	IM    IMConfig
@@ -61,7 +62,6 @@ func LoadConfig(paths ...string) {
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("config")
 		viper.AddConfigPath("../config")
-		viper.AddConfigPath("../../config")
 	} else {
 		for _, path := range paths {
 			viper.AddConfigPath(path)
@@ -73,11 +73,12 @@ func LoadConfig(paths ...string) {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
+	viper.SetDefault("mode", "debug")
 	viper.SetDefault("log_level", "info")
 	viper.SetDefault("log_path", "info")
-	viper.SetDefault("mode", "debug")
+	viper.SetDefault("atomic_level_addr", "4240")
+
 	viper.SetDefault("http.addr", ":8090")
-	viper.SetDefault("gate", nil)
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("load config error: %v", err)

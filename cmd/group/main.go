@@ -22,6 +22,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			n.Stop()
 			log.Sync()
+			return
 		case syscall.SIGHUP:
 			config.LoadConfig()
 		default:

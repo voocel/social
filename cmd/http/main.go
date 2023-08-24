@@ -30,6 +30,7 @@ func main() {
 			}
 			log.Sync()
 			cancel()
+			return
 		case syscall.SIGHUP:
 			config.LoadConfig()
 		default:
