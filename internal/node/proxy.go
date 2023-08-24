@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"social/internal/event"
 	"social/internal/transport"
@@ -48,15 +49,20 @@ func (p *Proxy) GetGidByUid(uid int64) string {
 }
 
 func (p *Proxy) getGateClientByGid(gid string) (transport.GateClient, error) {
-	endpoint, err := p.node.router.FindGateEndpoint(gid)
-	if err != nil {
-		return nil, err
-	}
-	return p.node.transporter.NewGateClient(endpoint)
+	return p.node.opts.transporter.NewGateClient(gid)
 }
 
-func (p *Proxy) Respond(ctx context.Context, target int64, msg []byte) error {
-	c, err := p.getGateClientByGid("")
+func (p *Proxy) getGateClientByUid(uid int64) (transport.GateClient, error) {
+	if val, ok := p.sourceGate.Load(uid); ok {
+		if gid := val.(string); gid != "" {
+			return p.node.opts.transporter.NewGateClient(gid)
+		}
+	}
+	return nil, fmt.Errorf("gateway not found by uid: %v", uid)
+}
+
+func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []byte) error {
+	c, err := p.getGateClientByGid("gate-inter-rpc-server")
 	if err != nil {
 		return err
 	}

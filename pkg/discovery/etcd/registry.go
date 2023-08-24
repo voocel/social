@@ -225,5 +225,5 @@ func (r *Registry) Close() error {
 }
 
 func (r *Registry) key(info *discovery.Node) string {
-	return fmt.Sprintf("etcd/%s/%s", info.GetName(), info.GetAddress())
+	return fmt.Sprintf("%s/%s/%s", r.Name(), info.GetName(), info.GetAddr())
 }

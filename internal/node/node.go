@@ -15,16 +15,6 @@ import (
 
 type RouteHandler func(req Request) error
 
-type Request struct {
-	Gid    string
-	Nid    string
-	Cid    int64
-	Uid    int64
-	Route  int32
-	Buffer []byte
-	Node   *Node
-}
-
 type routeEntity struct {
 	route    int32
 	stateful bool

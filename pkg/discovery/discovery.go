@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"context"
-	"fmt"
 )
 
 type Discovery interface {
@@ -24,8 +23,7 @@ type Discovery interface {
 type Node struct {
 	Id       string
 	Name     string
-	Host     string
-	Port     int
+	Addr     string
 	Enable   bool
 	Healthy  bool
 	Weight   float64
@@ -41,16 +39,8 @@ func (n *Node) GetName() string {
 	return n.Name
 }
 
-func (n *Node) GetHost() string {
-	return n.Host
-}
-
-func (n *Node) GetPort() int {
-	return n.Port
-}
-
-func (n *Node) GetAddress() string {
-	return fmt.Sprintf("%s:%d", n.GetHost(), n.GetPort())
+func (n *Node) GetAddr() string {
+	return n.Addr
 }
 
 func (n *Node) IsEnable() bool {
