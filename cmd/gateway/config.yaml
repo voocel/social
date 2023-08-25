@@ -12,7 +12,7 @@ transport:
     addr: "127.0.0.1:7200"
 
 gateway:
-  name: gateway
+  name: Gateway
   addr: :8800
   endpoint:
     - name: ws_service

@@ -6,7 +6,6 @@ import (
 	"google.golang.org/grpc/status"
 	"social/internal/event"
 	"social/internal/transport"
-	"social/pkg/log"
 	"social/protos/pb"
 )
 
@@ -32,14 +31,11 @@ func (n nodeService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.D
 	if req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
-	err := n.provider.Deliver(req.Gid, req.Nid, req.Cid, req.Uid, &transport.Message{
+	n.provider.Deliver(req.Gid, req.Nid, req.Cid, req.Uid, &transport.Message{
 		Seq:    req.Message.Seq,
 		Route:  req.Message.Route,
 		Buffer: req.Message.Buffer,
 	})
-	if err != nil {
-		log.Errorf("[node] handle route err: %v", err)
-	}
 
 	return &pb.DeliverReply{}, nil
 }

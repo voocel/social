@@ -13,7 +13,7 @@ import (
 	"social/pkg/log"
 )
 
-type RouteHandler func(req Request) error
+type RouteHandler func(req Request)
 
 type routeEntity struct {
 	route    int32

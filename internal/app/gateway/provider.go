@@ -28,11 +28,6 @@ func (p provider) Push(target int64, msg []byte, msgType ...int) error {
 	panic("implement me")
 }
 
-func (p provider) Multicast(targets []int64, msg []byte, msgType ...int) (n int, err error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (p provider) Broadcast(msg []byte, msgType ...int) (n int, err error) {
 	//TODO implement me
 	panic("implement me")

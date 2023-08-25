@@ -84,7 +84,7 @@ func (g *Gateway) Start() {
 }
 
 func (g *Gateway) startGate() {
-	startupMessage(":8800", "Gateway")
+	startupMessage(viper.GetString("gateway.addr"), viper.GetString("gateway.name"))
 	g.opts.server.OnConnect(g.handleConnect)
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
@@ -193,6 +193,7 @@ func (g *Gateway) handleConnect(conn network.Conn) {
 	g.sessionGroup.UidSession[uid] = s
 	g.sessionGroup.CidSession[conn.Cid()] = s
 	conn.Bind(uid)
+	go g.offlineMessage(uid, s)
 }
 
 func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
@@ -215,4 +216,19 @@ func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
 	log.Debugf("[Gateway] user connection disconnected: %v, err: %v", conn.RemoteAddr(), err)
 	g.sessionGroup.RemoveByUid(conn.Uid())
 	g.sessionGroup.RemoveByCid(conn.Cid())
+}
+
+// 上线后处理离线消息
+func (g *Gateway) offlineMessage(uid int64, sess *session.Session) {
+	for {
+		select {
+		case msg := <-entity.MsgCache.Get(uid):
+			resp := new(entity.Response)
+			if err := sess.Push(resp.Resp(msg)); err != nil {
+				log.Errorf("[Gateway] push offline message to user err: %v", err)
+			}
+		default:
+			return
+		}
+	}
 }

@@ -21,10 +21,10 @@ type Message struct {
 	ContentType int16  `json:"content_type"` // 1.文字 2.普通文件 3.图片 4.音频 5.视频 6.语音聊天 7.视频聊天
 }
 
-func (r *Response) Resp(data Message) []byte {
+func (r *Response) Resp(data *Message) []byte {
 	r.Code = 0
 	r.Msg = "ok"
-	r.Data = data
+	r.Data = *data
 	b, err := json.Marshal(r)
 	if err != nil {
 		log.Errorf("Resp marshal err: %v", err)

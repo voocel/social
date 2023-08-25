@@ -3,10 +3,13 @@ package node
 import (
 	"context"
 	"fmt"
-	"log"
+	"sync"
+
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/status"
 	"social/internal/event"
 	"social/internal/transport"
-	"sync"
+	"social/pkg/log"
 )
 
 type Proxy struct {
@@ -61,6 +64,7 @@ func (p *Proxy) getGateClientByUid(uid int64) (transport.GateClient, error) {
 	return nil, fmt.Errorf("gateway not found by uid: %v", uid)
 }
 
+// Respond send to gateway grpc server
 func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []byte) error {
 	c, err := p.getGateClientByGid("gate-inter-rpc-server")
 	if err != nil {
@@ -72,9 +76,20 @@ func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []b
 		Buffer: msg,
 	})
 	if err != nil {
-		log.Fatalf("could not gate: %v", err)
+		st := status.Convert(err)
+		for _, d := range st.Details() {
+			switch info := d.(type) {
+			case *errdetails.QuotaFailure:
+				// User offline
+				goto ok
+			default:
+				log.Errorf("Unexpected epb type: %v", info)
+			}
+		}
+		return fmt.Errorf("send to gateway err: %v", err)
 	}
-	log.Printf("push: %s", string(msg))
+ok:
+	log.Infof("Respond message to gateway success: %s", string(msg))
 	return nil
 }
 
