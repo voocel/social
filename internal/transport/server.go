@@ -25,8 +25,6 @@ type GateProvider interface {
 	Unbind(ctx context.Context, uid int64) error
 	// Push 发送消息（异步）
 	Push(target int64, msg []byte, msgType ...int) error
-	// Multicast 推送组播消息（异步）
-	Multicast(targets []int64, msg []byte, msgType ...int) (n int, err error)
 	// Broadcast 推送广播消息（异步）
 	Broadcast(msg []byte, msgType ...int) (n int, err error)
 }
@@ -35,5 +33,5 @@ type NodeProvider interface {
 	// Trigger 触发事件
 	Trigger(event event.Event, gid string, uid int64)
 	// Deliver 投递消息
-	Deliver(gid, nid string, cid, uid int64, message *Message) error
+	Deliver(gid, nid string, cid, uid int64, message *Message)
 }

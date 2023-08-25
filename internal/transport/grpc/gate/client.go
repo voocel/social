@@ -76,8 +76,8 @@ func (c *client) Disconnect(ctx context.Context, target int64) (err error) {
 	panic("implement me")
 }
 
+// Push node send message to gateway grpc server
 func (c *client) Push(ctx context.Context, target int64, message *transport.Message) (err error) {
-	fmt.Println("node客户端发送")
 	_, err = c.client.Push(ctx, &pb.PushRequest{
 		Target: target,
 		Message: &pb.Message{
@@ -87,10 +87,6 @@ func (c *client) Push(ctx context.Context, target int64, message *transport.Mess
 		},
 	})
 	return err
-}
-
-func (c *client) Multicast(ctx context.Context, targets []int64, message *transport.Message) (total int64, err error) {
-	panic("implement me")
 }
 
 func (c *client) Broadcast(ctx context.Context, message *transport.Message) (total int64, err error) {

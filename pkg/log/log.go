@@ -8,14 +8,15 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
-	pattern  = "/log/level"
-	endpoint = ":4246"
+	pattern         = "/log/level"
+	defaultEndpoint = ":4240"
 )
 
 var levelMap = map[string]zapcore.Level{
@@ -55,7 +56,7 @@ func Init(serviceName, level string, logPaths ...string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
 	srv = &http.Server{
-		Addr:    endpoint,
+		Addr:    viper.GetString("atomic_level_addr"),
 		Handler: mux,
 	}
 
@@ -83,7 +84,7 @@ func Init(serviceName, level string, logPaths ...string) {
 		zap.AddCaller(),
 		zap.AddCallerSkip(1),
 		zap.Development(),
-		zap.AddStacktrace(zapcore.ErrorLevel),
+		//zap.AddStacktrace(zapcore.ErrorLevel),
 		//zap.Fields(zap.String("func", funcName())),
 		zap.Fields(zap.String("usecase", serviceName)),
 	)

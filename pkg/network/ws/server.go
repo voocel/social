@@ -1,13 +1,13 @@
 package ws
 
 import (
-	"golang.org/x/time/rate"
 	"net"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/time/rate"
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
@@ -140,7 +140,7 @@ func (s *server) wsHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	log.Infof("连接成功：%v\n", conn.RemoteAddr())
+	log.Infof("connect successful：%v", conn.RemoteAddr())
 
 	s.cid++
 	c := s.pool.Get().(*Conn)

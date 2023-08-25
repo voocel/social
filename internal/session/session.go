@@ -2,7 +2,9 @@ package session
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
+	"social/internal/code"
 	"social/pkg/log"
 	"social/pkg/network"
 	"sync"
@@ -149,7 +151,7 @@ func (g *SessionGroup) GetSessionByUid(uid int64) (*Session, error) {
 	defer g.rw.RUnlock()
 	sess, ok := g.UidSession[uid]
 	if !ok {
-		return nil, errors.New("uid session not found")
+		return nil, fmt.Errorf("[%v]%w", uid, code.ErrSessionNotFound)
 	}
 	return sess, nil
 }

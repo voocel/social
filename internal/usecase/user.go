@@ -28,7 +28,7 @@ func (u *UserUseCase) UserLogin(ctx context.Context, req entity.UserLoginReq) (*
 	if user.Status != 1 {
 		return nil, errors.New("this user is disable")
 	}
-	if util.VerifyPassword(req.Password, user.Password) {
+	if !util.VerifyPassword(req.Password, user.Password) {
 		return nil, errors.New("password incorrect")
 	}
 	return user, nil
