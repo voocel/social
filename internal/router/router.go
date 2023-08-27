@@ -34,7 +34,9 @@ func NewRouter() *Router {
 }
 
 func (r *Router) AddService(service *discovery.Node) {
-
+	r.rw.Lock()
+	defer r.rw.Unlock()
+	r.gateEndpoints[service.Id] = service.Addr
 }
 
 func (r *Router) FindGateEndpoint(gid string) (string, error) {
