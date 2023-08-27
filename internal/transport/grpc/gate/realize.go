@@ -83,3 +83,11 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushRequest) (*pb.PushR
 	}
 	return &pb.PushReply{}, nil
 }
+
+func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPRequest) (*pb.GetIPReply, error) {
+	s, err := gs.provider.Session(req.Uid)
+	if err != nil {
+		return &pb.GetIPReply{}, nil
+	}
+	return &pb.GetIPReply{IP: s.RemoteIP()}, nil
+}

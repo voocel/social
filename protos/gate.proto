@@ -13,6 +13,8 @@ service Gate {
   rpc Unbind(UnbindRequest) returns (UnbindReply) {}
   // 推送消息
   rpc Push(PushRequest) returns (PushReply) {}
+  // 获取客户端IP
+  rpc GetIP(GetIPRequest) returns (GetIPReply) {}
 }
 
 message BindRequest {
@@ -36,3 +38,11 @@ message PushRequest {
 }
 
 message PushReply {}
+
+message GetIPRequest {
+  int64 Uid = 1;
+}
+
+message GetIPReply {
+  string IP = 1;
+}

@@ -69,7 +69,13 @@ func (c *client) Unbind(ctx context.Context, uid int64) (err error) {
 }
 
 func (c *client) GetIP(ctx context.Context, target int64) (ip string, err error) {
-	panic("implement me")
+	res, e := c.client.GetIP(ctx, &pb.GetIPRequest{
+		Uid: target,
+	})
+	if e != nil {
+		return "", e
+	}
+	return res.GetIP(), nil
 }
 
 func (c *client) Disconnect(ctx context.Context, target int64) (err error) {

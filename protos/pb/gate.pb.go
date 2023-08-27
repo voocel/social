@@ -291,6 +291,100 @@ func (*PushReply) Descriptor() ([]byte, []int) {
 	return file_gate_proto_rawDescGZIP(), []int{5}
 }
 
+type GetIPRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uid int64 `protobuf:"varint,1,opt,name=Uid,proto3" json:"Uid,omitempty"`
+}
+
+func (x *GetIPRequest) Reset() {
+	*x = GetIPRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gate_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetIPRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIPRequest) ProtoMessage() {}
+
+func (x *GetIPRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gate_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIPRequest.ProtoReflect.Descriptor instead.
+func (*GetIPRequest) Descriptor() ([]byte, []int) {
+	return file_gate_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetIPRequest) GetUid() int64 {
+	if x != nil {
+		return x.Uid
+	}
+	return 0
+}
+
+type GetIPReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IP string `protobuf:"bytes,1,opt,name=IP,proto3" json:"IP,omitempty"`
+}
+
+func (x *GetIPReply) Reset() {
+	*x = GetIPReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gate_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetIPReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetIPReply) ProtoMessage() {}
+
+func (x *GetIPReply) ProtoReflect() protoreflect.Message {
+	mi := &file_gate_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetIPReply.ProtoReflect.Descriptor instead.
+func (*GetIPReply) Descriptor() ([]byte, []int) {
+	return file_gate_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetIPReply) GetIP() string {
+	if x != nil {
+		return x.IP
+	}
+	return ""
+}
+
 var File_gate_proto protoreflect.FileDescriptor
 
 var file_gate_proto_rawDesc = []byte{
@@ -308,7 +402,11 @@ var file_gate_proto_rawDesc = []byte{
 	0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x25, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73,
 	0x61, 0x67, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x70, 0x62, 0x2e, 0x4d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22,
-	0x0b, 0x0a, 0x09, 0x50, 0x75, 0x73, 0x68, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x32, 0x8a, 0x01, 0x0a,
+	0x0b, 0x0a, 0x09, 0x50, 0x75, 0x73, 0x68, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x20, 0x0a, 0x0c,
+	0x47, 0x65, 0x74, 0x49, 0x50, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
+	0x55, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x55, 0x69, 0x64, 0x22, 0x1c,
+	0x0a, 0x0a, 0x47, 0x65, 0x74, 0x49, 0x50, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12, 0x0e, 0x0a, 0x02,
+	0x49, 0x50, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x49, 0x50, 0x32, 0xb7, 0x01, 0x0a,
 	0x04, 0x47, 0x61, 0x74, 0x65, 0x12, 0x28, 0x0a, 0x04, 0x42, 0x69, 0x6e, 0x64, 0x12, 0x0f, 0x2e,
 	0x70, 0x62, 0x2e, 0x42, 0x69, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d,
 	0x2e, 0x70, 0x62, 0x2e, 0x42, 0x69, 0x6e, 0x64, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x12,
@@ -317,8 +415,11 @@ var file_gate_proto_rawDesc = []byte{
 	0x62, 0x2e, 0x55, 0x6e, 0x62, 0x69, 0x6e, 0x64, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x12,
 	0x28, 0x0a, 0x04, 0x50, 0x75, 0x73, 0x68, 0x12, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75, 0x73,
 	0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x75,
-	0x73, 0x68, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x2f, 0x70,
-	0x62, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x68, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x12, 0x2b, 0x0a, 0x05, 0x47, 0x65, 0x74,
+	0x49, 0x50, 0x12, 0x10, 0x2e, 0x70, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x49, 0x50, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x49, 0x50, 0x52,
+	0x65, 0x70, 0x6c, 0x79, 0x22, 0x00, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x2f, 0x70, 0x62, 0x3b, 0x70,
+	0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -333,7 +434,7 @@ func file_gate_proto_rawDescGZIP() []byte {
 	return file_gate_proto_rawDescData
 }
 
-var file_gate_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_gate_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_gate_proto_goTypes = []interface{}{
 	(*BindRequest)(nil),   // 0: pb.BindRequest
 	(*BindReply)(nil),     // 1: pb.BindReply
@@ -341,18 +442,22 @@ var file_gate_proto_goTypes = []interface{}{
 	(*UnbindReply)(nil),   // 3: pb.UnbindReply
 	(*PushRequest)(nil),   // 4: pb.PushRequest
 	(*PushReply)(nil),     // 5: pb.PushReply
-	(*Message)(nil),       // 6: pb.Message
+	(*GetIPRequest)(nil),  // 6: pb.GetIPRequest
+	(*GetIPReply)(nil),    // 7: pb.GetIPReply
+	(*Message)(nil),       // 8: pb.Message
 }
 var file_gate_proto_depIdxs = []int32{
-	6, // 0: pb.PushRequest.Message:type_name -> pb.Message
+	8, // 0: pb.PushRequest.Message:type_name -> pb.Message
 	0, // 1: pb.Gate.Bind:input_type -> pb.BindRequest
 	2, // 2: pb.Gate.Unbind:input_type -> pb.UnbindRequest
 	4, // 3: pb.Gate.Push:input_type -> pb.PushRequest
-	1, // 4: pb.Gate.Bind:output_type -> pb.BindReply
-	3, // 5: pb.Gate.Unbind:output_type -> pb.UnbindReply
-	5, // 6: pb.Gate.Push:output_type -> pb.PushReply
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
+	6, // 4: pb.Gate.GetIP:input_type -> pb.GetIPRequest
+	1, // 5: pb.Gate.Bind:output_type -> pb.BindReply
+	3, // 6: pb.Gate.Unbind:output_type -> pb.UnbindReply
+	5, // 7: pb.Gate.Push:output_type -> pb.PushReply
+	7, // 8: pb.Gate.GetIP:output_type -> pb.GetIPReply
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -437,6 +542,30 @@ func file_gate_proto_init() {
 				return nil
 			}
 		}
+		file_gate_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetIPRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gate_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetIPReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -444,7 +573,7 @@ func file_gate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_gate_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
