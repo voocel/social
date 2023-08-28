@@ -30,13 +30,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GateClient interface {
 	// 绑定用户与连接
-	Bind(ctx context.Context, in *BindRequest, opts ...grpc.CallOption) (*BindReply, error)
+	Bind(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*BindReply, error)
 	// 解绑用户与连接
-	Unbind(ctx context.Context, in *UnbindRequest, opts ...grpc.CallOption) (*UnbindReply, error)
+	Unbind(ctx context.Context, in *UnbindReq, opts ...grpc.CallOption) (*UnbindReply, error)
 	// 推送消息
-	Push(ctx context.Context, in *PushRequest, opts ...grpc.CallOption) (*PushReply, error)
+	Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error)
 	// 获取客户端IP
-	GetIP(ctx context.Context, in *GetIPRequest, opts ...grpc.CallOption) (*GetIPReply, error)
+	GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error)
 }
 
 type gateClient struct {
@@ -47,7 +47,7 @@ func NewGateClient(cc grpc.ClientConnInterface) GateClient {
 	return &gateClient{cc}
 }
 
-func (c *gateClient) Bind(ctx context.Context, in *BindRequest, opts ...grpc.CallOption) (*BindReply, error) {
+func (c *gateClient) Bind(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*BindReply, error) {
 	out := new(BindReply)
 	err := c.cc.Invoke(ctx, Gate_Bind_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *gateClient) Bind(ctx context.Context, in *BindRequest, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *gateClient) Unbind(ctx context.Context, in *UnbindRequest, opts ...grpc.CallOption) (*UnbindReply, error) {
+func (c *gateClient) Unbind(ctx context.Context, in *UnbindReq, opts ...grpc.CallOption) (*UnbindReply, error) {
 	out := new(UnbindReply)
 	err := c.cc.Invoke(ctx, Gate_Unbind_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *gateClient) Unbind(ctx context.Context, in *UnbindRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *gateClient) Push(ctx context.Context, in *PushRequest, opts ...grpc.CallOption) (*PushReply, error) {
+func (c *gateClient) Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error) {
 	out := new(PushReply)
 	err := c.cc.Invoke(ctx, Gate_Push_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *gateClient) Push(ctx context.Context, in *PushRequest, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *gateClient) GetIP(ctx context.Context, in *GetIPRequest, opts ...grpc.CallOption) (*GetIPReply, error) {
+func (c *gateClient) GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error) {
 	out := new(GetIPReply)
 	err := c.cc.Invoke(ctx, Gate_GetIP_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -88,13 +88,13 @@ func (c *gateClient) GetIP(ctx context.Context, in *GetIPRequest, opts ...grpc.C
 // for forward compatibility
 type GateServer interface {
 	// 绑定用户与连接
-	Bind(context.Context, *BindRequest) (*BindReply, error)
+	Bind(context.Context, *BindReq) (*BindReply, error)
 	// 解绑用户与连接
-	Unbind(context.Context, *UnbindRequest) (*UnbindReply, error)
+	Unbind(context.Context, *UnbindReq) (*UnbindReply, error)
 	// 推送消息
-	Push(context.Context, *PushRequest) (*PushReply, error)
+	Push(context.Context, *PushReq) (*PushReply, error)
 	// 获取客户端IP
-	GetIP(context.Context, *GetIPRequest) (*GetIPReply, error)
+	GetIP(context.Context, *GetIPReq) (*GetIPReply, error)
 	mustEmbedUnimplementedGateServer()
 }
 
@@ -102,16 +102,16 @@ type GateServer interface {
 type UnimplementedGateServer struct {
 }
 
-func (UnimplementedGateServer) Bind(context.Context, *BindRequest) (*BindReply, error) {
+func (UnimplementedGateServer) Bind(context.Context, *BindReq) (*BindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bind not implemented")
 }
-func (UnimplementedGateServer) Unbind(context.Context, *UnbindRequest) (*UnbindReply, error) {
+func (UnimplementedGateServer) Unbind(context.Context, *UnbindReq) (*UnbindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unbind not implemented")
 }
-func (UnimplementedGateServer) Push(context.Context, *PushRequest) (*PushReply, error) {
+func (UnimplementedGateServer) Push(context.Context, *PushReq) (*PushReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Push not implemented")
 }
-func (UnimplementedGateServer) GetIP(context.Context, *GetIPRequest) (*GetIPReply, error) {
+func (UnimplementedGateServer) GetIP(context.Context, *GetIPReq) (*GetIPReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIP not implemented")
 }
 func (UnimplementedGateServer) mustEmbedUnimplementedGateServer() {}
@@ -128,7 +128,7 @@ func RegisterGateServer(s grpc.ServiceRegistrar, srv GateServer) {
 }
 
 func _Gate_Bind_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BindRequest)
+	in := new(BindReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -140,13 +140,13 @@ func _Gate_Bind_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: Gate_Bind_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GateServer).Bind(ctx, req.(*BindRequest))
+		return srv.(GateServer).Bind(ctx, req.(*BindReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Gate_Unbind_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnbindRequest)
+	in := new(UnbindReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -158,13 +158,13 @@ func _Gate_Unbind_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: Gate_Unbind_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GateServer).Unbind(ctx, req.(*UnbindRequest))
+		return srv.(GateServer).Unbind(ctx, req.(*UnbindReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Gate_Push_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PushRequest)
+	in := new(PushReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -176,13 +176,13 @@ func _Gate_Push_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: Gate_Push_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GateServer).Push(ctx, req.(*PushRequest))
+		return srv.(GateServer).Push(ctx, req.(*PushReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Gate_GetIP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIPRequest)
+	in := new(GetIPReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func _Gate_GetIP_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: Gate_GetIP_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GateServer).GetIP(ctx, req.(*GetIPRequest))
+		return srv.(GateServer).GetIP(ctx, req.(*GetIPReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -53,7 +53,7 @@ func NewClient(serviceName string) (*client, error) {
 }
 
 func (c *client) Bind(ctx context.Context, cid, uid int64) (err error) {
-	_, err = c.client.Bind(ctx, &pb.BindRequest{
+	_, err = c.client.Bind(ctx, &pb.BindReq{
 		Cid: cid,
 		Uid: uid,
 	})
@@ -62,14 +62,14 @@ func (c *client) Bind(ctx context.Context, cid, uid int64) (err error) {
 }
 
 func (c *client) Unbind(ctx context.Context, uid int64) (err error) {
-	_, err = c.client.Unbind(ctx, &pb.UnbindRequest{
+	_, err = c.client.Unbind(ctx, &pb.UnbindReq{
 		Uid: uid,
 	})
 	return err
 }
 
 func (c *client) GetIP(ctx context.Context, target int64) (ip string, err error) {
-	res, e := c.client.GetIP(ctx, &pb.GetIPRequest{
+	res, e := c.client.GetIP(ctx, &pb.GetIPReq{
 		Uid: target,
 	})
 	if e != nil {
@@ -84,7 +84,7 @@ func (c *client) Disconnect(ctx context.Context, target int64) (err error) {
 
 // Push node send message to gateway grpc server
 func (c *client) Push(ctx context.Context, target int64, message *transport.Message) (err error) {
-	_, err = c.client.Push(ctx, &pb.PushRequest{
+	_, err = c.client.Push(ctx, &pb.PushReq{
 		Target: target,
 		Message: &pb.Message{
 			Seq:    message.Seq,

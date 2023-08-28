@@ -31,7 +31,7 @@ func NewClient(addr string) (*client, error) {
 }
 
 func (c client) Trigger(ctx context.Context, event event.Event, gid string, uid int64) (err error) {
-	_, err = c.client.Trigger(ctx, &pb.TriggerRequest{
+	_, err = c.client.Trigger(ctx, &pb.TriggerReq{
 		Event: int32(event),
 		Gid:   gid,
 		Uid:   uid,
@@ -40,7 +40,7 @@ func (c client) Trigger(ctx context.Context, event event.Event, gid string, uid 
 }
 
 func (c client) Deliver(ctx context.Context, gid, nid string, cid, uid int64, message *transport.Message) (err error) {
-	_, err = c.client.Deliver(ctx, &pb.DeliverRequest{
+	_, err = c.client.Deliver(ctx, &pb.DeliverReq{
 		Gid: gid,
 		Nid: nid,
 		Cid: cid,

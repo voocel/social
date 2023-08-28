@@ -28,9 +28,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NodeClient interface {
 	// 触发事件
-	Trigger(ctx context.Context, in *TriggerRequest, opts ...grpc.CallOption) (*TriggerReply, error)
+	Trigger(ctx context.Context, in *TriggerReq, opts ...grpc.CallOption) (*TriggerReply, error)
 	// 投递消息
-	Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverReply, error)
+	Deliver(ctx context.Context, in *DeliverReq, opts ...grpc.CallOption) (*DeliverReply, error)
 }
 
 type nodeClient struct {
@@ -41,7 +41,7 @@ func NewNodeClient(cc grpc.ClientConnInterface) NodeClient {
 	return &nodeClient{cc}
 }
 
-func (c *nodeClient) Trigger(ctx context.Context, in *TriggerRequest, opts ...grpc.CallOption) (*TriggerReply, error) {
+func (c *nodeClient) Trigger(ctx context.Context, in *TriggerReq, opts ...grpc.CallOption) (*TriggerReply, error) {
 	out := new(TriggerReply)
 	err := c.cc.Invoke(ctx, Node_Trigger_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *nodeClient) Trigger(ctx context.Context, in *TriggerRequest, opts ...gr
 	return out, nil
 }
 
-func (c *nodeClient) Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverReply, error) {
+func (c *nodeClient) Deliver(ctx context.Context, in *DeliverReq, opts ...grpc.CallOption) (*DeliverReply, error) {
 	out := new(DeliverReply)
 	err := c.cc.Invoke(ctx, Node_Deliver_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -64,9 +64,9 @@ func (c *nodeClient) Deliver(ctx context.Context, in *DeliverRequest, opts ...gr
 // for forward compatibility
 type NodeServer interface {
 	// 触发事件
-	Trigger(context.Context, *TriggerRequest) (*TriggerReply, error)
+	Trigger(context.Context, *TriggerReq) (*TriggerReply, error)
 	// 投递消息
-	Deliver(context.Context, *DeliverRequest) (*DeliverReply, error)
+	Deliver(context.Context, *DeliverReq) (*DeliverReply, error)
 	mustEmbedUnimplementedNodeServer()
 }
 
@@ -74,10 +74,10 @@ type NodeServer interface {
 type UnimplementedNodeServer struct {
 }
 
-func (UnimplementedNodeServer) Trigger(context.Context, *TriggerRequest) (*TriggerReply, error) {
+func (UnimplementedNodeServer) Trigger(context.Context, *TriggerReq) (*TriggerReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Trigger not implemented")
 }
-func (UnimplementedNodeServer) Deliver(context.Context, *DeliverRequest) (*DeliverReply, error) {
+func (UnimplementedNodeServer) Deliver(context.Context, *DeliverReq) (*DeliverReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deliver not implemented")
 }
 func (UnimplementedNodeServer) mustEmbedUnimplementedNodeServer() {}
@@ -94,7 +94,7 @@ func RegisterNodeServer(s grpc.ServiceRegistrar, srv NodeServer) {
 }
 
 func _Node_Trigger_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TriggerRequest)
+	in := new(TriggerReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -106,13 +106,13 @@ func _Node_Trigger_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: Node_Trigger_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NodeServer).Trigger(ctx, req.(*TriggerRequest))
+		return srv.(NodeServer).Trigger(ctx, req.(*TriggerReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Node_Deliver_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeliverRequest)
+	in := new(DeliverReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func _Node_Deliver_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: Node_Deliver_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NodeServer).Deliver(ctx, req.(*DeliverRequest))
+		return srv.(NodeServer).Deliver(ctx, req.(*DeliverReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -18,7 +18,7 @@ func newProxy(gate *Gateway) *proxy {
 
 // Launch send to node
 func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route int32) ([]byte, error) {
-	reply, err := p.gate.nodeClient["im"].Deliver(ctx, &pb.DeliverRequest{
+	reply, err := p.gate.nodeClient["im"].Deliver(ctx, &pb.DeliverReq{
 		Gid: p.gate.opts.id,
 		Cid: cid,
 		Uid: uid,

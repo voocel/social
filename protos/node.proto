@@ -8,12 +8,12 @@ import "message.proto";
 
 service Node {
   // 触发事件
-  rpc Trigger(TriggerRequest) returns (TriggerReply) {}
+  rpc Trigger(TriggerReq) returns (TriggerReply) {}
   // 投递消息
-  rpc Deliver(DeliverRequest) returns (DeliverReply) {}
+  rpc Deliver(DeliverReq) returns (DeliverReply) {}
 }
 
-message TriggerRequest {
+message TriggerReq {
   int32 event = 1; // 事件
   string gid = 2; // 网关ID
   int64 uid = 3; // 用户ID
@@ -24,7 +24,7 @@ message TriggerReply {
   bytes payload = 2;
 }
 
-message DeliverRequest {
+message DeliverReq {
   string gid = 1; // 网关ID
   string nid = 2; // 节点ID
   int64 cid = 3; // 连接ID
