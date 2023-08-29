@@ -6,6 +6,15 @@ import (
 	"sync"
 )
 
+// im router
+const (
+	Heartbeat int32 = iota + 1
+	Connect
+	Disconnect
+	Message
+	GroupMessage
+)
+
 var (
 	ErrNotFoundRoute    = errors.New("not found route")
 	ErrNotFoundEndpoint = errors.New("not found endpoint")

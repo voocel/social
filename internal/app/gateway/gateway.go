@@ -2,15 +2,12 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
-	"google.golang.org/grpc/resolver"
 
+	"social/config"
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
 	"social/internal/session"
@@ -21,7 +18,6 @@ import (
 	"social/pkg/log"
 	"social/pkg/message"
 	"social/pkg/network"
-	"social/protos/pb"
 )
 
 type Gateway struct {
@@ -32,7 +28,7 @@ type Gateway struct {
 	srv           transport.Server
 	registry      *etcd.Registry
 	protocol      message.Protocol
-	nodeClient    map[string]pb.NodeClient
+	nodeClient    map[string]transport.NodeClient
 	sessionGroup  *session.SessionGroup
 	done          chan struct{}
 	nodeEndpoints map[string]*discovery.Node
@@ -65,7 +61,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 		endpoints:     NewEndpoint(),
 		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
-		nodeClient:    make(map[string]pb.NodeClient),
+		nodeClient:    make(map[string]transport.NodeClient),
 		protocol:      message.NewDefaultProtocol(),
 		nodeEndpoints: make(map[string]*discovery.Node),
 	}
@@ -76,7 +72,9 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 
 func (g *Gateway) Start() {
 	// 启动node RPC客户端
-	g.startNodeClient("im")
+	for _, v := range config.Conf.Transport.Discovery {
+		g.startNodeClient(v.Name)
+	}
 	// 启动RPC服务端
 	g.startRPCServer()
 	// 启动网关
@@ -136,27 +134,19 @@ func (g *Gateway) startRPCServer() {
 	}()
 }
 
+func (g *Gateway) getNodeClient(serviceName string) (transport.NodeClient, error) {
+	return g.opts.transporter.NewNodeClient(serviceName)
+}
+
 // 启动rpc客户端
 func (g *Gateway) startNodeClient(serviceName string) {
-	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
+	nc, err := g.getNodeClient(serviceName)
 	if err != nil {
-		panic(err)
-	}
-	resolver.Register(reg)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	log.Infof("[Gateway] grpc client trying to connect to node [%s]...", serviceName)
-
-	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:///%s", reg.Scheme(), serviceName), grpc.WithInsecure(),
-		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithBlock())
-	if err != nil {
-		log.Warnf("[Gateway] the node[%s] grpc server not ready yet: %v", serviceName, err)
-		return
+		log.Fatalf("[Gateway] grpc client connect to node [%s] err: %v", serviceName, err)
 	}
 
 	log.Infof("[Gateway] grpc client connect to node [%s] is successful!", serviceName)
-	g.nodeClient[serviceName] = pb.NewNodeClient(conn)
+	g.nodeClient[serviceName] = nc
 }
 
 func (g *Gateway) Stop() {
@@ -206,7 +196,7 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
+	err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
 	if err != nil {
 		log.Errorf("GRPC push to node error: %v", err)
 	}
@@ -222,6 +212,8 @@ func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
 func (g *Gateway) offlineMessage(uid int64, sess *session.Session) {
 	for {
 		select {
+		case <-g.done:
+			return
 		case msg := <-entity.MsgCache.Get(uid):
 			resp := new(entity.Response)
 			if err := sess.Push(resp.Resp(msg)); err != nil {

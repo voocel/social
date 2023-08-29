@@ -25,11 +25,9 @@ message TriggerReply {
 }
 
 message DeliverReq {
-  string gid = 1; // 网关ID
-  string nid = 2; // 节点ID
-  int64 cid = 3; // 连接ID
-  int64 uid = 4; // 用户ID
-  Message Message = 5; // 消息
+  int64 cid = 1; // 连接ID
+  int64 uid = 2; // 用户ID
+  Message Message = 3; // 消息
 }
 
 message DeliverReply {

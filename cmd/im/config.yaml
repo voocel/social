@@ -7,6 +7,8 @@ etcd:
   addr: 127.0.0.1:2379
 
 transport:
+  discovery:
+    gateway: "gate-inter-rpc-server"
   grpc:
     # node-inter-rpc-server-im
     service_name: "im"

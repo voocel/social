@@ -21,7 +21,7 @@ type gateService struct {
 }
 
 // Bind 将用户与当前网关进行绑定
-func (gs *gateService) Bind(ctx context.Context, req *pb.BindRequest) (*pb.BindReply, error) {
+func (gs *gateService) Bind(ctx context.Context, req *pb.BindReq) (*pb.BindReply, error) {
 	if req.Cid <= 0 || req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -35,7 +35,7 @@ func (gs *gateService) Bind(ctx context.Context, req *pb.BindRequest) (*pb.BindR
 	return &pb.BindReply{}, nil
 }
 
-func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindRequest) (*pb.UnbindReply, error) {
+func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.UnbindReply, error) {
 	if req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -49,7 +49,7 @@ func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindRequest) (*pb.U
 }
 
 // Push gateway send message to user
-func (gs *gateService) Push(ctx context.Context, req *pb.PushRequest) (*pb.PushReply, error) {
+func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
 	resp := new(entity.Response)
 	msg := &entity.Message{
@@ -84,7 +84,7 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushRequest) (*pb.PushR
 	return &pb.PushReply{}, nil
 }
 
-func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPRequest) (*pb.GetIPReply, error) {
+func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPReply, error) {
 	s, err := gs.provider.Session(req.Uid)
 	if err != nil {
 		return &pb.GetIPReply{}, nil

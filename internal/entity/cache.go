@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -17,7 +16,6 @@ type msgCache struct {
 func (c *msgCache) Add(uid int64, m *Message) {
 	if v, ok := c.receiver.Load(uid); ok {
 		if msgChan := v.(chan *Message); msgChan != nil {
-			fmt.Println("记录离线消息")
 			msgChan <- m
 		}
 	} else {
