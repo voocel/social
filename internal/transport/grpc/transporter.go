@@ -35,6 +35,6 @@ func (t *Transporter) NewGateClient(serviceName string) (transport.GateClient, e
 	return gate.NewClient(serviceName)
 }
 
-func (t *Transporter) NewNodeClient(addr string) (transport.NodeClient, error) {
-	return node.NewClient(addr)
+func (t *Transporter) NewNodeClient(serviceName string) (transport.NodeClient, error) {
+	return node.NewClient(serviceName)
 }

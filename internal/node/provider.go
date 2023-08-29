@@ -14,11 +14,9 @@ func (p provider) Trigger(event event.Event, gid string, uid int64) {
 	p.node.triggerEvent(event, gid, uid)
 }
 
-func (p provider) Deliver(gid, nid string, cid, uid int64, message *transport.Message) {
+func (p provider) Deliver(cid, uid int64, message *transport.Message) {
 	route, ok := p.node.Routes[message.Route]
 	r := Request{
-		Gid:    gid,
-		Nid:    nid,
 		Cid:    cid,
 		Uid:    uid,
 		Route:  message.Route,

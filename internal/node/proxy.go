@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/spf13/viper"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
 	"social/internal/event"
@@ -36,7 +37,7 @@ func (p *Proxy) AddEventListener(event event.Event, handler event.EventHandler) 
 }
 
 func (p *Proxy) BindGate(gid string, cid, uid int64) error {
-	c, err := p.getGateClientByGid(gid)
+	c, err := p.getGateClient(gid)
 	err = c.Bind(context.Background(), cid, uid)
 	p.sourceGate.Store(uid, gid)
 	return err
@@ -51,22 +52,13 @@ func (p *Proxy) GetGidByUid(uid int64) string {
 	return ""
 }
 
-func (p *Proxy) getGateClientByGid(gid string) (transport.GateClient, error) {
-	return p.node.opts.transporter.NewGateClient(gid)
-}
-
-func (p *Proxy) getGateClientByUid(uid int64) (transport.GateClient, error) {
-	if val, ok := p.sourceGate.Load(uid); ok {
-		if gid := val.(string); gid != "" {
-			return p.node.opts.transporter.NewGateClient(gid)
-		}
-	}
-	return nil, fmt.Errorf("gateway not found by uid: %v", uid)
+func (p *Proxy) getGateClient(name string) (transport.GateClient, error) {
+	return p.node.opts.transporter.NewGateClient(name)
 }
 
 // Respond send to gateway grpc server
 func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []byte) error {
-	c, err := p.getGateClientByGid("gate-inter-rpc-server")
+	c, err := p.getGateClient(viper.GetString("transport.discovery.gateway"))
 	if err != nil {
 		return err
 	}

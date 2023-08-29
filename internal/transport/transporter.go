@@ -9,7 +9,7 @@ type Transporter interface {
 	// NewGateClient 新建网关客户端
 	NewGateClient(serviceName string) (GateClient, error)
 	// NewNodeClient 新建节点客户端
-	NewNodeClient(addr string) (NodeClient, error)
+	NewNodeClient(serviceName string) (NodeClient, error)
 }
 
 type Message struct {
