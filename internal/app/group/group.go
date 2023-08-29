@@ -3,15 +3,16 @@ package group
 import (
 	"github.com/spf13/viper"
 	"social/internal/node"
-	"social/pkg/discovery"
+	"social/internal/transport"
+	"social/internal/transport/grpc"
 )
 
 func Run() *node.Node {
-	n := node.NewNode(&discovery.Node{
-		Name: "group",
-		Host: viper.GetString("group.host"),
-		Port: viper.GetInt("group.port"),
-	})
+	addr := viper.GetString("transport.grpc.addr")
+	name := viper.GetString("transport.grpc.service_name")
+	n := node.NewNode(node.WithTransporter(
+		grpc.NewTransporter(transport.WithAddr(addr), transport.WithName(name)),
+	))
 	core := newCore(n.GetProxy())
 	core.Init()
 	n.Start()
