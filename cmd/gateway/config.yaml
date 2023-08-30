@@ -1,18 +1,18 @@
 mode: debug
 log_level: info
-log_path: log
+
 atomic_level_addr: :4240
 
 etcd:
   addr: 127.0.0.1:2379
 
 transport:
-  discovery:
+  discovery_node:
     - name: "im"
-      router:
+      routers:
         - 4
     - name: "group"
-      router:
+      routers:
         - 5
   grpc:
     service_name: "gate-inter-rpc-server"

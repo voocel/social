@@ -7,19 +7,31 @@ import (
 	"strings"
 )
 
+var Conf = new(Config)
+
 type Config struct {
 	Mode            string
-	LogLevel        string
-	LogPath         string
-	AtomicLevelAddr string
+	LogLevel        string `mapstructure:"log_level"`
+	LogPath         string `mapstructure:"log_path"`
+	AtomicLevelAddr string `mapstructure:"atomic_level_addr"`
 
-	Http  HttpConfig
-	IM    IMConfig
-	Group GroupConfig
-	Gate  GateConfig
-	RPC   RPCConfig
-	Redis RedisConfig
-	Mysql MysqlConfig
+	Transport Transport
+	Http      HttpConfig
+	IM        IMConfig
+	Group     GroupConfig
+	Gate      GateConfig
+	RPC       RPCConfig
+	Redis     RedisConfig
+	Mysql     MysqlConfig
+}
+
+type Transport struct {
+	DiscoveryNode []Discovery `mapstructure:"discovery_node"`
+	DiscoveryGate string      `mapstructure:"discovery_gate"`
+	Grpc          struct {
+		Addr        string
+		ServiceName string `mapstructure:"service_name"`
+	}
 }
 
 type HttpConfig struct {
@@ -33,6 +45,8 @@ type GroupConfig struct {
 }
 
 type GateConfig struct {
+	Name string
+	Addr string
 }
 
 type RPCConfig struct {
@@ -44,7 +58,7 @@ type RedisConfig struct {
 	Password    string
 	Db          int
 	PoolSize    int
-	MinIdleConn int
+	MinIdleConn int `mapstructure:"min_idle_conn"`
 }
 
 type MysqlConfig struct {
@@ -53,8 +67,13 @@ type MysqlConfig struct {
 	Dbname          string
 	Username        string
 	Password        string
-	MaximumPoolSize int
-	MaximumIdleSize int
+	MaximumPoolSize int `mapstructure:"maximum_pool_size"`
+	MaximumIdleSize int `mapstructure:"maximum_idle_size"`
+}
+
+type Discovery struct {
+	Name    string
+	Routers []int32
 }
 
 func LoadConfig(paths ...string) {
@@ -75,7 +94,7 @@ func LoadConfig(paths ...string) {
 
 	viper.SetDefault("mode", "debug")
 	viper.SetDefault("log_level", "info")
-	viper.SetDefault("log_path", "info")
+	viper.SetDefault("log_path", "log")
 	viper.SetDefault("atomic_level_addr", "4240")
 
 	viper.SetDefault("http.addr", ":8090")
@@ -84,9 +103,16 @@ func LoadConfig(paths ...string) {
 		log.Printf("load config error: %v", err)
 		return
 	}
+	if err := viper.Unmarshal(Conf); err != nil {
+		log.Panic(err)
+	}
+
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		log.Printf("file change: %s, %s, %s\n", e.Op.String(), e.Name, e.String())
+		log.Printf("config change: %s, %s, %s\n", e.Op.String(), e.Name, e.String())
+		if err := viper.Unmarshal(Conf); err != nil {
+			log.Printf("config change unmarshal err: %v", err)
+		}
 	})
 	log.Println("load config successfully")
 }
