@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"social/internal/code"
-	"social/internal/entity"
 	"social/internal/transport"
 	"social/pkg/log"
 	"social/protos/pb"
@@ -51,18 +50,8 @@ func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.Unbin
 // Push gateway send message to user
 func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
-	resp := new(entity.Response)
-	msg := &entity.Message{
-		ID:          0,
-		Content:     string(req.GetMessage().GetBuffer()),
-		MsgType:     0,
-		ContentType: 0,
-	}
-	s, err := gs.provider.Session(req.Target)
+	err := gs.provider.Push(req.Target, req.GetMessage().GetBuffer())
 	if err != nil && errors.Is(err, code.ErrSessionNotFound) {
-		// user offline
-		entity.MsgCache.Add(req.Target, msg)
-
 		st := status.New(codes.ResourceExhausted, "session does not exist")
 		details, e := st.WithDetails(
 			&errdetails.QuotaFailure{
@@ -77,7 +66,6 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply
 		}
 		return &pb.PushReply{}, st.Err()
 	}
-	err = s.Push(resp.Resp(msg))
 	if err != nil {
 		log.Errorf("[Gateway] push to user(%v) err: ", req.Target, err)
 	}

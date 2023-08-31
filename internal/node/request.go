@@ -5,6 +5,7 @@ import "context"
 type Request struct {
 	Cid    int64
 	Uid    int64
+	Seq    int32
 	Route  int32
 	Buffer []byte
 	Node   *Node

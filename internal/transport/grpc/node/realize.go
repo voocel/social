@@ -26,7 +26,7 @@ func (n nodeService) Trigger(ctx context.Context, req *pb.TriggerReq) (*pb.Trigg
 	return &pb.TriggerReply{}, nil
 }
 
-// Deliver Messages sent from the gateway
+// Deliver node receive messages to handle, sent from the gateway
 func (n nodeService) Deliver(ctx context.Context, req *pb.DeliverReq) (*pb.DeliverReply, error) {
 	if req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()

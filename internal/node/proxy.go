@@ -2,21 +2,19 @@ package node
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"sync"
 
-	"github.com/spf13/viper"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
+	"social/config"
 	"social/internal/event"
 	"social/internal/transport"
 	"social/pkg/log"
 )
 
 type Proxy struct {
-	node       *Node
-	sourceGate sync.Map
-	sourceNode sync.Map
+	node *Node
 }
 
 func newProxy(node *Node) *Proxy {
@@ -36,29 +34,16 @@ func (p *Proxy) AddEventListener(event event.Event, handler event.EventHandler) 
 	p.node.addEventListener(event, handler)
 }
 
-func (p *Proxy) BindGate(gid string, cid, uid int64) error {
-	c, err := p.getGateClient(gid)
-	err = c.Bind(context.Background(), cid, uid)
-	p.sourceGate.Store(uid, gid)
-	return err
-}
-
-func (p *Proxy) GetGidByUid(uid int64) string {
-	if val, ok := p.sourceGate.Load(uid); ok {
-		if gid := val.(string); gid != "" {
-			return gid
-		}
-	}
-	return ""
-}
-
 func (p *Proxy) getGateClient(name string) (transport.GateClient, error) {
+	if len(name) == 0 {
+		return nil, errors.New("gateway service name not be empty")
+	}
 	return p.node.opts.transporter.NewGateClient(name)
 }
 
 // Respond send to gateway grpc server
 func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []byte) error {
-	c, err := p.getGateClient(viper.GetString("transport.discovery.gateway"))
+	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err
 	}
@@ -83,8 +68,4 @@ func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []b
 ok:
 	log.Infof("Respond message to gateway success: %s", string(msg))
 	return nil
-}
-
-func (p *Proxy) directDeliver(ctx context.Context, args *DeliverArgs) {
-
 }

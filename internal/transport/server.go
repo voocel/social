@@ -1,7 +1,6 @@
 package transport
 
 import (
-	"context"
 	"social/internal/event"
 	"social/internal/session"
 )
@@ -19,14 +18,10 @@ type Server interface {
 
 type GateProvider interface {
 	Session(target int64) (*session.Session, error)
-	// Bind 绑定用户与网关间的关系
-	Bind(ctx context.Context, uid int64) error
-	// Unbind 解绑用户与网关间的关系
-	Unbind(ctx context.Context, uid int64) error
 	// Push 发送消息（异步）
-	Push(target int64, msg []byte, msgType ...int) error
+	Push(target int64, msg []byte) error
 	// Broadcast 推送广播消息（异步）
-	Broadcast(msg []byte, msgType ...int) (n int, err error)
+	Broadcast(msg []byte) (n int, err error)
 }
 
 type NodeProvider interface {

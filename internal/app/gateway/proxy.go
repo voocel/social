@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"social/config"
 	"social/internal/transport"
 )
@@ -17,31 +18,30 @@ func newProxy(gate *Gateway) *proxy {
 	}
 }
 
-// Launch send to node
-func (p *proxy) push(ctx context.Context, cid, uid int64, message []byte, route int32) error {
+// Launch send to node rpc
+func (p *proxy) push(ctx context.Context, cid, uid int64, route int32, message []byte) error {
 	var serviceName string
-	for _, v := range config.Conf.Transport.Discovery {
+	for _, v := range config.Conf.Transport.DiscoveryNode {
 		if inSlice(v.Routers, route) {
 			serviceName = v.Name
 		}
 	}
+	if len(serviceName) == 0 {
+		return fmt.Errorf("service name not found: %v", serviceName)
+	}
 
-	return p.gate.nodeClient[serviceName].Deliver(ctx, cid, uid,
+	client, ok := p.gate.nodeClient[serviceName]
+	if !ok {
+		return fmt.Errorf("node service client not found: %v", serviceName)
+	}
+
+	return client.Deliver(ctx, cid, uid,
 		&transport.Message{
 			Seq:    0,
 			Route:  route,
 			Buffer: message,
 		},
 	)
-}
-
-func (p *proxy) bindGate(ctx context.Context, uid int64) {
-	p.bind[uid] = p.gate.opts.id
-}
-
-// 解绑用户与网关间的关系
-func (p *proxy) unbindGate(ctx context.Context, uid int64) {
-	delete(p.bind, uid)
 }
 
 func inSlice(s []int32, v int32) bool {

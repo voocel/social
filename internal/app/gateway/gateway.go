@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,7 +24,6 @@ import (
 type Gateway struct {
 	opts          *options
 	proxy         *proxy
-	endpoints     *Endpoint
 	instance      *discovery.Node
 	srv           transport.Server
 	registry      *etcd.Registry
@@ -32,20 +32,6 @@ type Gateway struct {
 	sessionGroup  *session.SessionGroup
 	done          chan struct{}
 	nodeEndpoints map[string]*discovery.Node
-}
-
-type Endpoint struct {
-	gateEndpoints map[string]string
-}
-
-func NewEndpoint() *Endpoint {
-	return &Endpoint{
-		gateEndpoints: make(map[string]string),
-	}
-}
-
-func (e *Endpoint) add(id, addr string) {
-	e.gateEndpoints[id] = addr
 }
 
 func NewGateway(opts ...OptionFunc) *Gateway {
@@ -58,7 +44,6 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 	}
 	g := &Gateway{
 		opts:          o,
-		endpoints:     NewEndpoint(),
 		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
 		nodeClient:    make(map[string]transport.NodeClient),
@@ -72,7 +57,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 
 func (g *Gateway) Start() {
 	// 启动node RPC客户端
-	for _, v := range config.Conf.Transport.Discovery {
+	for _, v := range config.Conf.Transport.DiscoveryNode {
 		g.startNodeClient(v.Name)
 	}
 	// 启动RPC服务端
@@ -134,15 +119,12 @@ func (g *Gateway) startRPCServer() {
 	}()
 }
 
-func (g *Gateway) getNodeClient(serviceName string) (transport.NodeClient, error) {
-	return g.opts.transporter.NewNodeClient(serviceName)
-}
-
 // 启动rpc客户端
 func (g *Gateway) startNodeClient(serviceName string) {
-	nc, err := g.getNodeClient(serviceName)
+	nc, err := g.opts.transporter.NewNodeClient(serviceName)
 	if err != nil {
-		log.Fatalf("[Gateway] grpc client connect to node [%s] err: %v", serviceName, err)
+		log.Errorf("[Gateway] grpc client connect to node [%s] err: %v", serviceName, err)
+		return
 	}
 
 	log.Infof("[Gateway] grpc client connect to node [%s] is successful!", serviceName)
@@ -164,21 +146,14 @@ func (g *Gateway) Stop() {
 func (g *Gateway) handleConnect(conn network.Conn) {
 	log.Debugf("[Gateway] user connect successful: %v", conn.RemoteAddr())
 	resp := new(entity.Response)
-	token, ok := conn.Values()["token"]
-	if !ok {
-		conn.Send(resp.ErrResp("token non-existent"))
-		conn.Close()
-		log.Errorf("token non-existent: %v", token)
-		return
-	}
-	claims, err := jwt.ParseToken(token[0])
+	uid, err := g.parseUid(conn)
 	if err != nil {
-		conn.Send(resp.ErrResp("token parse fail: " + err.Error()))
+		conn.Send(resp.ErrResp(err.Error()))
 		conn.Close()
-		log.Errorf("token parse fail: %v", err)
+		log.Errorf("[Gateway] user connect parse uid err: %v", err)
 		return
 	}
-	uid := claims.User.ID
+
 	s := session.NewSession(conn)
 	g.sessionGroup.UidSession[uid] = s
 	g.sessionGroup.CidSession[conn.Cid()] = s
@@ -196,7 +171,7 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Buffer, msg.Route)
+	err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Route, msg.Buffer)
 	if err != nil {
 		log.Errorf("GRPC push to node error: %v", err)
 	}
@@ -223,4 +198,21 @@ func (g *Gateway) offlineMessage(uid int64, sess *session.Session) {
 			return
 		}
 	}
+}
+
+// 从token中解析uid
+func (g *Gateway) parseUid(conn network.Conn) (uid int64, err error) {
+	token, ok := conn.Values()["token"]
+	if !ok {
+		err = fmt.Errorf("token non-existent: %v", token)
+		return
+	}
+	var claims *jwt.Claims
+	claims, err = jwt.ParseToken(token[0])
+	if err != nil {
+		err = fmt.Errorf("token parse fail: %v", err)
+		return
+	}
+
+	return claims.User.ID, nil
 }

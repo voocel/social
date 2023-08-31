@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/viper"
 	"social/internal/event"
-	"social/internal/router"
 	"social/internal/transport"
 	"social/pkg/discovery"
 	"social/pkg/discovery/etcd"
@@ -28,7 +27,6 @@ type Node struct {
 	opts                *options
 	registry            *etcd.Registry
 	eventCh             chan *event.EventEntity
-	router              *router.Router
 	Routes              map[int32]routeEntity
 	events              map[event.Event]event.EventHandler
 	instance            *discovery.Node
@@ -46,7 +44,6 @@ func NewNode(opts ...OptionFunc) *Node {
 	n := &Node{}
 	n.opts = o
 	n.proxy = newProxy(n)
-	n.router = router.NewRouter()
 	n.Routes = make(map[int32]routeEntity)
 	n.events = make(map[event.Event]event.EventHandler)
 	n.eventCh = make(chan *event.EventEntity, 1024)
