@@ -19,6 +19,7 @@ func (p provider) Deliver(cid, uid int64, message *transport.Message) {
 	r := Request{
 		Cid:    cid,
 		Uid:    uid,
+		Seq:    message.Seq,
 		Route:  message.Route,
 		Buffer: message.Buffer,
 		Node:   p.node,
