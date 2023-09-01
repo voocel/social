@@ -1,6 +1,9 @@
 package node
 
-import "context"
+import (
+	"context"
+	"social/protos/pb"
+)
 
 type Request struct {
 	Cid    int64
@@ -11,6 +14,6 @@ type Request struct {
 	Node   *Node
 }
 
-func (r *Request) Respond(ctx context.Context, target int64, message []byte) error {
+func (r *Request) Respond(ctx context.Context, target int64, message *pb.MsgItem) error {
 	return r.Node.proxy.Respond(ctx, r, target, message)
 }

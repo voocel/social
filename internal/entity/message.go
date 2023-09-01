@@ -4,27 +4,21 @@ import (
 	"encoding/json"
 	"io"
 	"social/pkg/log"
+	"social/protos/pb"
 	"sort"
 	"time"
 )
 
 type Response struct {
-	Code uint32  `json:"code"`
-	Msg  string  `json:"msg"`
-	Data Message `json:"data"`
+	Code uint32      `json:"code"`
+	Msg  string      `json:"msg"`
+	Data *pb.MsgItem `json:"data"`
 }
 
-type Message struct {
-	ID          int64  `json:"id"`
-	Content     string `json:"content"`
-	MsgType     int16  `json:"msg_type"`     // 1.单聊 2.群聊 3.系统
-	ContentType int16  `json:"content_type"` // 1.文字 2.普通文件 3.图片 4.音频 5.视频 6.语音聊天 7.视频聊天
-}
-
-func (r *Response) Resp(data *Message) []byte {
+func (r *Response) Wrap(data *pb.MsgItem) []byte {
 	r.Code = 0
 	r.Msg = "ok"
-	r.Data = *data
+	r.Data = data
 	b, err := json.Marshal(r)
 	if err != nil {
 		log.Errorf("Resp marshal err: %v", err)

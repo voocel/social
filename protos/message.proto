@@ -9,3 +9,11 @@ message Message {
   int32 Route = 2;  // 路由
   bytes Buffer = 3; // 消息内容
 }
+
+message MsgItem {
+  int64 sender = 1; // 发送者
+  int64 receiver = 2; // 接收者
+  string content = 3; // 内容
+  int32 msg_type = 4; // 1.单聊 2.群聊 3.系统
+  int32 content_type = 5; // 1.文字 2.普通文件 3.图片 4.音频 5.视频 6.语音聊天 7.视频聊天
+}

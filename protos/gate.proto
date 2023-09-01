@@ -32,9 +32,8 @@ message UnbindReq {
 message UnbindReply {}
 
 message PushReq {
-
-  int64 target = 3; // 推送目标
-  Message Message = 5; // 消息
+  int64 target = 1; // 推送目标
+  Message Message = 2; // 消息
 }
 
 message PushReply {}
