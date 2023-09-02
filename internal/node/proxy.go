@@ -2,6 +2,7 @@ package node
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -11,6 +12,7 @@ import (
 	"social/internal/event"
 	"social/internal/transport"
 	"social/pkg/log"
+	"social/protos/pb"
 )
 
 type Proxy struct {
@@ -42,15 +44,16 @@ func (p *Proxy) getGateClient(name string) (transport.GateClient, error) {
 }
 
 // Respond send to gateway grpc server
-func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []byte) error {
+func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg *pb.MsgItem) error {
 	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err
 	}
+	b, _ := json.Marshal(msg)
 	err = c.Push(ctx, target, &transport.Message{
-		Seq:    0,
-		Route:  0,
-		Buffer: msg,
+		Seq:    req.Seq,
+		Route:  req.Route,
+		Buffer: b,
 	})
 	if err != nil {
 		st := status.Convert(err)
@@ -66,6 +69,6 @@ func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg []b
 		return fmt.Errorf("send to gateway err: %v", err)
 	}
 ok:
-	log.Infof("Respond message to gateway success: %s", string(msg))
+	log.Infof("Respond message to gateway success: %v", msg)
 	return nil
 }

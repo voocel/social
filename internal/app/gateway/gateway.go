@@ -191,7 +191,7 @@ func (g *Gateway) offlineMessage(uid int64, sess *session.Session) {
 			return
 		case msg := <-entity.MsgCache.Get(uid):
 			resp := new(entity.Response)
-			if err := sess.Push(resp.Resp(msg)); err != nil {
+			if err := sess.Push(resp.Wrap(msg)); err != nil {
 				log.Errorf("[Gateway] push offline message to user err: %v", err)
 			}
 		default:

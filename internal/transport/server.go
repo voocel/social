@@ -19,7 +19,7 @@ type Server interface {
 type GateProvider interface {
 	Session(target int64) (*session.Session, error)
 	// Push 发送消息（异步）
-	Push(target int64, msg []byte) error
+	Push(target int64, buf []byte) error
 	// Broadcast 推送广播消息（异步）
 	Broadcast(msg []byte) (n int, err error)
 }
