@@ -2,10 +2,10 @@ package group
 
 import (
 	"encoding/json"
-	"social/internal/entity"
 	"social/internal/node"
 	"social/internal/router"
 	"social/pkg/log"
+	"social/protos/pb"
 )
 
 type core struct {
@@ -24,41 +24,41 @@ func (c *core) Init() {
 }
 
 func (c *core) Default(req node.Request) {
-	var arg entity.Request
-	data := req.Buffer
-	if err := json.Unmarshal(data, &arg); err != nil {
+	var msg = new(pb.MsgItem)
+	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
-	log.Debugf("[group] default receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	log.Debugf("[Group]Default receive data: %v", msg)
 	return
 }
 
 func (c *core) connect(req node.Request) {
-	var arg entity.Request
-	data := req.Buffer
-	if err := json.Unmarshal(data, &arg); err != nil {
+	var msg = new(pb.MsgItem)
+	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
-	log.Debugf("[group] connect receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	log.Debugf("[Group]Connect receive data: %v", msg)
 	return
 }
 
 func (c *core) disconnect(req node.Request) {
-	var arg entity.Request
-	data := req.Buffer
-	if err := json.Unmarshal(data, &arg); err != nil {
+	var msg = new(pb.MsgItem)
+	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
-	log.Debugf("[group] disconnect receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	log.Debugf("[Group]Disconnect receive data: %v", msg)
 	return
 }
 
 func (c *core) message(req node.Request) {
-	var arg entity.Request
-	data := req.Buffer
-	if err := json.Unmarshal(data, &arg); err != nil {
+	var msg = new(pb.MsgItem)
+	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
-	log.Debugf("[group] chat receive cmd: %v, params: %v", arg.Cmd, arg.Params)
+	log.Debugf("[Group]Message receive data: %v", msg)
 	return
 }
