@@ -11,9 +11,9 @@ transport:
     - name: "im"
       routers:
         - 4
-    - name: "group"
-      routers:
-        - 5
+#    - name: "group"
+#      routers:
+#        - 5
   grpc:
     service_name: "gate-inter-rpc-server"
     addr: "127.0.0.1:7200"

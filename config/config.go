@@ -57,7 +57,7 @@ type RedisConfig struct {
 	Port        int
 	Password    string
 	Db          int
-	PoolSize    int
+	PoolSize    int `mapstructure:"pool_size"`
 	MinIdleConn int `mapstructure:"min_idle_conn"`
 }
 
@@ -100,11 +100,10 @@ func LoadConfig(paths ...string) {
 	viper.SetDefault("http.addr", ":8090")
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("load config error: %v", err)
-		return
+		log.Panicf("read config error: %v", err)
 	}
 	if err := viper.Unmarshal(Conf); err != nil {
-		log.Panic(err)
+		log.Panicf("unmarshal config err: %v", err)
 	}
 
 	viper.WatchConfig()
@@ -115,58 +114,4 @@ func LoadConfig(paths ...string) {
 		}
 	})
 	log.Println("load config successfully")
-}
-
-func NewConfig() *Config {
-	return &Config{
-		LogLevel: viper.GetString("log_level"),
-		LogPath:  viper.GetString("log_path"),
-		Mode:     viper.GetString("mode"),
-		Http:     GetHttpConfig(),
-		IM:       GetIMConfig(),
-		Group:    GetGroupConfig(),
-		Redis:    GetRedisConfig(),
-		Mysql:    GetMysqlConfig(),
-	}
-}
-
-func (c *Config) Get(key string) string {
-	return viper.GetString(key)
-}
-
-func GetHttpConfig() HttpConfig {
-	return HttpConfig{
-		Addr: viper.GetString("http.addr"),
-	}
-}
-
-func GetIMConfig() IMConfig {
-	return IMConfig{}
-}
-
-func GetGroupConfig() GroupConfig {
-	return GroupConfig{}
-}
-
-func GetRedisConfig() RedisConfig {
-	return RedisConfig{
-		Host:        viper.GetString("redis.host"),
-		Port:        viper.GetInt("redis.port"),
-		Password:    viper.GetString("redis.password"),
-		Db:          viper.GetInt("redis.db"),
-		PoolSize:    viper.GetInt("redis.pool_size"),
-		MinIdleConn: viper.GetInt("redis.min_idle_conn"),
-	}
-}
-
-func GetMysqlConfig() MysqlConfig {
-	return MysqlConfig{
-		Host:            viper.GetString("mysql.host"),
-		Port:            viper.GetInt("mysql.port"),
-		Dbname:          viper.GetString("mysql.dbname"),
-		Username:        viper.GetString("mysql.username"),
-		Password:        viper.GetString("mysql.password"),
-		MaximumPoolSize: viper.GetInt("mysql.maximum_pool_size"),
-		MaximumIdleSize: viper.GetInt("mysql.maximum_idle_size"),
-	}
 }
