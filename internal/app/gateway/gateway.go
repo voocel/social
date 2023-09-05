@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 
-	"social/config"
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
 	"social/internal/session"
@@ -28,7 +27,6 @@ type Gateway struct {
 	srv           transport.Server
 	registry      *etcd.Registry
 	protocol      message.Protocol
-	nodeClient    map[string]transport.NodeClient
 	sessionGroup  *session.SessionGroup
 	done          chan struct{}
 	nodeEndpoints map[string]*discovery.Node
@@ -46,7 +44,6 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 		opts:          o,
 		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
-		nodeClient:    make(map[string]transport.NodeClient),
 		protocol:      message.NewDefaultProtocol(),
 		nodeEndpoints: make(map[string]*discovery.Node),
 	}
@@ -56,10 +53,6 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 }
 
 func (g *Gateway) Start() {
-	// 启动node RPC客户端
-	for _, v := range config.Conf.Transport.DiscoveryNode {
-		g.startNodeClient(v.Name)
-	}
 	// 启动RPC服务端
 	g.startRPCServer()
 	// 启动网关
@@ -78,13 +71,14 @@ func (g *Gateway) startGate() {
 
 	// get node service instance
 	go func() {
-		t := time.NewTimer(time.Second * 10)
+		t := time.NewTimer(time.Second * 5)
 		for {
 			select {
 			case <-g.done:
 				return
 			case <-t.C:
-				g.nodeEndpoints["node"] = g.registry.Query("node")
+				g.nodeEndpoints["node"] = g.registry.Query("im")
+				t.Reset(time.Second * 5)
 			}
 		}
 	}()
@@ -117,18 +111,6 @@ func (g *Gateway) startRPCServer() {
 		}
 		log.Infof("gateway GRPC server stop success")
 	}()
-}
-
-// 启动rpc客户端
-func (g *Gateway) startNodeClient(serviceName string) {
-	nc, err := g.opts.transporter.NewNodeClient(serviceName)
-	if err != nil {
-		log.Errorf("[Gateway] grpc client connect to node [%s] err: %v", serviceName, err)
-		return
-	}
-
-	log.Infof("[Gateway] grpc client connect to node [%s] is successful!", serviceName)
-	g.nodeClient[serviceName] = nc
 }
 
 func (g *Gateway) Stop() {

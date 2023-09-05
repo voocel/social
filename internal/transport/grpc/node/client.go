@@ -37,14 +37,16 @@ func NewClient(serviceName string) (*client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	log.Infof("[Gateway] grpc client trying to connect to node [%s]...", serviceName)
+	log.Infof("[Gateway] grpc client trying to connect to node[%s]...", serviceName)
 
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:///%s", reg.Scheme(), serviceName), grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithBlock())
 	if err != nil {
-		log.Warnf("[Gateway] the node[%s] grpc server not ready yet: %v", serviceName, err)
+		log.Errorf("[Gateway] the node[%s] grpc server not ready yet: %v", serviceName, err)
 		return nil, err
 	}
+
+	log.Infof("[Gateway] grpc client connect to node[%s] is successful!", serviceName)
 
 	cc := &client{client: pb.NewNodeClient(conn)}
 	clients.Store(serviceName, cc)

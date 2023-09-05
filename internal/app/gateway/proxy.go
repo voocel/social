@@ -18,6 +18,10 @@ func newProxy(gate *Gateway) *proxy {
 	}
 }
 
+func (p *proxy) getNodeClient(name string) (transport.NodeClient, error) {
+	return p.gate.opts.transporter.NewNodeClient(name)
+}
+
 // Launch send to node rpc
 func (p *proxy) push(ctx context.Context, cid, uid int64, route int32, message []byte) error {
 	var serviceName string
@@ -30,9 +34,9 @@ func (p *proxy) push(ctx context.Context, cid, uid int64, route int32, message [
 		return fmt.Errorf("service name not found: %v", serviceName)
 	}
 
-	client, ok := p.gate.nodeClient[serviceName]
-	if !ok {
-		return fmt.Errorf("node service client not found: %v", serviceName)
+	client, err := p.getNodeClient(serviceName)
+	if err != nil {
+		return fmt.Errorf("[%v]gateway get node rpc client err: %v", serviceName, err)
 	}
 
 	return client.Deliver(ctx, cid, uid,
