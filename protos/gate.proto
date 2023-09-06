@@ -15,6 +15,8 @@ service Gate {
   rpc Push(PushReq) returns (PushReply) {}
   // 获取客户端IP
   rpc GetIP(GetIPReq) returns (GetIPReply) {}
+  // 推送广播消息
+  rpc Broadcast(BroadcastReq) returns (BroadcastReply) {}
 }
 
 message BindReq {
@@ -44,4 +46,12 @@ message GetIPReq {
 
 message GetIPReply {
   string IP = 1;
+}
+
+message BroadcastReq {
+  Message Message = 1; // 消息
+}
+
+message BroadcastReply {
+  int64 Total = 1; // 广播数量
 }

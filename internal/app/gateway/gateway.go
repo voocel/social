@@ -130,6 +130,7 @@ func (g *Gateway) handleConnect(conn network.Conn) {
 	resp := new(entity.Response)
 	uid, err := g.parseUid(conn)
 	if err != nil {
+		resp.Code = 403
 		conn.Send(resp.ErrResp(err.Error()))
 		conn.Close()
 		log.Errorf("[Gateway] user connect parse uid err: %v", err)

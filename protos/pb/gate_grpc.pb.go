@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Gate_Bind_FullMethodName   = "/pb.Gate/Bind"
-	Gate_Unbind_FullMethodName = "/pb.Gate/Unbind"
-	Gate_Push_FullMethodName   = "/pb.Gate/Push"
-	Gate_GetIP_FullMethodName  = "/pb.Gate/GetIP"
+	Gate_Bind_FullMethodName      = "/pb.Gate/Bind"
+	Gate_Unbind_FullMethodName    = "/pb.Gate/Unbind"
+	Gate_Push_FullMethodName      = "/pb.Gate/Push"
+	Gate_GetIP_FullMethodName     = "/pb.Gate/GetIP"
+	Gate_Broadcast_FullMethodName = "/pb.Gate/Broadcast"
 )
 
 // GateClient is the client API for Gate service.
@@ -37,6 +38,8 @@ type GateClient interface {
 	Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error)
 	// 获取客户端IP
 	GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error)
+	// 推送广播消息
+	Broadcast(ctx context.Context, in *BroadcastReq, opts ...grpc.CallOption) (*BroadcastReply, error)
 }
 
 type gateClient struct {
@@ -83,6 +86,15 @@ func (c *gateClient) GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *gateClient) Broadcast(ctx context.Context, in *BroadcastReq, opts ...grpc.CallOption) (*BroadcastReply, error) {
+	out := new(BroadcastReply)
+	err := c.cc.Invoke(ctx, Gate_Broadcast_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GateServer is the server API for Gate service.
 // All implementations must embed UnimplementedGateServer
 // for forward compatibility
@@ -95,6 +107,8 @@ type GateServer interface {
 	Push(context.Context, *PushReq) (*PushReply, error)
 	// 获取客户端IP
 	GetIP(context.Context, *GetIPReq) (*GetIPReply, error)
+	// 推送广播消息
+	Broadcast(context.Context, *BroadcastReq) (*BroadcastReply, error)
 	mustEmbedUnimplementedGateServer()
 }
 
@@ -113,6 +127,9 @@ func (UnimplementedGateServer) Push(context.Context, *PushReq) (*PushReply, erro
 }
 func (UnimplementedGateServer) GetIP(context.Context, *GetIPReq) (*GetIPReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIP not implemented")
+}
+func (UnimplementedGateServer) Broadcast(context.Context, *BroadcastReq) (*BroadcastReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
 }
 func (UnimplementedGateServer) mustEmbedUnimplementedGateServer() {}
 
@@ -199,6 +216,24 @@ func _Gate_GetIP_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Gate_Broadcast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BroadcastReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GateServer).Broadcast(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Gate_Broadcast_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GateServer).Broadcast(ctx, req.(*BroadcastReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Gate_ServiceDesc is the grpc.ServiceDesc for Gate service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -221,6 +256,10 @@ var Gate_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIP",
 			Handler:    _Gate_GetIP_Handler,
+		},
+		{
+			MethodName: "Broadcast",
+			Handler:    _Gate_Broadcast_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
