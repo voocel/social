@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS friend_apply(
     status     smallint NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
-    deleted_at TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 COMMENT ON COLUMN friend_apply.from_id IS '申请人ID';

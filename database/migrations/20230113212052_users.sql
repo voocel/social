@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users(
     deleted_at      TIMESTAMP
 );
 
-CREATE INDEX idx_account_mobile_email ON users (username, mobile, email);
+-- CREATE INDEX idx_account_mobile_email ON users (username, mobile, email);
 
 COMMENT ON COLUMN users.username IS '用户名称';
 COMMENT ON COLUMN users.password IS '用户密码';

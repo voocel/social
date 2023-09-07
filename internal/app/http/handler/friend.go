@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"social/ent"
@@ -59,6 +60,7 @@ func (f *FriendHandler) AddFriend(c *gin.Context) {
 		return
 	}
 	req.Uid = u.ID
+	fmt.Println(req)
 
 	if _, err := f.friendUsecase.AddFriend(c, req); err != nil {
 		resp.Code = 1
