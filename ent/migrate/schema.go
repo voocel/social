@@ -31,7 +31,7 @@ var (
 		{Name: "from_id", Type: field.TypeInt64},
 		{Name: "to_id", Type: field.TypeInt64},
 		{Name: "remark", Type: field.TypeString},
-		{Name: "status", Type: field.TypeInt8},
+		{Name: "status", Type: field.TypeInt8, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},

@@ -1159,10 +1159,24 @@ func (m *FriendApplyMutation) AddedStatus() (r int8, exists bool) {
 	return *v, true
 }
 
+// ClearStatus clears the value of the "status" field.
+func (m *FriendApplyMutation) ClearStatus() {
+	m.status = nil
+	m.addstatus = nil
+	m.clearedFields[friendapply.FieldStatus] = struct{}{}
+}
+
+// StatusCleared returns if the "status" field was cleared in this mutation.
+func (m *FriendApplyMutation) StatusCleared() bool {
+	_, ok := m.clearedFields[friendapply.FieldStatus]
+	return ok
+}
+
 // ResetStatus resets all changes to the "status" field.
 func (m *FriendApplyMutation) ResetStatus() {
 	m.status = nil
 	m.addstatus = nil
+	delete(m.clearedFields, friendapply.FieldStatus)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1525,6 +1539,9 @@ func (m *FriendApplyMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *FriendApplyMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(friendapply.FieldStatus) {
+		fields = append(fields, friendapply.FieldStatus)
+	}
 	if m.FieldCleared(friendapply.FieldCreatedAt) {
 		fields = append(fields, friendapply.FieldCreatedAt)
 	}
@@ -1548,6 +1565,9 @@ func (m *FriendApplyMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *FriendApplyMutation) ClearField(name string) error {
 	switch name {
+	case friendapply.FieldStatus:
+		m.ClearStatus()
+		return nil
 	case friendapply.FieldCreatedAt:
 		m.ClearCreatedAt()
 		return nil

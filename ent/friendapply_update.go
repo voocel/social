@@ -67,9 +67,23 @@ func (fau *FriendApplyUpdate) SetStatus(i int8) *FriendApplyUpdate {
 	return fau
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (fau *FriendApplyUpdate) SetNillableStatus(i *int8) *FriendApplyUpdate {
+	if i != nil {
+		fau.SetStatus(*i)
+	}
+	return fau
+}
+
 // AddStatus adds i to the "status" field.
 func (fau *FriendApplyUpdate) AddStatus(i int8) *FriendApplyUpdate {
 	fau.mutation.AddStatus(i)
+	return fau
+}
+
+// ClearStatus clears the value of the "status" field.
+func (fau *FriendApplyUpdate) ClearStatus() *FriendApplyUpdate {
+	fau.mutation.ClearStatus()
 	return fau
 }
 
@@ -259,6 +273,12 @@ func (fau *FriendApplyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: friendapply.FieldStatus,
 		})
 	}
+	if fau.mutation.StatusCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Column: friendapply.FieldStatus,
+		})
+	}
 	if value, ok := fau.mutation.CreatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -356,9 +376,23 @@ func (fauo *FriendApplyUpdateOne) SetStatus(i int8) *FriendApplyUpdateOne {
 	return fauo
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (fauo *FriendApplyUpdateOne) SetNillableStatus(i *int8) *FriendApplyUpdateOne {
+	if i != nil {
+		fauo.SetStatus(*i)
+	}
+	return fauo
+}
+
 // AddStatus adds i to the "status" field.
 func (fauo *FriendApplyUpdateOne) AddStatus(i int8) *FriendApplyUpdateOne {
 	fauo.mutation.AddStatus(i)
+	return fauo
+}
+
+// ClearStatus clears the value of the "status" field.
+func (fauo *FriendApplyUpdateOne) ClearStatus() *FriendApplyUpdateOne {
+	fauo.mutation.ClearStatus()
 	return fauo
 }
 
@@ -569,6 +603,12 @@ func (fauo *FriendApplyUpdateOne) sqlSave(ctx context.Context) (_node *FriendApp
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
 			Value:  value,
+			Column: friendapply.FieldStatus,
+		})
+	}
+	if fauo.mutation.StatusCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
 			Column: friendapply.FieldStatus,
 		})
 	}

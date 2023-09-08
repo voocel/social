@@ -44,6 +44,14 @@ func (fac *FriendApplyCreate) SetStatus(i int8) *FriendApplyCreate {
 	return fac
 }
 
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (fac *FriendApplyCreate) SetNillableStatus(i *int8) *FriendApplyCreate {
+	if i != nil {
+		fac.SetStatus(*i)
+	}
+	return fac
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (fac *FriendApplyCreate) SetCreatedAt(t time.Time) *FriendApplyCreate {
 	fac.mutation.SetCreatedAt(t)
@@ -170,9 +178,6 @@ func (fac *FriendApplyCreate) check() error {
 	}
 	if _, ok := fac.mutation.Remark(); !ok {
 		return &ValidationError{Name: "remark", err: errors.New(`ent: missing required field "FriendApply.remark"`)}
-	}
-	if _, ok := fac.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "FriendApply.status"`)}
 	}
 	return nil
 }

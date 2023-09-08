@@ -480,6 +480,20 @@ func StatusLTE(v int8) predicate.FriendApply {
 	})
 }
 
+// StatusIsNil applies the IsNil predicate on the "status" field.
+func StatusIsNil() predicate.FriendApply {
+	return predicate.FriendApply(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStatus)))
+	})
+}
+
+// StatusNotNil applies the NotNil predicate on the "status" field.
+func StatusNotNil() predicate.FriendApply {
+	return predicate.FriendApply(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStatus)))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.FriendApply {
 	return predicate.FriendApply(func(s *sql.Selector) {

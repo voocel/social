@@ -23,7 +23,7 @@ type FriendApply struct {
 	// Remark holds the value of the "remark" field.
 	Remark string `json:"remark,omitempty"`
 	// Status holds the value of the "status" field.
-	Status int8 `json:"status,omitempty"`
+	Status int8 `json:"status"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"-"`
 	// UpdatedAt holds the value of the "updated_at" field.
