@@ -27,7 +27,9 @@ func (r *Response) Wrap(data *pb.MsgItem) []byte {
 }
 
 func (r *Response) ErrResp(msg string) []byte {
-	r.Code = 1
+	if r.Code == 0 {
+		r.Code = 1
+	}
 	r.Msg = msg
 	b, err := json.Marshal(r)
 	if err != nil {

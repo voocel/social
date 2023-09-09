@@ -31,6 +31,6 @@ func (p provider) Push(target int64, buf []byte) error {
 	return s.Push(resp.Wrap(msg))
 }
 
-func (p provider) Broadcast(msg []byte) (n int) {
+func (p provider) Broadcast(msg []byte) (n int64) {
 	return p.gate.sessionGroup.Broadcast(msg)
 }

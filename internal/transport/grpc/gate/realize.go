@@ -79,3 +79,8 @@ func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPRe
 	}
 	return &pb.GetIPReply{IP: s.RemoteIP()}, nil
 }
+
+func (gs *gateService) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.BroadcastReply, error) {
+	n := gs.provider.Broadcast(req.Message.Buffer)
+	return &pb.BroadcastReply{Total: n}, nil
+}

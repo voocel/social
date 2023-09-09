@@ -17,3 +17,9 @@ type FriendApply struct {
 	Status      uint8  `json:"status"`
 	CreatedTime int64  `json:"created_time"`
 }
+
+type FriendApplyReq struct {
+	Uid       int64  `json:"uid"`
+	FriendId  int64  `json:"friend_id"`
+	ApplyInfo string `json:"apply_info"`
+}

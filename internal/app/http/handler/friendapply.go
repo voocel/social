@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"social/ent"
@@ -29,17 +28,19 @@ func (h *FriendApplyHandler) AddFriendApply(c *gin.Context) {
 		return
 	}
 
-	req := &entity.FriendApply{}
+	req := &entity.FriendApplyReq{}
 	if err := c.ShouldBind(req); err != nil {
 		resp.Code = 1
 		resp.Message = "params invalid"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	req.FromId = u.ID
-	fmt.Println(req)
+	args := &entity.FriendApply{}
+	args.FromId = u.ID
+	args.ToId = req.FriendId
+	args.Remark = req.ApplyInfo
 
-	if _, err := h.faUseCase.AddFriendApply(c, req); err != nil {
+	if _, err := h.faUseCase.AddFriendApply(c, args); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
@@ -84,16 +85,17 @@ func (h *FriendApplyHandler) AgreeFriendApply(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	applyId, ok := c.GetQuery("apply_id")
+	fromId, ok := c.GetQuery("from_id")
 	if !ok {
 		resp.Code = 1
 		resp.Message = "apply id not exist"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	id, _ := strconv.Atoi(applyId)
+	fid, _ := strconv.Atoi(fromId)
+	tid := u.ID
 
-	if _, err := h.faUseCase.AgreeFriendApply(c, int64(id), u.ID); err != nil {
+	if _, err := h.faUseCase.AgreeFriendApply(c, int64(fid), tid); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
