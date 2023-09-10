@@ -28,6 +28,6 @@ type UserLoginReq struct {
 type UserRegisterReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Mobile   string `json:"mobile"`
-	Nickname string `json:"nickname"`
+	//Mobile   string `json:"mobile,omitempty"`
+	//Nickname string `json:"nickname,omitempty"`
 }

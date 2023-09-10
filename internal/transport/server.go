@@ -21,7 +21,7 @@ type GateProvider interface {
 	// Push 发送消息（异步）
 	Push(target int64, buf []byte) error
 	// Broadcast 推送广播消息（异步）
-	Broadcast(msg []byte) (n int)
+	Broadcast(msg []byte) (n int64)
 }
 
 type NodeProvider interface {

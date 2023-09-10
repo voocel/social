@@ -172,8 +172,8 @@ func (g *SessionGroup) PushByCid(cid int64, msg []byte) error {
 	return s.Push(msg)
 }
 
-func (g *SessionGroup) Broadcast(msg []byte) int {
-	var n int
+func (g *SessionGroup) Broadcast(msg []byte) int64 {
+	var n int64
 	for _, session := range g.CidSession {
 		err := session.Push(msg)
 		if err != nil {

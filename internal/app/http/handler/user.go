@@ -2,14 +2,15 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"net/http"
 	"social/internal/app/http/middleware"
 	"social/internal/entity"
-	"social/internal/entity/filter"
 	"social/internal/usecase"
-	"time"
 )
 
 type UserHandler struct {
@@ -78,14 +79,15 @@ func (h *UserHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	m := make(map[string]string)
-	if err := copier.Copy(m, req); err != nil {
+	m := make(map[string]interface{})
+	if err := copier.Copy(&m, req); err != nil {
+		fmt.Println(err)
 		resp.Code = 1
 		resp.Message = "params invalid."
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	filter.Filters(m)
+	//filter.Filters(m)
 	if err := h.userUsecase.UserRegister(c, req); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()

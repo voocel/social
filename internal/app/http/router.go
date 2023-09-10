@@ -78,8 +78,8 @@ func (r *friendApplyRouter) Load(g *gin.Engine) {
 	far := g.Group("/v1/friend_apply")
 	{
 		far.GET("/getFriendsApply", r.h.GetFriendApply)
-		far.POST("/addFriendApply")
-		far.GET("/agreeFriendApply")
+		far.POST("/addFriendApply", r.h.AddFriendApply)
+		far.GET("/agreeFriendApply", r.h.AgreeFriendApply)
 		far.GET("/refuseFriendApply")
 	}
 }
