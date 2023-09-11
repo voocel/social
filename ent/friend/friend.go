@@ -46,3 +46,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultShield holds the default value on creation for the "shield" field.
+	DefaultShield int8
+)

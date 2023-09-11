@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS friend(
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
     deleted_at TIMESTAMP
 )
+
+-- CREATE UNIQUE INDEX idx_uid_friend_id ON friend (uid, friend_id);
+
 -- +goose StatementEnd
 
 -- +goose Down

@@ -14,7 +14,7 @@ var (
 		{Name: "uid", Type: field.TypeInt64},
 		{Name: "friend_id", Type: field.TypeInt64},
 		{Name: "remark", Type: field.TypeString},
-		{Name: "shield", Type: field.TypeInt8},
+		{Name: "shield", Type: field.TypeInt8, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},

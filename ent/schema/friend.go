@@ -17,7 +17,7 @@ func (Friend) Fields() []ent.Field {
 		field.Int64("uid"),
 		field.Int64("friend_id"),
 		field.String("remark"),
-		field.Int8("shield"),
+		field.Int8("shield").Default(0),
 		field.Time("created_at").Optional().StructTag(`json:"-"`),
 		field.Time("updated_at").Optional().StructTag(`json:"-"`),
 		field.Time("deleted_at").Optional().Nillable().StructTag(`json:"-"`),

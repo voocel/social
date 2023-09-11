@@ -44,6 +44,14 @@ func (fc *FriendCreate) SetShield(i int8) *FriendCreate {
 	return fc
 }
 
+// SetNillableShield sets the "shield" field if the given value is not nil.
+func (fc *FriendCreate) SetNillableShield(i *int8) *FriendCreate {
+	if i != nil {
+		fc.SetShield(*i)
+	}
+	return fc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (fc *FriendCreate) SetCreatedAt(t time.Time) *FriendCreate {
 	fc.mutation.SetCreatedAt(t)
@@ -103,6 +111,7 @@ func (fc *FriendCreate) Save(ctx context.Context) (*Friend, error) {
 		err  error
 		node *Friend
 	)
+	fc.defaults()
 	if len(fc.hooks) == 0 {
 		if err = fc.check(); err != nil {
 			return nil, err
@@ -157,6 +166,14 @@ func (fc *FriendCreate) Exec(ctx context.Context) error {
 func (fc *FriendCreate) ExecX(ctx context.Context) {
 	if err := fc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (fc *FriendCreate) defaults() {
+	if _, ok := fc.mutation.Shield(); !ok {
+		v := friend.DefaultShield
+		fc.mutation.SetShield(v)
 	}
 }
 
@@ -280,6 +297,7 @@ func (fcb *FriendCreateBulk) Save(ctx context.Context) ([]*Friend, error) {
 	for i := range fcb.builders {
 		func(i int, root context.Context) {
 			builder := fcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FriendMutation)
 				if !ok {

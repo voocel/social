@@ -67,6 +67,14 @@ func (fu *FriendUpdate) SetShield(i int8) *FriendUpdate {
 	return fu
 }
 
+// SetNillableShield sets the "shield" field if the given value is not nil.
+func (fu *FriendUpdate) SetNillableShield(i *int8) *FriendUpdate {
+	if i != nil {
+		fu.SetShield(*i)
+	}
+	return fu
+}
+
 // AddShield adds i to the "shield" field.
 func (fu *FriendUpdate) AddShield(i int8) *FriendUpdate {
 	fu.mutation.AddShield(i)
@@ -353,6 +361,14 @@ func (fuo *FriendUpdateOne) SetRemark(s string) *FriendUpdateOne {
 func (fuo *FriendUpdateOne) SetShield(i int8) *FriendUpdateOne {
 	fuo.mutation.ResetShield()
 	fuo.mutation.SetShield(i)
+	return fuo
+}
+
+// SetNillableShield sets the "shield" field if the given value is not nil.
+func (fuo *FriendUpdateOne) SetNillableShield(i *int8) *FriendUpdateOne {
+	if i != nil {
+		fuo.SetShield(*i)
+	}
 	return fuo
 }
 
