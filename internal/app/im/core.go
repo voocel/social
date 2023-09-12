@@ -3,30 +3,35 @@ package im
 import (
 	"context"
 	"encoding/json"
+	"social/ent"
 	"social/internal/node"
-	"social/internal/router"
+	"social/internal/route"
+	"social/internal/usecase"
+	"social/internal/usecase/repo"
 	"social/pkg/log"
 	"social/protos/pb"
+	"time"
 )
 
 type core struct {
-	proxy *node.Proxy
+	proxy       *node.Proxy
+	userUseCase *usecase.UserUseCase
 }
 
-func newCore(proxy *node.Proxy) *core {
-	return &core{proxy: proxy}
+func newCore(proxy *node.Proxy, entClient *ent.Client) *core {
+	return &core{proxy: proxy, userUseCase: usecase.NewUserUseCase(repo.NewUserRepo(entClient))}
 }
 
 func (c *core) Init() {
-	c.proxy.AddRouteHandler(router.Connect, c.connect)
-	c.proxy.AddRouteHandler(router.Disconnect, c.disconnect)
-	c.proxy.AddRouteHandler(router.Message, c.message)
+	c.proxy.AddRouteHandler(route.Connect, c.connect)
+	c.proxy.AddRouteHandler(route.Disconnect, c.disconnect)
+	c.proxy.AddRouteHandler(route.Message, c.message)
 	c.proxy.SetDefaultRouteHandler(c.Default)
 }
 
 func (c *core) Default(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
 	}
@@ -36,7 +41,7 @@ func (c *core) Default(req node.Request) {
 
 func (c *core) connect(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
 	}
@@ -46,7 +51,7 @@ func (c *core) connect(req node.Request) {
 
 func (c *core) disconnect(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
 	}
@@ -62,7 +67,16 @@ func (c *core) message(req node.Request) {
 	}
 	log.Debugf("[IM]Message receive data: %v", msg)
 
-	err := req.Respond(context.Background(), msg.Receiver, msg)
+	user, err := c.userUseCase.GetUserById(context.Background(), msg.Sender.Id)
+	if err != nil {
+		log.Errorf("[IM]GetUserById err: %v", err)
+		return
+	}
+	msg.Sender.Nickname = user.Nickname
+	msg.Sender.Avatar = user.Avatar
+	msg.Timestamp = time.Now().Unix()
+
+	err = req.Respond(context.Background(), msg.Receiver.Id, msg)
 	if err != nil {
 		log.Errorf("[IM]Respond message err: %v", err)
 	}

@@ -43,7 +43,7 @@ func (c *Conn) Send(msg []byte) error {
 	if err := c.checkState(); err != nil {
 		return err
 	}
-	return c.conn.WriteMessage(websocket.TextMessage, msg)
+	return c.conn.WriteMessage(websocket.BinaryMessage, msg)
 }
 
 func (c *Conn) Push(msg []byte) error {
@@ -138,7 +138,7 @@ func (c *Conn) writeLoop() {
 		case <-c.exitCh:
 			return
 		case msg := <-c.sendCh:
-			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+			if err := c.conn.WriteMessage(websocket.BinaryMessage, msg); err != nil {
 				log.Error("client write closed")
 				return
 			}

@@ -3,7 +3,7 @@ package group
 import (
 	"encoding/json"
 	"social/internal/node"
-	"social/internal/router"
+	"social/internal/route"
 	"social/pkg/log"
 	"social/protos/pb"
 )
@@ -17,15 +17,15 @@ func newCore(proxy *node.Proxy) *core {
 }
 
 func (c *core) Init() {
-	c.proxy.AddRouteHandler(router.Connect, c.connect)
-	c.proxy.AddRouteHandler(router.Disconnect, c.disconnect)
-	c.proxy.AddRouteHandler(router.GroupMessage, c.message)
+	c.proxy.AddRouteHandler(route.Connect, c.connect)
+	c.proxy.AddRouteHandler(route.Disconnect, c.disconnect)
+	c.proxy.AddRouteHandler(route.GroupMessage, c.message)
 	c.proxy.SetDefaultRouteHandler(c.Default)
 }
 
 func (c *core) Default(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
@@ -35,7 +35,7 @@ func (c *core) Default(req node.Request) {
 
 func (c *core) connect(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
@@ -45,7 +45,7 @@ func (c *core) connect(req node.Request) {
 
 func (c *core) disconnect(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
@@ -55,7 +55,7 @@ func (c *core) disconnect(req node.Request) {
 
 func (c *core) message(req node.Request) {
 	var msg = new(pb.MsgItem)
-	if err := json.Unmarshal(req.Buffer, &msg); err != nil {
+	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[Group]Unmarshal message err: %v", err)
 		return
 	}
