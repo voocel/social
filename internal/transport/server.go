@@ -3,6 +3,7 @@ package transport
 import (
 	"social/internal/event"
 	"social/internal/session"
+	"social/protos/pb"
 )
 
 type Server interface {
@@ -19,7 +20,7 @@ type Server interface {
 type GateProvider interface {
 	Session(target int64) (*session.Session, error)
 	// Push 发送消息（异步）
-	Push(target int64, buf []byte) error
+	Push(req *pb.PushReq) error
 	// Broadcast 推送广播消息（异步）
 	Broadcast(msg []byte) (n int64)
 }

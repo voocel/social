@@ -5,8 +5,17 @@ type Friend struct {
 	Uid         int64  `json:"uid"`
 	FriendId    int64  `json:"friend_id"`
 	Remark      string `json:"remark"`
-	Shield      uint8  `json:"shield"`
+	Shield      int8   `json:"shield"`
 	CreatedTime int64  `json:"created_time"`
+}
+
+type FriendResp struct {
+	Uid      int64  `json:"uid"`
+	FriendId int64  `json:"friend_id"`
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
+	Remark   string `json:"remark"`
+	Shield   int8   `json:"shield"`
 }
 
 type FriendApply struct {

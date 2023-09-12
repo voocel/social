@@ -50,7 +50,7 @@ func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.Unbin
 // Push gateway send message to user
 func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
-	err := gs.provider.Push(req.Target, req.GetMessage().GetBuffer())
+	err := gs.provider.Push(req)
 	if err != nil && errors.Is(err, code.ErrSessionNotFound) {
 		st := status.New(codes.ResourceExhausted, "session does not exist")
 		details, e := st.WithDetails(
