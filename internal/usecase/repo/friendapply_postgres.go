@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"social/ent"
-	entFriendApply "social/ent/friendapply"
+	"social/ent/friendapply"
 	"social/internal/entity"
 )
 
@@ -27,24 +27,32 @@ func (r FriendApplyRepo) AddFriendApplyRepo(ctx context.Context, req *entity.Fri
 }
 
 func (r FriendApplyRepo) GetFriendApplyRepo(ctx context.Context, uid int64) ([]*ent.FriendApply, error) {
-	found, err := r.ent.FriendApply.Query().Where(entFriendApply.ToID(uid)).All(ctx)
+	found, err := r.ent.FriendApply.Query().Where(friendapply.ToID(uid)).All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("FriendApplyRepo - GetFriendApplyRepo query fail: %w", err)
+		return nil, fmt.Errorf("GetFriendApplyRepo query fail: %w", err)
 	}
 	return found, nil
 }
 
-func (r FriendApplyRepo) AgreeFriendApplyRepo(ctx context.Context, fromID, toID int64) (*ent.FriendApply, error) {
-	found, err := r.ent.FriendApply.UpdateOne(&ent.FriendApply{
-		FromID: fromID,
-		ToID:   toID,
-	}).SetStatus(1).Save(ctx)
+func (r FriendApplyRepo) AgreeFriendApplyRepo(ctx context.Context, fromID, toID int64) (int, error) {
+	found, err := r.ent.FriendApply.Update().
+		Where(friendapply.FromID(fromID), friendapply.ToID(toID)).
+		SetStatus(1).
+		Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("FriendApplyRepo - AgreeFriendApplyRepo update fail: %w", err)
+		return 0, fmt.Errorf("AgreeFriendApplyRepo update fail: %w", err)
 	}
+
 	return found, nil
 }
 
-func (r FriendApplyRepo) RefuseFriendApplyRepo(ctx context.Context, applyId int64) error {
-	panic("implement me")
+func (r FriendApplyRepo) RefuseFriendApplyRepo(ctx context.Context, fromID, toID int64) (int, error) {
+	found, err := r.ent.FriendApply.Update().
+		Where(friendapply.FromID(fromID), friendapply.ToID(toID)).
+		SetStatus(2).
+		Save(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("AgreeFriendApplyRepo update fail: %w", err)
+	}
+	return found, nil
 }

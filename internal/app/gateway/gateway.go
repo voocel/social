@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"social/internal/route"
 	"time"
 
 	"github.com/google/uuid"
@@ -127,12 +128,13 @@ func (g *Gateway) Stop() {
 
 func (g *Gateway) handleConnect(conn network.Conn) {
 	log.Debugf("[Gateway] user connect successful: %v", conn.RemoteAddr())
-	resp := new(entity.Response)
 	uid, err := g.parseUid(conn)
 	if err != nil {
-		resp.Code = 403
-		conn.Send(resp.ErrResp(err.Error()))
-		conn.Close()
+		b, _ := packet.Pack(&packet.Message{
+			Seq:   0,
+			Route: route.Auth,
+		})
+		conn.Send(b)
 		log.Errorf("[Gateway] user connect parse uid err: %v", err)
 		return
 	}
@@ -150,9 +152,16 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 		log.Errorf("unpack data to struct failed: %v", err)
 		return
 	}
-	log.Debugf("[Gateway] receive message route: %v, cid: %v, uid: %v,data: %v", msg.Route, conn.Cid(), conn.Uid(), string(msg.Buffer))
+	log.Debugf("[Gateway] receive message route: %v(%v), cid: %v, uid: %v,data: %v",
+		route.RouteMap[msg.Route], msg.Route, conn.Cid(), conn.Uid(), string(msg.Buffer))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	switch msg.Route {
+	case route.Heartbeat:
+		g.heartbeat(conn)
+		return
+	}
 
 	err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Route, msg.Buffer)
 	if err != nil {
@@ -164,6 +173,15 @@ func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
 	log.Debugf("[Gateway] user connection disconnected: %v, err: %v", conn.RemoteAddr(), err)
 	g.sessionGroup.RemoveByUid(conn.Uid())
 	g.sessionGroup.RemoveByCid(conn.Cid())
+}
+
+// send heartbeat
+func (g *Gateway) heartbeat(conn network.Conn) {
+	b, _ := packet.Pack(&packet.Message{
+		Seq:   0,
+		Route: route.Heartbeat,
+	})
+	conn.Send(b)
 }
 
 // 上线后处理离线消息
