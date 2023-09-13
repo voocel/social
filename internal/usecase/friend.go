@@ -26,3 +26,7 @@ func (f *FriendUseCase) GetFriends(ctx context.Context, uid int64) ([]*entity.Fr
 func (f *FriendUseCase) AddFriend(ctx context.Context, req *entity.Friend) (*ent.Friend, error) {
 	return f.repo.AddFriendRepo(ctx, req)
 }
+
+func (f *FriendUseCase) DeleteFriendRepo(ctx context.Context, uid, friendId int64) error {
+	return f.repo.DeleteFriendRepo(ctx, uid, friendId)
+}

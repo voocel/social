@@ -70,8 +70,31 @@ func (r *FriendRepo) AddFriendRepo(ctx context.Context, info *entity.Friend) (*e
 		if e := tx.Rollback(); e != nil {
 			err = fmt.Errorf("%v: %v", err, e)
 		}
-		return nil, fmt.Errorf("AddFriendRepo create2 fail: %w", err)
+		return nil, fmt.Errorf("AddFriendRepo delete2 fail: %w", err)
 	}
 
 	return create, tx.Commit()
+}
+
+func (r *FriendRepo) DeleteFriendRepo(ctx context.Context, uid, friendId int64) error {
+	tx, err := r.ent.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("DeleteFriendRepo start transaction fail: %w", err)
+	}
+	_, err = tx.Friend.Delete().Where(entFriend.UID(uid), entFriend.FriendID(friendId)).Exec(ctx)
+	if err != nil {
+		if e := tx.Rollback(); e != nil {
+			err = fmt.Errorf("%v: %v", err, e)
+		}
+		return fmt.Errorf("DeleteFriendRepo delete fail: %w", err)
+	}
+
+	_, err = tx.Friend.Delete().Where(entFriend.UID(friendId), entFriend.FriendID(uid)).Exec(ctx)
+	if err != nil {
+		if e := tx.Rollback(); e != nil {
+			err = fmt.Errorf("%v: %v", err, e)
+		}
+		return fmt.Errorf("DeleteFriendRepo delete2 fail: %w", err)
+	}
+	return tx.Commit()
 }
