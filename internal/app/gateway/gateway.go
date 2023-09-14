@@ -3,7 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"social/internal/route"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +11,7 @@ import (
 
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
+	"social/internal/route"
 	"social/internal/session"
 	"social/internal/transport"
 	"social/pkg/discovery"
@@ -23,6 +24,7 @@ import (
 
 type Gateway struct {
 	opts          *options
+	mu            sync.Mutex
 	proxy         *proxy
 	instance      *discovery.Node
 	srv           transport.Server
@@ -43,6 +45,7 @@ func NewGateway(opts ...OptionFunc) *Gateway {
 	}
 	g := &Gateway{
 		opts:          o,
+		mu:            sync.Mutex{},
 		sessionGroup:  session.NewSessionGroup(),
 		done:          make(chan struct{}),
 		protocol:      message.NewDefaultProtocol(),
@@ -139,6 +142,8 @@ func (g *Gateway) handleConnect(conn network.Conn) {
 		return
 	}
 
+	g.mu.Lock()
+	defer g.mu.Unlock()
 	s := session.NewSession(conn)
 	g.sessionGroup.UidSession[uid] = s
 	g.sessionGroup.CidSession[conn.Cid()] = s

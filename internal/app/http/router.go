@@ -14,16 +14,13 @@ func getRouters(u *usecase.UserUseCase, f *usecase.FriendUseCase, fa *usecase.Fr
 	userHandler := handler.NewUserHandler(u)
 	ur := newUserRouter(userHandler)
 
-	friendHandler := handler.NewFriendHandler(f)
+	friendHandler := handler.NewFriendHandler(f, fa)
 	fr := newFriendRouter(friendHandler)
-
-	friendApplyHandler := handler.NewFriendApplyHandle(fa)
-	far := newFriendApplyRouter(friendApplyHandler)
 
 	groupHandler := handler.NewGroupHandler(g)
 	gr := newGroupRouter(groupHandler)
 
-	routers = append(routers, ur, fr, far, gr)
+	routers = append(routers, ur, fr, gr)
 	return
 }
 
@@ -42,6 +39,7 @@ func (r *userRouter) Load(g *gin.Engine) {
 		ur.POST("/login", r.h.Login)
 		ur.POST("/register", r.h.Register)
 		ur.GET("/info", r.h.Info)
+		ur.GET("/getEmoji", r.h.GetEmoji)
 	}
 }
 
@@ -57,30 +55,11 @@ func newFriendRouter(h *handler.FriendHandler) *friendRouter {
 func (r *friendRouter) Load(g *gin.Engine) {
 	fr := g.Group("/v1/friend")
 	{
-		fr.GET("/getFriends", r.h.GetFriends)
-		fr.POST("/addFriendApply")
-		fr.GET("/getFriendApply")
-		fr.GET("/agreeFriendApply")
-		fr.GET("/refuseFriendApply")
-	}
-}
-
-// ######################### Friend Router #########################
-type friendApplyRouter struct {
-	h *handler.FriendApplyHandler
-}
-
-func newFriendApplyRouter(h *handler.FriendApplyHandler) *friendApplyRouter {
-	return &friendApplyRouter{h: h}
-}
-
-func (r *friendApplyRouter) Load(g *gin.Engine) {
-	far := g.Group("/v1/friend_apply")
-	{
-		far.GET("/getFriendsApply", r.h.GetFriendApply)
-		far.POST("/addFriendApply", r.h.AddFriendApply)
-		far.GET("/agreeFriendApply", r.h.AgreeFriendApply)
-		far.GET("/refuseFriendApply")
+		fr.GET("/list", r.h.GetFriends)
+		fr.POST("/addApply", r.h.AddFriendApply)
+		fr.GET("/getApply", r.h.GetFriendApply)
+		fr.GET("/agreeApply", r.h.AgreeFriendApply)
+		fr.GET("/refuseApply", r.h.RefuseFriendApply)
 	}
 }
 
@@ -96,7 +75,7 @@ func newGroupRouter(h *handler.GroupHandler) *groupRouter {
 func (r *groupRouter) Load(g *gin.Engine) {
 	gr := g.Group("/v1/group")
 	{
-		gr.GET("/getGroups", r.h.GetGroups)
-		gr.POST("/createGroup")
+		gr.GET("/list", r.h.GetGroups)
+		gr.POST("/create")
 	}
 }
