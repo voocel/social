@@ -10,10 +10,15 @@ transport:
   discovery_node:
     - name: "im"
       routers:
+        - 1
+        - 2
+        - 3
         - 4
-#    - name: "group"
-#      routers:
-#        - 5
+        - 5
+        - 7
+    - name: "group"
+      routers:
+        - 6
   grpc:
     service_name: "gate-inter-rpc-server"
     addr: "127.0.0.1:7200"

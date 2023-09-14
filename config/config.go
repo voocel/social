@@ -23,6 +23,7 @@ type Config struct {
 	RPC       RPCConfig
 	Redis     RedisConfig
 	Mysql     MysqlConfig
+	Postgres  PostgresConfig
 }
 
 type Transport struct {
@@ -69,6 +70,15 @@ type MysqlConfig struct {
 	Password        string
 	MaximumPoolSize int `mapstructure:"maximum_pool_size"`
 	MaximumIdleSize int `mapstructure:"maximum_idle_size"`
+}
+
+type PostgresConfig struct {
+	Host     string
+	Port     int
+	Database string
+	Username string
+	Password string
+	Sslmode  string
 }
 
 type Discovery struct {
