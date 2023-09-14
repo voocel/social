@@ -25,3 +25,7 @@ func (f *FriendApplyUseCase) GetFriendApply(ctx context.Context, uid int64) ([]*
 func (f *FriendApplyUseCase) AgreeFriendApply(ctx context.Context, fromID, toID int64) (int, error) {
 	return f.repo.AgreeFriendApplyRepo(ctx, fromID, toID)
 }
+
+func (f *FriendApplyUseCase) RefuseFriendApply(ctx context.Context, fromID, toID int64) (int, error) {
+	return f.repo.RefuseFriendApplyRepo(ctx, fromID, toID)
+}

@@ -58,14 +58,6 @@ func (fac *FriendApplyCreate) SetCreatedAt(t time.Time) *FriendApplyCreate {
 	return fac
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (fac *FriendApplyCreate) SetNillableCreatedAt(t *time.Time) *FriendApplyCreate {
-	if t != nil {
-		fac.SetCreatedAt(*t)
-	}
-	return fac
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (fac *FriendApplyCreate) SetUpdatedAt(t time.Time) *FriendApplyCreate {
 	fac.mutation.SetUpdatedAt(t)
@@ -178,6 +170,9 @@ func (fac *FriendApplyCreate) check() error {
 	}
 	if _, ok := fac.mutation.Remark(); !ok {
 		return &ValidationError{Name: "remark", err: errors.New(`ent: missing required field "FriendApply.remark"`)}
+	}
+	if _, ok := fac.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "FriendApply.created_at"`)}
 	}
 	return nil
 }

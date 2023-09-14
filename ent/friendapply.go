@@ -25,7 +25,7 @@ type FriendApply struct {
 	// Status holds the value of the "status" field.
 	Status int8 `json:"status"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"-"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"-"`
 	// DeletedAt holds the value of the "deleted_at" field.

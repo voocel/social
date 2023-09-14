@@ -93,20 +93,6 @@ func (fau *FriendApplyUpdate) SetCreatedAt(t time.Time) *FriendApplyUpdate {
 	return fau
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (fau *FriendApplyUpdate) SetNillableCreatedAt(t *time.Time) *FriendApplyUpdate {
-	if t != nil {
-		fau.SetCreatedAt(*t)
-	}
-	return fau
-}
-
-// ClearCreatedAt clears the value of the "created_at" field.
-func (fau *FriendApplyUpdate) ClearCreatedAt() *FriendApplyUpdate {
-	fau.mutation.ClearCreatedAt()
-	return fau
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (fau *FriendApplyUpdate) SetUpdatedAt(t time.Time) *FriendApplyUpdate {
 	fau.mutation.SetUpdatedAt(t)
@@ -286,12 +272,6 @@ func (fau *FriendApplyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: friendapply.FieldCreatedAt,
 		})
 	}
-	if fau.mutation.CreatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: friendapply.FieldCreatedAt,
-		})
-	}
 	if value, ok := fau.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -399,20 +379,6 @@ func (fauo *FriendApplyUpdateOne) ClearStatus() *FriendApplyUpdateOne {
 // SetCreatedAt sets the "created_at" field.
 func (fauo *FriendApplyUpdateOne) SetCreatedAt(t time.Time) *FriendApplyUpdateOne {
 	fauo.mutation.SetCreatedAt(t)
-	return fauo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (fauo *FriendApplyUpdateOne) SetNillableCreatedAt(t *time.Time) *FriendApplyUpdateOne {
-	if t != nil {
-		fauo.SetCreatedAt(*t)
-	}
-	return fauo
-}
-
-// ClearCreatedAt clears the value of the "created_at" field.
-func (fauo *FriendApplyUpdateOne) ClearCreatedAt() *FriendApplyUpdateOne {
-	fauo.mutation.ClearCreatedAt()
 	return fauo
 }
 
@@ -616,12 +582,6 @@ func (fauo *FriendApplyUpdateOne) sqlSave(ctx context.Context) (_node *FriendApp
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: friendapply.FieldCreatedAt,
-		})
-	}
-	if fauo.mutation.CreatedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
 			Column: friendapply.FieldCreatedAt,
 		})
 	}

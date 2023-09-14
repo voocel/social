@@ -18,7 +18,7 @@ func (FriendApply) Fields() []ent.Field {
 		field.Int64("to_id"),
 		field.String("remark"),
 		field.Int8("status").Optional().StructTag(`json:"status"`),
-		field.Time("created_at").Optional().StructTag(`json:"-"`),
+		field.Time("created_at"),
 		field.Time("updated_at").Optional().StructTag(`json:"-"`),
 		field.Time("deleted_at").Optional().Nillable().StructTag(`json:"-"`),
 	}

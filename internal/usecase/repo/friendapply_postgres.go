@@ -27,7 +27,7 @@ func (r FriendApplyRepo) AddFriendApplyRepo(ctx context.Context, req *entity.Fri
 }
 
 func (r FriendApplyRepo) GetFriendApplyRepo(ctx context.Context, uid int64) ([]*ent.FriendApply, error) {
-	found, err := r.ent.FriendApply.Query().Where(friendapply.ToID(uid)).All(ctx)
+	found, err := r.ent.FriendApply.Query().Where(friendapply.ToID(uid)).Order(ent.Desc("id")).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("GetFriendApplyRepo query fail: %w", err)
 	}
