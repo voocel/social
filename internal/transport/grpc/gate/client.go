@@ -96,5 +96,12 @@ func (c *client) Push(ctx context.Context, target int64, message *transport.Mess
 }
 
 func (c *client) Broadcast(ctx context.Context, message *transport.Message) (total int64, err error) {
-	panic("implement me")
+	reply, err := c.client.Broadcast(ctx, &pb.BroadcastReq{
+		Message: &pb.Message{
+			Seq:    message.Seq,
+			Route:  message.Route,
+			Buffer: message.Buffer,
+		},
+	})
+	return reply.Total, err
 }

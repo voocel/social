@@ -22,7 +22,7 @@ type GateProvider interface {
 	// Push 发送消息（异步）
 	Push(req *pb.PushReq) error
 	// Broadcast 推送广播消息（异步）
-	Broadcast(msg []byte) (n int64)
+	Broadcast(req *pb.Message) (n int64)
 }
 
 type NodeProvider interface {

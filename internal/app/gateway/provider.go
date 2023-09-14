@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
-	"social/internal/route"
 	"social/internal/session"
 	"social/protos/pb"
 )
@@ -31,14 +30,20 @@ func (p provider) Push(req *pb.PushReq) error {
 	}
 
 	data := &packet.Message{
-		Seq:    0,
-		Route:  route.Message,
+		Seq:    req.Message.Seq,
+		Route:  req.Message.Route,
 		Buffer: req.Message.GetBuffer(),
 	}
 	b, _ := packet.Pack(data)
 	return s.Push(b)
 }
 
-func (p provider) Broadcast(msg []byte) (n int64) {
-	return p.gate.sessionGroup.Broadcast(msg)
+func (p provider) Broadcast(req *pb.Message) (n int64) {
+	data := &packet.Message{
+		Seq:    req.Seq,
+		Route:  req.Route,
+		Buffer: req.GetBuffer(),
+	}
+	b, _ := packet.Pack(data)
+	return p.gate.sessionGroup.Broadcast(b)
 }

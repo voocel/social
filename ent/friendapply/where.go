@@ -570,20 +570,6 @@ func CreatedAtLTE(v time.Time) predicate.FriendApply {
 	})
 }
 
-// CreatedAtIsNil applies the IsNil predicate on the "created_at" field.
-func CreatedAtIsNil() predicate.FriendApply {
-	return predicate.FriendApply(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldCreatedAt)))
-	})
-}
-
-// CreatedAtNotNil applies the NotNil predicate on the "created_at" field.
-func CreatedAtNotNil() predicate.FriendApply {
-	return predicate.FriendApply(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldCreatedAt)))
-	})
-}
-
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
 func UpdatedAtEQ(v time.Time) predicate.FriendApply {
 	return predicate.FriendApply(func(s *sql.Selector) {

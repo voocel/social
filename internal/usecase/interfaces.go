@@ -22,6 +22,7 @@ type (
 	FriendRepo interface {
 		GetFriendsRepo(ctx context.Context, uid int64) ([]*entity.FriendResp, error)
 		AddFriendRepo(ctx context.Context, friend *entity.Friend) (*ent.Friend, error)
+		DeleteFriendRepo(ctx context.Context, uid, friendId int64) error
 	}
 
 	FriendApplyRepo interface {

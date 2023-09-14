@@ -72,3 +72,22 @@ ok:
 	log.Infof("Respond message to gateway success: %v", msg)
 	return nil
 }
+
+func (p *Proxy) Broadcast(ctx context.Context, msg *pb.MsgItem) error {
+	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
+	if err != nil {
+		return err
+	}
+	b, _ := json.Marshal(msg)
+	total, err := c.Broadcast(ctx, &transport.Message{
+		Seq:    0,
+		Route:  0,
+		Buffer: b,
+	})
+	if err != nil {
+		log.Errorf("Broadcast err: %v", err)
+		return err
+	}
+	log.Infof("Respond broadcast message to gateway success: %v", total)
+	return nil
+}

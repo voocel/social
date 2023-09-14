@@ -1210,22 +1210,9 @@ func (m *FriendApplyMutation) OldCreatedAt(ctx context.Context) (v time.Time, er
 	return oldValue.CreatedAt, nil
 }
 
-// ClearCreatedAt clears the value of the "created_at" field.
-func (m *FriendApplyMutation) ClearCreatedAt() {
-	m.created_at = nil
-	m.clearedFields[friendapply.FieldCreatedAt] = struct{}{}
-}
-
-// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
-func (m *FriendApplyMutation) CreatedAtCleared() bool {
-	_, ok := m.clearedFields[friendapply.FieldCreatedAt]
-	return ok
-}
-
 // ResetCreatedAt resets all changes to the "created_at" field.
 func (m *FriendApplyMutation) ResetCreatedAt() {
 	m.created_at = nil
-	delete(m.clearedFields, friendapply.FieldCreatedAt)
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1542,9 +1529,6 @@ func (m *FriendApplyMutation) ClearedFields() []string {
 	if m.FieldCleared(friendapply.FieldStatus) {
 		fields = append(fields, friendapply.FieldStatus)
 	}
-	if m.FieldCleared(friendapply.FieldCreatedAt) {
-		fields = append(fields, friendapply.FieldCreatedAt)
-	}
 	if m.FieldCleared(friendapply.FieldUpdatedAt) {
 		fields = append(fields, friendapply.FieldUpdatedAt)
 	}
@@ -1567,9 +1551,6 @@ func (m *FriendApplyMutation) ClearField(name string) error {
 	switch name {
 	case friendapply.FieldStatus:
 		m.ClearStatus()
-		return nil
-	case friendapply.FieldCreatedAt:
-		m.ClearCreatedAt()
 		return nil
 	case friendapply.FieldUpdatedAt:
 		m.ClearUpdatedAt()

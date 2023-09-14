@@ -81,6 +81,6 @@ func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPRe
 }
 
 func (gs *gateService) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.BroadcastReply, error) {
-	n := gs.provider.Broadcast(req.Message.Buffer)
+	n := gs.provider.Broadcast(req.Message)
 	return &pb.BroadcastReply{Total: n}, nil
 }
