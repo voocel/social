@@ -1,5 +1,7 @@
 package entity
 
+import "time"
+
 type Friend struct {
 	Id          int64  `json:"id"`
 	Uid         int64  `json:"uid"`
@@ -19,12 +21,22 @@ type FriendResp struct {
 }
 
 type FriendApply struct {
-	Id          int64  `json:"id"`
-	FromId      int64  `json:"from_id"`
-	ToId        int64  `json:"to_id"`
-	Remark      string `json:"remark"`
-	Status      uint8  `json:"status"`
-	CreatedTime int64  `json:"created_time"`
+	Id     int64  `json:"id"`
+	FromId int64  `json:"from_id"`
+	ToId   int64  `json:"to_id"`
+	Remark string `json:"remark"`
+	Status uint8  `json:"status"`
+}
+
+type FriendApplyResp struct {
+	Id           int64     `json:"id"`
+	FromId       int64     `json:"from_id"`
+	FromNickname string    `json:"from_nickname"`
+	FromAvatar   string    `json:"from_avatar"`
+	ToId         int64     `json:"to_id"`
+	Remark       string    `json:"remark"`
+	Status       int8      `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type FriendApplyReq struct {

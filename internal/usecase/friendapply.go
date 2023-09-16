@@ -18,7 +18,7 @@ func (f *FriendApplyUseCase) AddFriendApply(ctx context.Context, req *entity.Fri
 	return f.repo.AddFriendApplyRepo(ctx, req)
 }
 
-func (f *FriendApplyUseCase) GetFriendApply(ctx context.Context, uid int64) ([]*ent.FriendApply, error) {
+func (f *FriendApplyUseCase) GetFriendApply(ctx context.Context, uid int64) ([]*entity.FriendApplyResp, error) {
 	return f.repo.GetFriendApplyRepo(ctx, uid)
 }
 

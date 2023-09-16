@@ -6,6 +6,7 @@ import (
 	"social/ent"
 	"social/ent/friendapply"
 	"social/internal/entity"
+	"social/pkg/log"
 )
 
 type FriendApplyRepo struct {
@@ -26,12 +27,30 @@ func (r FriendApplyRepo) AddFriendApplyRepo(ctx context.Context, req *entity.Fri
 	return create, err
 }
 
-func (r FriendApplyRepo) GetFriendApplyRepo(ctx context.Context, uid int64) ([]*ent.FriendApply, error) {
+func (r FriendApplyRepo) GetFriendApplyRepo(ctx context.Context, uid int64) ([]*entity.FriendApplyResp, error) {
 	found, err := r.ent.FriendApply.Query().Where(friendapply.ToID(uid)).Order(ent.Desc("id")).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("GetFriendApplyRepo query fail: %w", err)
 	}
-	return found, nil
+	res := make([]*entity.FriendApplyResp, 0)
+	for _, apply := range found {
+		user, err := r.ent.User.Get(ctx, apply.FromID)
+		if err != nil {
+			log.Errorf("GetFriendsRepo user get query fail: %w", err)
+			continue
+		}
+		item := &entity.FriendApplyResp{
+			FromId:       apply.FromID,
+			FromNickname: user.Nickname,
+			FromAvatar:   user.Avatar,
+			ToId:         apply.ToID,
+			Remark:       apply.Remark,
+			Status:       apply.Status,
+			CreatedAt:    apply.CreatedAt,
+		}
+		res = append(res, item)
+	}
+	return res, nil
 }
 
 func (r FriendApplyRepo) AgreeFriendApplyRepo(ctx context.Context, fromID, toID int64) (int, error) {

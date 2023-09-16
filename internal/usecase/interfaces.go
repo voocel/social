@@ -27,7 +27,7 @@ type (
 
 	FriendApplyRepo interface {
 		AddFriendApplyRepo(ctx context.Context, req *entity.FriendApply) (*ent.FriendApply, error)
-		GetFriendApplyRepo(ctx context.Context, uid int64) ([]*ent.FriendApply, error)
+		GetFriendApplyRepo(ctx context.Context, uid int64) ([]*entity.FriendApplyResp, error)
 		AgreeFriendApplyRepo(ctx context.Context, fromID, toID int64) (int, error)
 		RefuseFriendApplyRepo(ctx context.Context, fromID, toID int64) (int, error)
 	}
