@@ -67,3 +67,11 @@ func (r *UserRepo) AddUserRepo(ctx context.Context, user *entity.User) (*ent.Use
 		Save(ctx)
 	return create, err
 }
+
+func (r *UserRepo) UpdateAvatarUserRepo(ctx context.Context, uid int64, avatar string) (int, error) {
+	n, err := r.ent.User.Update().
+		Where(entUser.ID(uid)).
+		SetAvatar(avatar).
+		Save(ctx)
+	return n, err
+}

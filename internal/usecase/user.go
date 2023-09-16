@@ -79,3 +79,11 @@ func (u *UserUseCase) GetUserByName(ctx context.Context, name string) (*ent.User
 
 	return v.(*ent.User), err
 }
+
+func (u *UserUseCase) UpdateFieldUserRepo(ctx context.Context, uid int64, avatar string) (*ent.User, error) {
+	_, err := u.repo.UpdateAvatarUserRepo(ctx, uid, avatar)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

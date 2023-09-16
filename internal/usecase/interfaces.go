@@ -17,6 +17,7 @@ type (
 		GetUserByNameExistRepo(ctx context.Context, name string) (bool, error)
 		GetUsersRepo(ctx context.Context) ([]*ent.User, int, error)
 		AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error)
+		UpdateAvatarUserRepo(ctx context.Context, uid int64, avatar string) (int, error)
 	}
 
 	FriendRepo interface {

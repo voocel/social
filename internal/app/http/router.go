@@ -40,6 +40,7 @@ func (r *userRouter) Load(g *gin.Engine) {
 		ur.POST("/register", r.h.Register)
 		ur.GET("/info", r.h.Info)
 		ur.GET("/getEmoji", r.h.GetEmoji)
+		ur.GET("/updateAvatar", r.h.UpdateAvatar)
 	}
 }
 
