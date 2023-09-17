@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"social/pkg/log"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -121,6 +124,40 @@ func (h *UserHandler) RetrievePassword(c *gin.Context) {
 
 func (h *UserHandler) GetEmoji(c *gin.Context) {
 
+}
+
+func (h *UserHandler) UploadFile(c *gin.Context) {
+	resp := new(ApiResponse)
+	user, exists := c.Get("jwt-user")
+	_, ok := user.(*ent.User)
+	if !exists || !ok {
+		resp.Code = 1
+		resp.Message = "token invalid"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		resp.Code = 1
+		resp.Message = "params invalid"
+		c.JSON(http.StatusOK, resp)
+		log.Error(err)
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	fileNameInt := time.Now().Unix()
+	fileNameStr := strconv.FormatInt(fileNameInt, 10)
+	fileName := fileNameStr + ext
+	filePath := filepath.Join("static/images", "/", fileName)
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		resp.Code = 1
+		resp.Message = "upload file fail"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp.Message = "ok"
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *UserHandler) UpdateAvatar(c *gin.Context) {
