@@ -196,6 +196,7 @@ func (g *Gateway) offlineMessage(uid int64, sess *session.Session) {
 		case <-g.done:
 			return
 		case msg := <-entity.MsgCache.Get(uid):
+			log.Infof("send offline message to: %v", uid)
 			resp := new(entity.Response)
 			if err := sess.Push(resp.Wrap(msg)); err != nil {
 				log.Errorf("[Gateway] push offline message to user err: %v", err)

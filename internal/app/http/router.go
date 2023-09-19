@@ -41,6 +41,7 @@ func (r *userRouter) Load(g *gin.Engine) {
 		ur.GET("/info", r.h.Info)
 		ur.GET("/getEmoji", r.h.GetEmoji)
 		ur.GET("/updateAvatar", r.h.UpdateAvatar)
+		ur.POST("/uploadFile", r.h.UploadFile)
 	}
 }
 
