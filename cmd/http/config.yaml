@@ -5,7 +5,7 @@ atomic_level_addr: :4241
 
 app:
   prefix_url: http://127.0.0.1:8100
-  avatar_save_path: static/uploads/avatar/
+  avatar_save_path: source/uploads/avatar/
   runtime_root_path: runtime/
   image_allow_exts: .jpg,.jpeg,.png
   image_max_size: 5
