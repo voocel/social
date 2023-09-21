@@ -24,6 +24,7 @@ func (w bodyWriter) WriteString(s string) (int, error) {
 }
 
 func Logger(c *gin.Context) {
+	var body string
 	now := time.Now()
 	path := c.Request.URL.Path
 	requestID := c.GetString("request_id")
@@ -37,12 +38,17 @@ func Logger(c *gin.Context) {
 	buf.Grow(1024)
 	io.Copy(buf, c.Request.Body)
 	c.Request.Body = io.NopCloser(buf)
+	body = buf.String()
+	if buf.Len() > 1024 {
+		body = "too large body"
+	}
+
 	log.Infow("request",
 		log.Pair("request_id", requestID),
 		log.Pair("host", ip),
 		log.Pair("path", path),
 		log.Pair("method", method),
-		log.Pair("body", buf.String()),
+		log.Pair("body", body),
 	)
 
 	bw := &bodyWriter{
@@ -53,7 +59,7 @@ func Logger(c *gin.Context) {
 
 	c.Next()
 
-	body := bw.body.String()
+	body = bw.body.String()
 	latency := time.Since(now)
 	log.Infow("response",
 		log.Pair("request_id", requestID),
