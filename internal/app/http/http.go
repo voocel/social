@@ -57,7 +57,10 @@ func (s *Server) Run() {
 	g.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "404 not found!")
 	})
+
 	g.GET("/ping", handler.Ping())
+	g.StaticFS("/static", gin.Dir("static", false))
+	g.StaticFile("/favicon.ico", "./static/favicon.ico")
 	g.Group("/swagger").GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	s.routerLoad(g, getRouters(userUseCase, friendUseCase, friendApplyUseCase, groupUseCase)...)
 

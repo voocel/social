@@ -37,6 +37,16 @@ const (
 	socialContextKey = "jwt-user"
 )
 
+var whiteListRouter = []string{
+	"/api/auth",
+	"/v1/user/register",
+	"/v1/user/login",
+	"/swagger",
+	"/static",
+	"/ping",
+	"/favicon",
+}
+
 type Claims struct {
 	User *ent.User `json:"user"`
 	jwt.RegisteredClaims
@@ -88,8 +98,7 @@ func generateToken(user *ent.User, aud string, expirationTime time.Time) (string
 // JWTMiddleware 验证 access token
 func JWTMiddleware(userRepo *usecase.UserUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 跳过 auth, register
-		if HasPrefixes(c.Request.RequestURI, "/api/auth", "/v1/user/register", "/v1/user/login", "/swagger") {
+		if HasPrefixes(c.Request.RequestURI, whiteListRouter) {
 			c.Next()
 			return
 		}
@@ -308,7 +317,7 @@ func RandomString(n int) (string, error) {
 	return sb.String(), nil
 }
 
-func HasPrefixes(src string, prefixes ...string) bool {
+func HasPrefixes(src string, prefixes []string) bool {
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(src, prefix) {
 			return true
