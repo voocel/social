@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"social/pkg/log"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"social/config"
 	"social/ent"
 	"social/internal/app/http/middleware"
 	"social/internal/entity"
 	"social/internal/usecase"
 	"social/pkg/files"
+	"social/pkg/log"
 )
 
 type UserHandler struct {
@@ -146,17 +146,20 @@ func (h *UserHandler) UploadFile(c *gin.Context) {
 		return
 	}
 	ext := filepath.Ext(file.Filename)
-	fileNameInt := time.Now().Unix()
-	fileNameStr := strconv.FormatInt(fileNameInt, 10)
-	fileName := fileNameStr + ext
-	filePath := filepath.Join("static/images", "/", fileName)
-	if err := c.SaveUploadedFile(file, filePath); err != nil {
+	filename := files.GenFilename(ext)
+	folderPath := filepath.Join(config.Conf.App.StaticRootPath, "images", filename)
+	if err := c.SaveUploadedFile(file, folderPath); err != nil {
 		resp.Code = 1
 		resp.Message = "upload file fail"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
+
+	data := map[string]interface{}{
+		"url": config.Conf.App.Domain + "/" + folderPath,
+	}
 	resp.Message = "ok"
+	resp.Data = data
 	c.JSON(http.StatusOK, resp)
 }
 

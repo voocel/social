@@ -15,6 +15,7 @@ type Config struct {
 	LogPath         string `mapstructure:"log_path"`
 	AtomicLevelAddr string `mapstructure:"atomic_level_addr"`
 
+	App       AppConfig
 	Transport Transport
 	Http      HttpConfig
 	IM        IMConfig
@@ -33,6 +34,11 @@ type Transport struct {
 		Addr        string
 		ServiceName string `mapstructure:"service_name"`
 	}
+}
+
+type AppConfig struct {
+	Domain         string
+	StaticRootPath string `mapstructure:"static_root_path"`
 }
 
 type HttpConfig struct {

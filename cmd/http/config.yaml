@@ -4,10 +4,10 @@ log_path: log
 atomic_level_addr: :4241
 
 app:
-  prefix_url: http://127.0.0.1:8100
-  avatar_save_path: source/uploads/avatar/
+  domain: http://127.0.0.1:8100
+  static_root_path: static
   runtime_root_path: runtime/
-  image_allow_exts: .jpg,.jpeg,.png
+  image_allow_ext: .jpg,.jpeg,.png
   image_max_size: 5
   heartbeat: 1000
   jwt_time: 7200
