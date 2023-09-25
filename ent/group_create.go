@@ -32,9 +32,85 @@ func (gc *GroupCreate) SetOwner(i int64) *GroupCreate {
 	return gc
 }
 
+// SetCreatedUID sets the "created_uid" field.
+func (gc *GroupCreate) SetCreatedUID(i int64) *GroupCreate {
+	gc.mutation.SetCreatedUID(i)
+	return gc
+}
+
+// SetMode sets the "mode" field.
+func (gc *GroupCreate) SetMode(i int8) *GroupCreate {
+	gc.mutation.SetMode(i)
+	return gc
+}
+
+// SetNillableMode sets the "mode" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableMode(i *int8) *GroupCreate {
+	if i != nil {
+		gc.SetMode(*i)
+	}
+	return gc
+}
+
+// SetType sets the "type" field.
+func (gc *GroupCreate) SetType(i int8) *GroupCreate {
+	gc.mutation.SetType(i)
+	return gc
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableType(i *int8) *GroupCreate {
+	if i != nil {
+		gc.SetType(*i)
+	}
+	return gc
+}
+
+// SetStatus sets the "status" field.
+func (gc *GroupCreate) SetStatus(i int8) *GroupCreate {
+	gc.mutation.SetStatus(i)
+	return gc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableStatus(i *int8) *GroupCreate {
+	if i != nil {
+		gc.SetStatus(*i)
+	}
+	return gc
+}
+
+// SetInviteMode sets the "invite_mode" field.
+func (gc *GroupCreate) SetInviteMode(i int8) *GroupCreate {
+	gc.mutation.SetInviteMode(i)
+	return gc
+}
+
+// SetNillableInviteMode sets the "invite_mode" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableInviteMode(i *int8) *GroupCreate {
+	if i != nil {
+		gc.SetInviteMode(*i)
+	}
+	return gc
+}
+
 // SetNotice sets the "notice" field.
 func (gc *GroupCreate) SetNotice(s string) *GroupCreate {
 	gc.mutation.SetNotice(s)
+	return gc
+}
+
+// SetIntroduction sets the "introduction" field.
+func (gc *GroupCreate) SetIntroduction(s string) *GroupCreate {
+	gc.mutation.SetIntroduction(s)
+	return gc
+}
+
+// SetNillableIntroduction sets the "introduction" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableIntroduction(s *string) *GroupCreate {
+	if s != nil {
+		gc.SetIntroduction(*s)
+	}
 	return gc
 }
 
@@ -97,6 +173,7 @@ func (gc *GroupCreate) Save(ctx context.Context) (*Group, error) {
 		err  error
 		node *Group
 	)
+	gc.defaults()
 	if len(gc.hooks) == 0 {
 		if err = gc.check(); err != nil {
 			return nil, err
@@ -154,6 +231,30 @@ func (gc *GroupCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (gc *GroupCreate) defaults() {
+	if _, ok := gc.mutation.Mode(); !ok {
+		v := group.DefaultMode
+		gc.mutation.SetMode(v)
+	}
+	if _, ok := gc.mutation.GetType(); !ok {
+		v := group.DefaultType
+		gc.mutation.SetType(v)
+	}
+	if _, ok := gc.mutation.Status(); !ok {
+		v := group.DefaultStatus
+		gc.mutation.SetStatus(v)
+	}
+	if _, ok := gc.mutation.InviteMode(); !ok {
+		v := group.DefaultInviteMode
+		gc.mutation.SetInviteMode(v)
+	}
+	if _, ok := gc.mutation.Introduction(); !ok {
+		v := group.DefaultIntroduction
+		gc.mutation.SetIntroduction(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (gc *GroupCreate) check() error {
 	if _, ok := gc.mutation.Name(); !ok {
@@ -162,8 +263,26 @@ func (gc *GroupCreate) check() error {
 	if _, ok := gc.mutation.Owner(); !ok {
 		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required field "Group.owner"`)}
 	}
+	if _, ok := gc.mutation.CreatedUID(); !ok {
+		return &ValidationError{Name: "created_uid", err: errors.New(`ent: missing required field "Group.created_uid"`)}
+	}
+	if _, ok := gc.mutation.Mode(); !ok {
+		return &ValidationError{Name: "mode", err: errors.New(`ent: missing required field "Group.mode"`)}
+	}
+	if _, ok := gc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Group.type"`)}
+	}
+	if _, ok := gc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Group.status"`)}
+	}
+	if _, ok := gc.mutation.InviteMode(); !ok {
+		return &ValidationError{Name: "invite_mode", err: errors.New(`ent: missing required field "Group.invite_mode"`)}
+	}
 	if _, ok := gc.mutation.Notice(); !ok {
 		return &ValidationError{Name: "notice", err: errors.New(`ent: missing required field "Group.notice"`)}
+	}
+	if _, ok := gc.mutation.Introduction(); !ok {
+		return &ValidationError{Name: "introduction", err: errors.New(`ent: missing required field "Group.introduction"`)}
 	}
 	return nil
 }
@@ -214,6 +333,46 @@ func (gc *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		})
 		_node.Owner = value
 	}
+	if value, ok := gc.mutation.CreatedUID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: group.FieldCreatedUID,
+		})
+		_node.CreatedUID = value
+	}
+	if value, ok := gc.mutation.Mode(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldMode,
+		})
+		_node.Mode = value
+	}
+	if value, ok := gc.mutation.GetType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldType,
+		})
+		_node.Type = value
+	}
+	if value, ok := gc.mutation.Status(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldStatus,
+		})
+		_node.Status = value
+	}
+	if value, ok := gc.mutation.InviteMode(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldInviteMode,
+		})
+		_node.InviteMode = value
+	}
 	if value, ok := gc.mutation.Notice(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -221,6 +380,14 @@ func (gc *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Column: group.FieldNotice,
 		})
 		_node.Notice = value
+	}
+	if value, ok := gc.mutation.Introduction(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldIntroduction,
+		})
+		_node.Introduction = value
 	}
 	if value, ok := gc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -263,6 +430,7 @@ func (gcb *GroupCreateBulk) Save(ctx context.Context) ([]*Group, error) {
 	for i := range gcb.builders {
 		func(i int, root context.Context) {
 			builder := gcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GroupMutation)
 				if !ok {

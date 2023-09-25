@@ -12,6 +12,7 @@ import (
 	"social/ent/friend"
 	"social/ent/friendapply"
 	"social/ent/group"
+	"social/ent/groupmember"
 	"social/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -29,6 +30,8 @@ type Client struct {
 	FriendApply *FriendApplyClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// GroupMember is the client for interacting with the GroupMember builders.
+	GroupMember *GroupMemberClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -47,6 +50,7 @@ func (c *Client) init() {
 	c.Friend = NewFriendClient(c.config)
 	c.FriendApply = NewFriendApplyClient(c.config)
 	c.Group = NewGroupClient(c.config)
+	c.GroupMember = NewGroupMemberClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -84,6 +88,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Friend:      NewFriendClient(cfg),
 		FriendApply: NewFriendApplyClient(cfg),
 		Group:       NewGroupClient(cfg),
+		GroupMember: NewGroupMemberClient(cfg),
 		User:        NewUserClient(cfg),
 	}, nil
 }
@@ -107,6 +112,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Friend:      NewFriendClient(cfg),
 		FriendApply: NewFriendApplyClient(cfg),
 		Group:       NewGroupClient(cfg),
+		GroupMember: NewGroupMemberClient(cfg),
 		User:        NewUserClient(cfg),
 	}, nil
 }
@@ -139,6 +145,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Friend.Use(hooks...)
 	c.FriendApply.Use(hooks...)
 	c.Group.Use(hooks...)
+	c.GroupMember.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -410,6 +417,96 @@ func (c *GroupClient) GetX(ctx context.Context, id int64) *Group {
 // Hooks returns the client hooks.
 func (c *GroupClient) Hooks() []Hook {
 	return c.hooks.Group
+}
+
+// GroupMemberClient is a client for the GroupMember schema.
+type GroupMemberClient struct {
+	config
+}
+
+// NewGroupMemberClient returns a client for the GroupMember from the given config.
+func NewGroupMemberClient(c config) *GroupMemberClient {
+	return &GroupMemberClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `groupmember.Hooks(f(g(h())))`.
+func (c *GroupMemberClient) Use(hooks ...Hook) {
+	c.hooks.GroupMember = append(c.hooks.GroupMember, hooks...)
+}
+
+// Create returns a create builder for GroupMember.
+func (c *GroupMemberClient) Create() *GroupMemberCreate {
+	mutation := newGroupMemberMutation(c.config, OpCreate)
+	return &GroupMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GroupMember entities.
+func (c *GroupMemberClient) CreateBulk(builders ...*GroupMemberCreate) *GroupMemberCreateBulk {
+	return &GroupMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GroupMember.
+func (c *GroupMemberClient) Update() *GroupMemberUpdate {
+	mutation := newGroupMemberMutation(c.config, OpUpdate)
+	return &GroupMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GroupMemberClient) UpdateOne(gm *GroupMember) *GroupMemberUpdateOne {
+	mutation := newGroupMemberMutation(c.config, OpUpdateOne, withGroupMember(gm))
+	return &GroupMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GroupMemberClient) UpdateOneID(id int64) *GroupMemberUpdateOne {
+	mutation := newGroupMemberMutation(c.config, OpUpdateOne, withGroupMemberID(id))
+	return &GroupMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GroupMember.
+func (c *GroupMemberClient) Delete() *GroupMemberDelete {
+	mutation := newGroupMemberMutation(c.config, OpDelete)
+	return &GroupMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GroupMemberClient) DeleteOne(gm *GroupMember) *GroupMemberDeleteOne {
+	return c.DeleteOneID(gm.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GroupMemberClient) DeleteOneID(id int64) *GroupMemberDeleteOne {
+	builder := c.Delete().Where(groupmember.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GroupMemberDeleteOne{builder}
+}
+
+// Query returns a query builder for GroupMember.
+func (c *GroupMemberClient) Query() *GroupMemberQuery {
+	return &GroupMemberQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a GroupMember entity by its id.
+func (c *GroupMemberClient) Get(ctx context.Context, id int64) (*GroupMember, error) {
+	return c.Query().Where(groupmember.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GroupMemberClient) GetX(ctx context.Context, id int64) *GroupMember {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GroupMemberClient) Hooks() []Hook {
+	return c.hooks.GroupMember
 }
 
 // UserClient is a client for the User schema.

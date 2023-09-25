@@ -4,6 +4,7 @@ package ent
 
 import (
 	"social/ent/friend"
+	"social/ent/group"
 	"social/ent/schema"
 )
 
@@ -17,4 +18,26 @@ func init() {
 	friendDescShield := friendFields[4].Descriptor()
 	// friend.DefaultShield holds the default value on creation for the shield field.
 	friend.DefaultShield = friendDescShield.Default.(int8)
+	groupFields := schema.Group{}.Fields()
+	_ = groupFields
+	// groupDescMode is the schema descriptor for mode field.
+	groupDescMode := groupFields[4].Descriptor()
+	// group.DefaultMode holds the default value on creation for the mode field.
+	group.DefaultMode = groupDescMode.Default.(int8)
+	// groupDescType is the schema descriptor for type field.
+	groupDescType := groupFields[5].Descriptor()
+	// group.DefaultType holds the default value on creation for the type field.
+	group.DefaultType = groupDescType.Default.(int8)
+	// groupDescStatus is the schema descriptor for status field.
+	groupDescStatus := groupFields[6].Descriptor()
+	// group.DefaultStatus holds the default value on creation for the status field.
+	group.DefaultStatus = groupDescStatus.Default.(int8)
+	// groupDescInviteMode is the schema descriptor for invite_mode field.
+	groupDescInviteMode := groupFields[7].Descriptor()
+	// group.DefaultInviteMode holds the default value on creation for the invite_mode field.
+	group.DefaultInviteMode = groupDescInviteMode.Default.(int8)
+	// groupDescIntroduction is the schema descriptor for introduction field.
+	groupDescIntroduction := groupFields[9].Descriptor()
+	// group.DefaultIntroduction holds the default value on creation for the introduction field.
+	group.DefaultIntroduction = groupDescIntroduction.Default.(string)
 }

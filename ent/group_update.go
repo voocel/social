@@ -47,9 +47,120 @@ func (gu *GroupUpdate) AddOwner(i int64) *GroupUpdate {
 	return gu
 }
 
+// SetCreatedUID sets the "created_uid" field.
+func (gu *GroupUpdate) SetCreatedUID(i int64) *GroupUpdate {
+	gu.mutation.ResetCreatedUID()
+	gu.mutation.SetCreatedUID(i)
+	return gu
+}
+
+// AddCreatedUID adds i to the "created_uid" field.
+func (gu *GroupUpdate) AddCreatedUID(i int64) *GroupUpdate {
+	gu.mutation.AddCreatedUID(i)
+	return gu
+}
+
+// SetMode sets the "mode" field.
+func (gu *GroupUpdate) SetMode(i int8) *GroupUpdate {
+	gu.mutation.ResetMode()
+	gu.mutation.SetMode(i)
+	return gu
+}
+
+// SetNillableMode sets the "mode" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableMode(i *int8) *GroupUpdate {
+	if i != nil {
+		gu.SetMode(*i)
+	}
+	return gu
+}
+
+// AddMode adds i to the "mode" field.
+func (gu *GroupUpdate) AddMode(i int8) *GroupUpdate {
+	gu.mutation.AddMode(i)
+	return gu
+}
+
+// SetType sets the "type" field.
+func (gu *GroupUpdate) SetType(i int8) *GroupUpdate {
+	gu.mutation.ResetType()
+	gu.mutation.SetType(i)
+	return gu
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableType(i *int8) *GroupUpdate {
+	if i != nil {
+		gu.SetType(*i)
+	}
+	return gu
+}
+
+// AddType adds i to the "type" field.
+func (gu *GroupUpdate) AddType(i int8) *GroupUpdate {
+	gu.mutation.AddType(i)
+	return gu
+}
+
+// SetStatus sets the "status" field.
+func (gu *GroupUpdate) SetStatus(i int8) *GroupUpdate {
+	gu.mutation.ResetStatus()
+	gu.mutation.SetStatus(i)
+	return gu
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableStatus(i *int8) *GroupUpdate {
+	if i != nil {
+		gu.SetStatus(*i)
+	}
+	return gu
+}
+
+// AddStatus adds i to the "status" field.
+func (gu *GroupUpdate) AddStatus(i int8) *GroupUpdate {
+	gu.mutation.AddStatus(i)
+	return gu
+}
+
+// SetInviteMode sets the "invite_mode" field.
+func (gu *GroupUpdate) SetInviteMode(i int8) *GroupUpdate {
+	gu.mutation.ResetInviteMode()
+	gu.mutation.SetInviteMode(i)
+	return gu
+}
+
+// SetNillableInviteMode sets the "invite_mode" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableInviteMode(i *int8) *GroupUpdate {
+	if i != nil {
+		gu.SetInviteMode(*i)
+	}
+	return gu
+}
+
+// AddInviteMode adds i to the "invite_mode" field.
+func (gu *GroupUpdate) AddInviteMode(i int8) *GroupUpdate {
+	gu.mutation.AddInviteMode(i)
+	return gu
+}
+
 // SetNotice sets the "notice" field.
 func (gu *GroupUpdate) SetNotice(s string) *GroupUpdate {
 	gu.mutation.SetNotice(s)
+	return gu
+}
+
+// SetIntroduction sets the "introduction" field.
+func (gu *GroupUpdate) SetIntroduction(s string) *GroupUpdate {
+	gu.mutation.SetIntroduction(s)
+	return gu
+}
+
+// SetNillableIntroduction sets the "introduction" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableIntroduction(s *string) *GroupUpdate {
+	if s != nil {
+		gu.SetIntroduction(*s)
+	}
 	return gu
 }
 
@@ -211,11 +322,88 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: group.FieldOwner,
 		})
 	}
+	if value, ok := gu.mutation.CreatedUID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: group.FieldCreatedUID,
+		})
+	}
+	if value, ok := gu.mutation.AddedCreatedUID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: group.FieldCreatedUID,
+		})
+	}
+	if value, ok := gu.mutation.Mode(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldMode,
+		})
+	}
+	if value, ok := gu.mutation.AddedMode(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldMode,
+		})
+	}
+	if value, ok := gu.mutation.GetType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldType,
+		})
+	}
+	if value, ok := gu.mutation.AddedType(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldType,
+		})
+	}
+	if value, ok := gu.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldStatus,
+		})
+	}
+	if value, ok := gu.mutation.AddedStatus(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldStatus,
+		})
+	}
+	if value, ok := gu.mutation.InviteMode(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldInviteMode,
+		})
+	}
+	if value, ok := gu.mutation.AddedInviteMode(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldInviteMode,
+		})
+	}
 	if value, ok := gu.mutation.Notice(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: group.FieldNotice,
+		})
+	}
+	if value, ok := gu.mutation.Introduction(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldIntroduction,
 		})
 	}
 	if value, ok := gu.mutation.CreatedAt(); ok {
@@ -295,9 +483,120 @@ func (guo *GroupUpdateOne) AddOwner(i int64) *GroupUpdateOne {
 	return guo
 }
 
+// SetCreatedUID sets the "created_uid" field.
+func (guo *GroupUpdateOne) SetCreatedUID(i int64) *GroupUpdateOne {
+	guo.mutation.ResetCreatedUID()
+	guo.mutation.SetCreatedUID(i)
+	return guo
+}
+
+// AddCreatedUID adds i to the "created_uid" field.
+func (guo *GroupUpdateOne) AddCreatedUID(i int64) *GroupUpdateOne {
+	guo.mutation.AddCreatedUID(i)
+	return guo
+}
+
+// SetMode sets the "mode" field.
+func (guo *GroupUpdateOne) SetMode(i int8) *GroupUpdateOne {
+	guo.mutation.ResetMode()
+	guo.mutation.SetMode(i)
+	return guo
+}
+
+// SetNillableMode sets the "mode" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableMode(i *int8) *GroupUpdateOne {
+	if i != nil {
+		guo.SetMode(*i)
+	}
+	return guo
+}
+
+// AddMode adds i to the "mode" field.
+func (guo *GroupUpdateOne) AddMode(i int8) *GroupUpdateOne {
+	guo.mutation.AddMode(i)
+	return guo
+}
+
+// SetType sets the "type" field.
+func (guo *GroupUpdateOne) SetType(i int8) *GroupUpdateOne {
+	guo.mutation.ResetType()
+	guo.mutation.SetType(i)
+	return guo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableType(i *int8) *GroupUpdateOne {
+	if i != nil {
+		guo.SetType(*i)
+	}
+	return guo
+}
+
+// AddType adds i to the "type" field.
+func (guo *GroupUpdateOne) AddType(i int8) *GroupUpdateOne {
+	guo.mutation.AddType(i)
+	return guo
+}
+
+// SetStatus sets the "status" field.
+func (guo *GroupUpdateOne) SetStatus(i int8) *GroupUpdateOne {
+	guo.mutation.ResetStatus()
+	guo.mutation.SetStatus(i)
+	return guo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableStatus(i *int8) *GroupUpdateOne {
+	if i != nil {
+		guo.SetStatus(*i)
+	}
+	return guo
+}
+
+// AddStatus adds i to the "status" field.
+func (guo *GroupUpdateOne) AddStatus(i int8) *GroupUpdateOne {
+	guo.mutation.AddStatus(i)
+	return guo
+}
+
+// SetInviteMode sets the "invite_mode" field.
+func (guo *GroupUpdateOne) SetInviteMode(i int8) *GroupUpdateOne {
+	guo.mutation.ResetInviteMode()
+	guo.mutation.SetInviteMode(i)
+	return guo
+}
+
+// SetNillableInviteMode sets the "invite_mode" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableInviteMode(i *int8) *GroupUpdateOne {
+	if i != nil {
+		guo.SetInviteMode(*i)
+	}
+	return guo
+}
+
+// AddInviteMode adds i to the "invite_mode" field.
+func (guo *GroupUpdateOne) AddInviteMode(i int8) *GroupUpdateOne {
+	guo.mutation.AddInviteMode(i)
+	return guo
+}
+
 // SetNotice sets the "notice" field.
 func (guo *GroupUpdateOne) SetNotice(s string) *GroupUpdateOne {
 	guo.mutation.SetNotice(s)
+	return guo
+}
+
+// SetIntroduction sets the "introduction" field.
+func (guo *GroupUpdateOne) SetIntroduction(s string) *GroupUpdateOne {
+	guo.mutation.SetIntroduction(s)
+	return guo
+}
+
+// SetNillableIntroduction sets the "introduction" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableIntroduction(s *string) *GroupUpdateOne {
+	if s != nil {
+		guo.SetIntroduction(*s)
+	}
 	return guo
 }
 
@@ -483,11 +782,88 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 			Column: group.FieldOwner,
 		})
 	}
+	if value, ok := guo.mutation.CreatedUID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: group.FieldCreatedUID,
+		})
+	}
+	if value, ok := guo.mutation.AddedCreatedUID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: group.FieldCreatedUID,
+		})
+	}
+	if value, ok := guo.mutation.Mode(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldMode,
+		})
+	}
+	if value, ok := guo.mutation.AddedMode(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldMode,
+		})
+	}
+	if value, ok := guo.mutation.GetType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldType,
+		})
+	}
+	if value, ok := guo.mutation.AddedType(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldType,
+		})
+	}
+	if value, ok := guo.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldStatus,
+		})
+	}
+	if value, ok := guo.mutation.AddedStatus(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldStatus,
+		})
+	}
+	if value, ok := guo.mutation.InviteMode(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldInviteMode,
+		})
+	}
+	if value, ok := guo.mutation.AddedInviteMode(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: group.FieldInviteMode,
+		})
+	}
 	if value, ok := guo.mutation.Notice(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: group.FieldNotice,
+		})
+	}
+	if value, ok := guo.mutation.Introduction(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldIntroduction,
 		})
 	}
 	if value, ok := guo.mutation.CreatedAt(); ok {

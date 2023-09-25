@@ -8,6 +8,7 @@ import (
 	"social/ent/friend"
 	"social/ent/friendapply"
 	"social/ent/group"
+	"social/ent/groupmember"
 	"social/ent/user"
 
 	"entgo.io/ent"
@@ -35,6 +36,7 @@ func columnChecker(table string) func(string) error {
 		friend.Table:      friend.ValidColumn,
 		friendapply.Table: friendapply.ValidColumn,
 		group.Table:       group.ValidColumn,
+		groupmember.Table: groupmember.ValidColumn,
 		user.Table:        user.ValidColumn,
 	}
 	check, ok := checks[table]

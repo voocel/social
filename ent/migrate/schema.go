@@ -47,7 +47,13 @@ var (
 		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "owner", Type: field.TypeInt64},
+		{Name: "created_uid", Type: field.TypeInt64},
+		{Name: "mode", Type: field.TypeInt8, Default: 0},
+		{Name: "type", Type: field.TypeInt8, Default: 0},
+		{Name: "status", Type: field.TypeInt8, Default: 0},
+		{Name: "invite_mode", Type: field.TypeInt8, Default: 0},
 		{Name: "notice", Type: field.TypeString},
+		{Name: "introduction", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
@@ -57,6 +63,25 @@ var (
 		Name:       "groups",
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+	}
+	// GroupMembersColumns holds the columns for the "group_members" table.
+	GroupMembersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "uid", Type: field.TypeInt64},
+		{Name: "group_id", Type: field.TypeInt64},
+		{Name: "inviter", Type: field.TypeInt64},
+		{Name: "remark", Type: field.TypeString},
+		{Name: "status", Type: field.TypeInt8},
+		{Name: "apply_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+	}
+	// GroupMembersTable holds the schema information for the "group_members" table.
+	GroupMembersTable = &schema.Table{
+		Name:       "group_members",
+		Columns:    GroupMembersColumns,
+		PrimaryKey: []*schema.Column{GroupMembersColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -86,6 +111,7 @@ var (
 		FriendsTable,
 		FriendAppliesTable,
 		GroupsTable,
+		GroupMembersTable,
 		UsersTable,
 	}
 )

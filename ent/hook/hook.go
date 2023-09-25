@@ -47,6 +47,19 @@ func (f GroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The GroupMemberFunc type is an adapter to allow the use of ordinary
+// function as GroupMember mutator.
+type GroupMemberFunc func(context.Context, *ent.GroupMemberMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GroupMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GroupMemberMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GroupMemberMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

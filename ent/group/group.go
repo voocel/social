@@ -11,8 +11,20 @@ const (
 	FieldName = "name"
 	// FieldOwner holds the string denoting the owner field in the database.
 	FieldOwner = "owner"
+	// FieldCreatedUID holds the string denoting the created_uid field in the database.
+	FieldCreatedUID = "created_uid"
+	// FieldMode holds the string denoting the mode field in the database.
+	FieldMode = "mode"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldInviteMode holds the string denoting the invite_mode field in the database.
+	FieldInviteMode = "invite_mode"
 	// FieldNotice holds the string denoting the notice field in the database.
 	FieldNotice = "notice"
+	// FieldIntroduction holds the string denoting the introduction field in the database.
+	FieldIntroduction = "introduction"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -28,7 +40,13 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldOwner,
+	FieldCreatedUID,
+	FieldMode,
+	FieldType,
+	FieldStatus,
+	FieldInviteMode,
 	FieldNotice,
+	FieldIntroduction,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
@@ -43,3 +61,16 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultMode holds the default value on creation for the "mode" field.
+	DefaultMode int8
+	// DefaultType holds the default value on creation for the "type" field.
+	DefaultType int8
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus int8
+	// DefaultInviteMode holds the default value on creation for the "invite_mode" field.
+	DefaultInviteMode int8
+	// DefaultIntroduction holds the default value on creation for the "introduction" field.
+	DefaultIntroduction string
+)

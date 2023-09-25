@@ -20,8 +20,20 @@ type Group struct {
 	Name string `json:"name,omitempty"`
 	// Owner holds the value of the "owner" field.
 	Owner int64 `json:"owner,omitempty"`
+	// CreatedUID holds the value of the "created_uid" field.
+	CreatedUID int64 `json:"created_uid,omitempty"`
+	// Mode holds the value of the "mode" field.
+	Mode int8 `json:"mode,omitempty"`
+	// Type holds the value of the "type" field.
+	Type int8 `json:"type,omitempty"`
+	// Status holds the value of the "status" field.
+	Status int8 `json:"status,omitempty"`
+	// InviteMode holds the value of the "invite_mode" field.
+	InviteMode int8 `json:"invite_mode,omitempty"`
 	// Notice holds the value of the "notice" field.
 	Notice string `json:"notice,omitempty"`
+	// Introduction holds the value of the "introduction" field.
+	Introduction string `json:"introduction,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"-"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -35,9 +47,9 @@ func (*Group) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case group.FieldID, group.FieldOwner:
+		case group.FieldID, group.FieldOwner, group.FieldCreatedUID, group.FieldMode, group.FieldType, group.FieldStatus, group.FieldInviteMode:
 			values[i] = new(sql.NullInt64)
-		case group.FieldName, group.FieldNotice:
+		case group.FieldName, group.FieldNotice, group.FieldIntroduction:
 			values[i] = new(sql.NullString)
 		case group.FieldCreatedAt, group.FieldUpdatedAt, group.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -74,11 +86,47 @@ func (gr *Group) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				gr.Owner = value.Int64
 			}
+		case group.FieldCreatedUID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field created_uid", values[i])
+			} else if value.Valid {
+				gr.CreatedUID = value.Int64
+			}
+		case group.FieldMode:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field mode", values[i])
+			} else if value.Valid {
+				gr.Mode = int8(value.Int64)
+			}
+		case group.FieldType:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				gr.Type = int8(value.Int64)
+			}
+		case group.FieldStatus:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				gr.Status = int8(value.Int64)
+			}
+		case group.FieldInviteMode:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field invite_mode", values[i])
+			} else if value.Valid {
+				gr.InviteMode = int8(value.Int64)
+			}
 		case group.FieldNotice:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field notice", values[i])
 			} else if value.Valid {
 				gr.Notice = value.String
+			}
+		case group.FieldIntroduction:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field introduction", values[i])
+			} else if value.Valid {
+				gr.Introduction = value.String
 			}
 		case group.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -131,8 +179,20 @@ func (gr *Group) String() string {
 	builder.WriteString(gr.Name)
 	builder.WriteString(", owner=")
 	builder.WriteString(fmt.Sprintf("%v", gr.Owner))
+	builder.WriteString(", created_uid=")
+	builder.WriteString(fmt.Sprintf("%v", gr.CreatedUID))
+	builder.WriteString(", mode=")
+	builder.WriteString(fmt.Sprintf("%v", gr.Mode))
+	builder.WriteString(", type=")
+	builder.WriteString(fmt.Sprintf("%v", gr.Type))
+	builder.WriteString(", status=")
+	builder.WriteString(fmt.Sprintf("%v", gr.Status))
+	builder.WriteString(", invite_mode=")
+	builder.WriteString(fmt.Sprintf("%v", gr.InviteMode))
 	builder.WriteString(", notice=")
 	builder.WriteString(gr.Notice)
+	builder.WriteString(", introduction=")
+	builder.WriteString(gr.Introduction)
 	builder.WriteString(", created_at=")
 	builder.WriteString(gr.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
