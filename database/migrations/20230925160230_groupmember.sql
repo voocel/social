@@ -1,21 +1,20 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS friends(
+CREATE TABLE IF NOT EXISTS group_members(
     id         BIGSERIAL PRIMARY KEY NOT NULL,
     uid        bigint NOT NULL,
-    friend_id  bigint NOT NULL,
+    group_id   bigint NOT NULL,
+    inviter    bigint NOT NULL,
     remark     char(64) NOT NULL DEFAULT '',
-    shield     smallint NOT NULL DEFAULT 0,
+    status     smallint NOT NULL DEFAULT 0,
+    apply_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(0),
     deleted_at TIMESTAMP
 );
-
--- CREATE UNIQUE INDEX idx_uid_friend_id ON friend (uid, friend_id);
-
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-drop table friend;
+drop table group_member;
 -- +goose StatementEnd
