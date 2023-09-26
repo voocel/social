@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"social/ent"
@@ -9,11 +10,46 @@ import (
 )
 
 type GroupHandler struct {
-	groupUsecase *usecase.GroupUseCase
+	groupUsecase       *usecase.GroupUseCase
+	groupMemberUsecase *usecase.GroupMemberUseCase
 }
 
-func NewGroupHandler(g *usecase.GroupUseCase) *GroupHandler {
-	return &GroupHandler{groupUsecase: g}
+func NewGroupHandler(g *usecase.GroupUseCase, gm *usecase.GroupMemberUseCase) *GroupHandler {
+	return &GroupHandler{groupUsecase: g, groupMemberUsecase: gm}
+}
+
+func (h *GroupHandler) CreateGroup(c *gin.Context) {
+	resp := new(ApiResponse)
+	user, exists := c.Get("jwt-user")
+	u, ok := user.(*ent.User)
+	if !exists || !ok {
+		resp.Code = 1
+		resp.Message = "token invalid"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	req := &entity.Group{}
+	if err := c.ShouldBind(req); err != nil {
+		resp.Code = 1
+		resp.Message = "params invalid"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	req.Owner = u.ID
+	req.CreatedUid = u.ID
+
+	result, err := h.groupUsecase.CreateGroup(c, req)
+	if err != nil {
+		resp.Code = 1
+		resp.Message = err.Error()
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	resp.Message = "ok"
+	resp.Data = result
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *GroupHandler) GetGroups(c *gin.Context) {
@@ -40,7 +76,7 @@ func (h *GroupHandler) GetGroups(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *GroupHandler) CreateGroup(c *gin.Context) {
+func (h *GroupHandler) GetGroupMembers(c *gin.Context) {
 	resp := new(ApiResponse)
 	user, exists := c.Get("jwt-user")
 	u, ok := user.(*ent.User)
@@ -51,16 +87,7 @@ func (h *GroupHandler) CreateGroup(c *gin.Context) {
 		return
 	}
 
-	req := &entity.Group{}
-	if err := c.ShouldBind(req); err != nil {
-		resp.Code = 1
-		resp.Message = "params invalid"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-	req.Owner = u.ID
-
-	result, err := h.groupUsecase.CreateGroup(c, req)
+	result, err := h.groupUsecase.GetGroups(c, u.ID)
 	if err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
@@ -71,4 +98,39 @@ func (h *GroupHandler) CreateGroup(c *gin.Context) {
 	resp.Message = "ok"
 	resp.Data = result
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *GroupHandler) JoinGroup(c *gin.Context) {
+	resp := new(ApiResponse)
+	user, exists := c.Get("jwt-user")
+	u, ok := user.(*ent.User)
+	if !exists || !ok {
+		resp.Code = 1
+		resp.Message = "token invalid"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	req := &entity.JoinGroupReq{}
+	if err := c.ShouldBind(req); err != nil {
+		resp.Code = 1
+		resp.Message = "params invalid"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	_, err := h.groupUsecase.GetGroupById(c, req.GroupId)
+	if err != nil || ent.IsNotFound(err) {
+		resp.Code = 1
+		resp.Message = fmt.Sprintf("group not exists: %v", req.GroupId)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	group := &ent.GroupMember{
+		UID:     u.ID,
+		GroupID: req.GroupId,
+		Remark:  req.Remark,
+	}
+	h.groupMemberUsecase.CreateGroupMember(c, group)
 }
