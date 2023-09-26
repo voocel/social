@@ -38,15 +38,39 @@ func (gmc *GroupMemberCreate) SetInviter(i int64) *GroupMemberCreate {
 	return gmc
 }
 
+// SetNillableInviter sets the "inviter" field if the given value is not nil.
+func (gmc *GroupMemberCreate) SetNillableInviter(i *int64) *GroupMemberCreate {
+	if i != nil {
+		gmc.SetInviter(*i)
+	}
+	return gmc
+}
+
 // SetRemark sets the "remark" field.
 func (gmc *GroupMemberCreate) SetRemark(s string) *GroupMemberCreate {
 	gmc.mutation.SetRemark(s)
 	return gmc
 }
 
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (gmc *GroupMemberCreate) SetNillableRemark(s *string) *GroupMemberCreate {
+	if s != nil {
+		gmc.SetRemark(*s)
+	}
+	return gmc
+}
+
 // SetStatus sets the "status" field.
 func (gmc *GroupMemberCreate) SetStatus(i int8) *GroupMemberCreate {
 	gmc.mutation.SetStatus(i)
+	return gmc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (gmc *GroupMemberCreate) SetNillableStatus(i *int8) *GroupMemberCreate {
+	if i != nil {
+		gmc.SetStatus(*i)
+	}
 	return gmc
 }
 
@@ -123,6 +147,7 @@ func (gmc *GroupMemberCreate) Save(ctx context.Context) (*GroupMember, error) {
 		err  error
 		node *GroupMember
 	)
+	gmc.defaults()
 	if len(gmc.hooks) == 0 {
 		if err = gmc.check(); err != nil {
 			return nil, err
@@ -177,6 +202,22 @@ func (gmc *GroupMemberCreate) Exec(ctx context.Context) error {
 func (gmc *GroupMemberCreate) ExecX(ctx context.Context) {
 	if err := gmc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (gmc *GroupMemberCreate) defaults() {
+	if _, ok := gmc.mutation.Inviter(); !ok {
+		v := groupmember.DefaultInviter
+		gmc.mutation.SetInviter(v)
+	}
+	if _, ok := gmc.mutation.Remark(); !ok {
+		v := groupmember.DefaultRemark
+		gmc.mutation.SetRemark(v)
+	}
+	if _, ok := gmc.mutation.Status(); !ok {
+		v := groupmember.DefaultStatus
+		gmc.mutation.SetStatus(v)
 	}
 }
 
@@ -319,6 +360,7 @@ func (gmcb *GroupMemberCreateBulk) Save(ctx context.Context) ([]*GroupMember, er
 	for i := range gmcb.builders {
 		func(i int, root context.Context) {
 			builder := gmcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GroupMemberMutation)
 				if !ok {

@@ -5,6 +5,7 @@ package ent
 import (
 	"social/ent/friend"
 	"social/ent/group"
+	"social/ent/groupmember"
 	"social/ent/schema"
 )
 
@@ -40,4 +41,18 @@ func init() {
 	groupDescIntroduction := groupFields[9].Descriptor()
 	// group.DefaultIntroduction holds the default value on creation for the introduction field.
 	group.DefaultIntroduction = groupDescIntroduction.Default.(string)
+	groupmemberFields := schema.GroupMember{}.Fields()
+	_ = groupmemberFields
+	// groupmemberDescInviter is the schema descriptor for inviter field.
+	groupmemberDescInviter := groupmemberFields[3].Descriptor()
+	// groupmember.DefaultInviter holds the default value on creation for the inviter field.
+	groupmember.DefaultInviter = groupmemberDescInviter.Default.(int64)
+	// groupmemberDescRemark is the schema descriptor for remark field.
+	groupmemberDescRemark := groupmemberFields[4].Descriptor()
+	// groupmember.DefaultRemark holds the default value on creation for the remark field.
+	groupmember.DefaultRemark = groupmemberDescRemark.Default.(string)
+	// groupmemberDescStatus is the schema descriptor for status field.
+	groupmemberDescStatus := groupmemberFields[5].Descriptor()
+	// groupmember.DefaultStatus holds the default value on creation for the status field.
+	groupmember.DefaultStatus = groupmemberDescStatus.Default.(int8)
 }

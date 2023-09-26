@@ -61,6 +61,14 @@ func (gmu *GroupMemberUpdate) SetInviter(i int64) *GroupMemberUpdate {
 	return gmu
 }
 
+// SetNillableInviter sets the "inviter" field if the given value is not nil.
+func (gmu *GroupMemberUpdate) SetNillableInviter(i *int64) *GroupMemberUpdate {
+	if i != nil {
+		gmu.SetInviter(*i)
+	}
+	return gmu
+}
+
 // AddInviter adds i to the "inviter" field.
 func (gmu *GroupMemberUpdate) AddInviter(i int64) *GroupMemberUpdate {
 	gmu.mutation.AddInviter(i)
@@ -73,10 +81,26 @@ func (gmu *GroupMemberUpdate) SetRemark(s string) *GroupMemberUpdate {
 	return gmu
 }
 
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (gmu *GroupMemberUpdate) SetNillableRemark(s *string) *GroupMemberUpdate {
+	if s != nil {
+		gmu.SetRemark(*s)
+	}
+	return gmu
+}
+
 // SetStatus sets the "status" field.
 func (gmu *GroupMemberUpdate) SetStatus(i int8) *GroupMemberUpdate {
 	gmu.mutation.ResetStatus()
 	gmu.mutation.SetStatus(i)
+	return gmu
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (gmu *GroupMemberUpdate) SetNillableStatus(i *int8) *GroupMemberUpdate {
+	if i != nil {
+		gmu.SetStatus(*i)
+	}
 	return gmu
 }
 
@@ -410,6 +434,14 @@ func (gmuo *GroupMemberUpdateOne) SetInviter(i int64) *GroupMemberUpdateOne {
 	return gmuo
 }
 
+// SetNillableInviter sets the "inviter" field if the given value is not nil.
+func (gmuo *GroupMemberUpdateOne) SetNillableInviter(i *int64) *GroupMemberUpdateOne {
+	if i != nil {
+		gmuo.SetInviter(*i)
+	}
+	return gmuo
+}
+
 // AddInviter adds i to the "inviter" field.
 func (gmuo *GroupMemberUpdateOne) AddInviter(i int64) *GroupMemberUpdateOne {
 	gmuo.mutation.AddInviter(i)
@@ -422,10 +454,26 @@ func (gmuo *GroupMemberUpdateOne) SetRemark(s string) *GroupMemberUpdateOne {
 	return gmuo
 }
 
+// SetNillableRemark sets the "remark" field if the given value is not nil.
+func (gmuo *GroupMemberUpdateOne) SetNillableRemark(s *string) *GroupMemberUpdateOne {
+	if s != nil {
+		gmuo.SetRemark(*s)
+	}
+	return gmuo
+}
+
 // SetStatus sets the "status" field.
 func (gmuo *GroupMemberUpdateOne) SetStatus(i int8) *GroupMemberUpdateOne {
 	gmuo.mutation.ResetStatus()
 	gmuo.mutation.SetStatus(i)
+	return gmuo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (gmuo *GroupMemberUpdateOne) SetNillableStatus(i *int8) *GroupMemberUpdateOne {
+	if i != nil {
+		gmuo.SetStatus(*i)
+	}
 	return gmuo
 }
 

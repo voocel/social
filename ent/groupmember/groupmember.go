@@ -52,3 +52,12 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultInviter holds the default value on creation for the "inviter" field.
+	DefaultInviter int64
+	// DefaultRemark holds the default value on creation for the "remark" field.
+	DefaultRemark string
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus int8
+)
