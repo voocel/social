@@ -7,6 +7,7 @@ import (
 	"social/ent/friendapply"
 	"social/internal/entity"
 	"social/pkg/log"
+	"time"
 )
 
 type FriendApplyRepo struct {
@@ -23,6 +24,7 @@ func (r FriendApplyRepo) AddFriendApplyRepo(ctx context.Context, req *entity.Fri
 		SetToID(req.ToId).
 		SetRemark(req.Remark).
 		SetStatus(0).
+		SetCreatedAt(time.Now()).
 		Save(ctx)
 	return create, err
 }

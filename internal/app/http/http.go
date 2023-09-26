@@ -43,9 +43,6 @@ func (s *Server) Run() {
 	entClient := ent.InitEnt(cfg)
 
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(entClient))
-	friendUseCase := usecase.NewFriendUseCase(repo.NewFriendRepo(entClient))
-	friendApplyUseCase := usecase.NewFriendApplyUseCase(repo.NewFriendApplyRepo(entClient))
-	groupUseCase := usecase.NewGroupUseCase(repo.NewGroupRepo(entClient))
 
 	g.Use(
 		gin.Logger(),
@@ -62,7 +59,7 @@ func (s *Server) Run() {
 	g.StaticFS("/static", gin.Dir("static", false))
 	g.StaticFile("/favicon.ico", "./static/favicon.ico")
 	g.Group("/swagger").GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	s.routerLoad(g, getRouters(userUseCase, friendUseCase, friendApplyUseCase, groupUseCase)...)
+	s.routerLoad(g, getRouters(entClient)...)
 
 	srv := http.Server{
 		Addr:    viper.GetString("http.addr"),

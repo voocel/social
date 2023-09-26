@@ -6,7 +6,6 @@ import (
 	"social/ent"
 	"social/internal/entity"
 	"social/internal/usecase"
-	"strconv"
 )
 
 type FriendHandler struct {
@@ -110,27 +109,26 @@ func (h *FriendHandler) AgreeFriendApply(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	fromId, ok := c.GetQuery("from_id")
-	if !ok {
+
+	req := &entity.FriendApply{}
+	if err := c.ShouldBind(req); err != nil {
 		resp.Code = 1
-		resp.Message = "apply id not exist"
+		resp.Message = "params invalid"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	fid, _ := strconv.Atoi(fromId)
-	tid := u.ID
 
-	if _, err := h.faUseCase.AgreeFriendApply(c, int64(fid), tid); err != nil {
+	if _, err := h.faUseCase.AgreeFriendApply(c, req.FromId, u.ID); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	req := &entity.Friend{
-		Uid:      tid,
-		FriendId: int64(fid),
+	arg := &entity.Friend{
+		Uid:      u.ID,
+		FriendId: req.FromId,
 	}
-	if _, err := h.fUseCase.AddFriend(c, req); err != nil {
+	if _, err := h.fUseCase.AddFriend(c, arg); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
@@ -151,17 +149,16 @@ func (h *FriendHandler) RefuseFriendApply(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	fromId, ok := c.GetQuery("from_id")
-	if !ok {
+
+	req := &entity.FriendApply{}
+	if err := c.ShouldBind(req); err != nil {
 		resp.Code = 1
-		resp.Message = "apply id not exist"
+		resp.Message = "params invalid"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	fid, _ := strconv.Atoi(fromId)
-	tid := u.ID
 
-	if _, err := h.faUseCase.RefuseFriendApply(c, int64(fid), tid); err != nil {
+	if _, err := h.faUseCase.RefuseFriendApply(c, req.FromId, u.ID); err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
 		c.JSON(http.StatusOK, resp)
