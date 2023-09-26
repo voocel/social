@@ -35,7 +35,14 @@ type (
 
 	GroupRepo interface {
 		GetGroupsRepo(ctx context.Context, uid int64) ([]*ent.Group, error)
+		GetGroupByIdRepo(ctx context.Context, groupId int64) (*ent.Group, error)
 		CreateGroupRepo(ctx context.Context, group *entity.Group) (*ent.Group, error)
+	}
+
+	GroupMemberRepo interface {
+		GetGroupsRepo(ctx context.Context, uid int64) ([]*entity.Group, error)
+		GetGroupMembersRepo(ctx context.Context, uid int64) ([]*ent.GroupMember, error)
+		CreateGroupMemberRepo(ctx context.Context, info *ent.GroupMember) (*ent.GroupMember, error)
 	}
 
 	UserWebAPI interface{}
