@@ -20,6 +20,8 @@ type Group struct {
 	Name string `json:"name,omitempty"`
 	// Owner holds the value of the "owner" field.
 	Owner int64 `json:"owner,omitempty"`
+	// Avatar holds the value of the "avatar" field.
+	Avatar string `json:"avatar,omitempty"`
 	// CreatedUID holds the value of the "created_uid" field.
 	CreatedUID int64 `json:"created_uid,omitempty"`
 	// Mode holds the value of the "mode" field.
@@ -49,7 +51,7 @@ func (*Group) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case group.FieldID, group.FieldOwner, group.FieldCreatedUID, group.FieldMode, group.FieldType, group.FieldStatus, group.FieldInviteMode:
 			values[i] = new(sql.NullInt64)
-		case group.FieldName, group.FieldNotice, group.FieldIntroduction:
+		case group.FieldName, group.FieldAvatar, group.FieldNotice, group.FieldIntroduction:
 			values[i] = new(sql.NullString)
 		case group.FieldCreatedAt, group.FieldUpdatedAt, group.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -85,6 +87,12 @@ func (gr *Group) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field owner", values[i])
 			} else if value.Valid {
 				gr.Owner = value.Int64
+			}
+		case group.FieldAvatar:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field avatar", values[i])
+			} else if value.Valid {
+				gr.Avatar = value.String
 			}
 		case group.FieldCreatedUID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -179,6 +187,8 @@ func (gr *Group) String() string {
 	builder.WriteString(gr.Name)
 	builder.WriteString(", owner=")
 	builder.WriteString(fmt.Sprintf("%v", gr.Owner))
+	builder.WriteString(", avatar=")
+	builder.WriteString(gr.Avatar)
 	builder.WriteString(", created_uid=")
 	builder.WriteString(fmt.Sprintf("%v", gr.CreatedUID))
 	builder.WriteString(", mode=")

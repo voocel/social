@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS group_members(
 
 -- +goose Down
 -- +goose StatementBegin
-drop table group_member;
+drop table group_members;
 -- +goose StatementEnd

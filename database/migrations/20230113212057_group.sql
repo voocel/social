@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS groups(
     id           BIGSERIAL PRIMARY KEY NOT NULL,
     name         varchar(32) NOT NULL DEFAULT '未命名',
     owner        bigint NOT NULL DEFAULT 0,
+    avatar       varchar(128) NOT NULL DEFAULT '',
     created_uid  bigint NOT NULL DEFAULT 0,
     mode         smallint  NOT NULL DEFAULT 0,
     type         smallint  NOT NULL DEFAULT 0,
@@ -24,5 +25,5 @@ COMMENT ON COLUMN groups.invite_mode IS '邀请模式: 0 仅群主可邀请, 1 �
 
 -- +goose Down
 -- +goose StatementBegin
-drop table group;
+drop table groups;
 -- +goose StatementEnd

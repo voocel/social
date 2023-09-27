@@ -11,6 +11,8 @@ const (
 	FieldName = "name"
 	// FieldOwner holds the string denoting the owner field in the database.
 	FieldOwner = "owner"
+	// FieldAvatar holds the string denoting the avatar field in the database.
+	FieldAvatar = "avatar"
 	// FieldCreatedUID holds the string denoting the created_uid field in the database.
 	FieldCreatedUID = "created_uid"
 	// FieldMode holds the string denoting the mode field in the database.
@@ -40,6 +42,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldOwner,
+	FieldAvatar,
 	FieldCreatedUID,
 	FieldMode,
 	FieldType,
@@ -63,6 +66,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultAvatar holds the default value on creation for the "avatar" field.
+	DefaultAvatar string
 	// DefaultMode holds the default value on creation for the "mode" field.
 	DefaultMode int8
 	// DefaultType holds the default value on creation for the "type" field.
@@ -71,6 +76,8 @@ var (
 	DefaultStatus int8
 	// DefaultInviteMode holds the default value on creation for the "invite_mode" field.
 	DefaultInviteMode int8
+	// DefaultNotice holds the default value on creation for the "notice" field.
+	DefaultNotice string
 	// DefaultIntroduction holds the default value on creation for the "introduction" field.
 	DefaultIntroduction string
 )

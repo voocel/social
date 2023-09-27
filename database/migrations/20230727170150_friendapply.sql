@@ -22,5 +22,5 @@ COMMENT ON COLUMN friend_applies.deleted_at IS '删除时间';
 
 -- +goose Down
 -- +goose StatementBegin
-drop table friend_apply;
+drop table friend_applies;
 -- +goose StatementEnd

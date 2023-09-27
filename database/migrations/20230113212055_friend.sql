@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS friends(
 
 -- +goose Down
 -- +goose StatementBegin
-drop table friend;
+drop table friends;
 -- +goose StatementEnd

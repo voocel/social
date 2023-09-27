@@ -47,6 +47,20 @@ func (gu *GroupUpdate) AddOwner(i int64) *GroupUpdate {
 	return gu
 }
 
+// SetAvatar sets the "avatar" field.
+func (gu *GroupUpdate) SetAvatar(s string) *GroupUpdate {
+	gu.mutation.SetAvatar(s)
+	return gu
+}
+
+// SetNillableAvatar sets the "avatar" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableAvatar(s *string) *GroupUpdate {
+	if s != nil {
+		gu.SetAvatar(*s)
+	}
+	return gu
+}
+
 // SetCreatedUID sets the "created_uid" field.
 func (gu *GroupUpdate) SetCreatedUID(i int64) *GroupUpdate {
 	gu.mutation.ResetCreatedUID()
@@ -147,6 +161,14 @@ func (gu *GroupUpdate) AddInviteMode(i int8) *GroupUpdate {
 // SetNotice sets the "notice" field.
 func (gu *GroupUpdate) SetNotice(s string) *GroupUpdate {
 	gu.mutation.SetNotice(s)
+	return gu
+}
+
+// SetNillableNotice sets the "notice" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableNotice(s *string) *GroupUpdate {
+	if s != nil {
+		gu.SetNotice(*s)
+	}
 	return gu
 }
 
@@ -322,6 +344,13 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: group.FieldOwner,
 		})
 	}
+	if value, ok := gu.mutation.Avatar(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldAvatar,
+		})
+	}
 	if value, ok := gu.mutation.CreatedUID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt64,
@@ -483,6 +512,20 @@ func (guo *GroupUpdateOne) AddOwner(i int64) *GroupUpdateOne {
 	return guo
 }
 
+// SetAvatar sets the "avatar" field.
+func (guo *GroupUpdateOne) SetAvatar(s string) *GroupUpdateOne {
+	guo.mutation.SetAvatar(s)
+	return guo
+}
+
+// SetNillableAvatar sets the "avatar" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableAvatar(s *string) *GroupUpdateOne {
+	if s != nil {
+		guo.SetAvatar(*s)
+	}
+	return guo
+}
+
 // SetCreatedUID sets the "created_uid" field.
 func (guo *GroupUpdateOne) SetCreatedUID(i int64) *GroupUpdateOne {
 	guo.mutation.ResetCreatedUID()
@@ -583,6 +626,14 @@ func (guo *GroupUpdateOne) AddInviteMode(i int8) *GroupUpdateOne {
 // SetNotice sets the "notice" field.
 func (guo *GroupUpdateOne) SetNotice(s string) *GroupUpdateOne {
 	guo.mutation.SetNotice(s)
+	return guo
+}
+
+// SetNillableNotice sets the "notice" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableNotice(s *string) *GroupUpdateOne {
+	if s != nil {
+		guo.SetNotice(*s)
+	}
 	return guo
 }
 
@@ -780,6 +831,13 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 			Type:   field.TypeInt64,
 			Value:  value,
 			Column: group.FieldOwner,
+		})
+	}
+	if value, ok := guo.mutation.Avatar(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldAvatar,
 		})
 	}
 	if value, ok := guo.mutation.CreatedUID(); ok {

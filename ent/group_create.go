@@ -32,6 +32,20 @@ func (gc *GroupCreate) SetOwner(i int64) *GroupCreate {
 	return gc
 }
 
+// SetAvatar sets the "avatar" field.
+func (gc *GroupCreate) SetAvatar(s string) *GroupCreate {
+	gc.mutation.SetAvatar(s)
+	return gc
+}
+
+// SetNillableAvatar sets the "avatar" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableAvatar(s *string) *GroupCreate {
+	if s != nil {
+		gc.SetAvatar(*s)
+	}
+	return gc
+}
+
 // SetCreatedUID sets the "created_uid" field.
 func (gc *GroupCreate) SetCreatedUID(i int64) *GroupCreate {
 	gc.mutation.SetCreatedUID(i)
@@ -97,6 +111,14 @@ func (gc *GroupCreate) SetNillableInviteMode(i *int8) *GroupCreate {
 // SetNotice sets the "notice" field.
 func (gc *GroupCreate) SetNotice(s string) *GroupCreate {
 	gc.mutation.SetNotice(s)
+	return gc
+}
+
+// SetNillableNotice sets the "notice" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableNotice(s *string) *GroupCreate {
+	if s != nil {
+		gc.SetNotice(*s)
+	}
 	return gc
 }
 
@@ -233,6 +255,10 @@ func (gc *GroupCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (gc *GroupCreate) defaults() {
+	if _, ok := gc.mutation.Avatar(); !ok {
+		v := group.DefaultAvatar
+		gc.mutation.SetAvatar(v)
+	}
 	if _, ok := gc.mutation.Mode(); !ok {
 		v := group.DefaultMode
 		gc.mutation.SetMode(v)
@@ -249,6 +275,10 @@ func (gc *GroupCreate) defaults() {
 		v := group.DefaultInviteMode
 		gc.mutation.SetInviteMode(v)
 	}
+	if _, ok := gc.mutation.Notice(); !ok {
+		v := group.DefaultNotice
+		gc.mutation.SetNotice(v)
+	}
 	if _, ok := gc.mutation.Introduction(); !ok {
 		v := group.DefaultIntroduction
 		gc.mutation.SetIntroduction(v)
@@ -262,6 +292,9 @@ func (gc *GroupCreate) check() error {
 	}
 	if _, ok := gc.mutation.Owner(); !ok {
 		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required field "Group.owner"`)}
+	}
+	if _, ok := gc.mutation.Avatar(); !ok {
+		return &ValidationError{Name: "avatar", err: errors.New(`ent: missing required field "Group.avatar"`)}
 	}
 	if _, ok := gc.mutation.CreatedUID(); !ok {
 		return &ValidationError{Name: "created_uid", err: errors.New(`ent: missing required field "Group.created_uid"`)}
@@ -332,6 +365,14 @@ func (gc *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Column: group.FieldOwner,
 		})
 		_node.Owner = value
+	}
+	if value, ok := gc.mutation.Avatar(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: group.FieldAvatar,
+		})
+		_node.Avatar = value
 	}
 	if value, ok := gc.mutation.CreatedUID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

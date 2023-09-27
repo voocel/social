@@ -21,24 +21,32 @@ func init() {
 	friend.DefaultShield = friendDescShield.Default.(int8)
 	groupFields := schema.Group{}.Fields()
 	_ = groupFields
+	// groupDescAvatar is the schema descriptor for avatar field.
+	groupDescAvatar := groupFields[3].Descriptor()
+	// group.DefaultAvatar holds the default value on creation for the avatar field.
+	group.DefaultAvatar = groupDescAvatar.Default.(string)
 	// groupDescMode is the schema descriptor for mode field.
-	groupDescMode := groupFields[4].Descriptor()
+	groupDescMode := groupFields[5].Descriptor()
 	// group.DefaultMode holds the default value on creation for the mode field.
 	group.DefaultMode = groupDescMode.Default.(int8)
 	// groupDescType is the schema descriptor for type field.
-	groupDescType := groupFields[5].Descriptor()
+	groupDescType := groupFields[6].Descriptor()
 	// group.DefaultType holds the default value on creation for the type field.
 	group.DefaultType = groupDescType.Default.(int8)
 	// groupDescStatus is the schema descriptor for status field.
-	groupDescStatus := groupFields[6].Descriptor()
+	groupDescStatus := groupFields[7].Descriptor()
 	// group.DefaultStatus holds the default value on creation for the status field.
 	group.DefaultStatus = groupDescStatus.Default.(int8)
 	// groupDescInviteMode is the schema descriptor for invite_mode field.
-	groupDescInviteMode := groupFields[7].Descriptor()
+	groupDescInviteMode := groupFields[8].Descriptor()
 	// group.DefaultInviteMode holds the default value on creation for the invite_mode field.
 	group.DefaultInviteMode = groupDescInviteMode.Default.(int8)
+	// groupDescNotice is the schema descriptor for notice field.
+	groupDescNotice := groupFields[9].Descriptor()
+	// group.DefaultNotice holds the default value on creation for the notice field.
+	group.DefaultNotice = groupDescNotice.Default.(string)
 	// groupDescIntroduction is the schema descriptor for introduction field.
-	groupDescIntroduction := groupFields[9].Descriptor()
+	groupDescIntroduction := groupFields[10].Descriptor()
 	// group.DefaultIntroduction holds the default value on creation for the introduction field.
 	group.DefaultIntroduction = groupDescIntroduction.Default.(string)
 	groupmemberFields := schema.GroupMember{}.Fields()

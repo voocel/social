@@ -106,6 +106,13 @@ func Owner(v int64) predicate.Group {
 	})
 }
 
+// Avatar applies equality check predicate on the "avatar" field. It's identical to AvatarEQ.
+func Avatar(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAvatar), v))
+	})
+}
+
 // CreatedUID applies equality check predicate on the "created_uid" field. It's identical to CreatedUIDEQ.
 func CreatedUID(v int64) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -360,6 +367,117 @@ func OwnerLT(v int64) predicate.Group {
 func OwnerLTE(v int64) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldOwner), v))
+	})
+}
+
+// AvatarEQ applies the EQ predicate on the "avatar" field.
+func AvatarEQ(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarNEQ applies the NEQ predicate on the "avatar" field.
+func AvatarNEQ(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarIn applies the In predicate on the "avatar" field.
+func AvatarIn(vs ...string) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAvatar), v...))
+	})
+}
+
+// AvatarNotIn applies the NotIn predicate on the "avatar" field.
+func AvatarNotIn(vs ...string) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAvatar), v...))
+	})
+}
+
+// AvatarGT applies the GT predicate on the "avatar" field.
+func AvatarGT(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarGTE applies the GTE predicate on the "avatar" field.
+func AvatarGTE(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarLT applies the LT predicate on the "avatar" field.
+func AvatarLT(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarLTE applies the LTE predicate on the "avatar" field.
+func AvatarLTE(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarContains applies the Contains predicate on the "avatar" field.
+func AvatarContains(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarHasPrefix applies the HasPrefix predicate on the "avatar" field.
+func AvatarHasPrefix(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarHasSuffix applies the HasSuffix predicate on the "avatar" field.
+func AvatarHasSuffix(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarEqualFold applies the EqualFold predicate on the "avatar" field.
+func AvatarEqualFold(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldAvatar), v))
+	})
+}
+
+// AvatarContainsFold applies the ContainsFold predicate on the "avatar" field.
+func AvatarContainsFold(v string) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldAvatar), v))
 	})
 }
 
