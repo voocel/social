@@ -32,6 +32,7 @@ func (g *GroupMemberRepo) GetGroupsRepo(ctx context.Context, uid int64) ([]*enti
 		item := &entity.Group{
 			Name:         group.Name,
 			Owner:        group.Owner,
+			Avatar:       group.Avatar,
 			Notice:       group.Notice,
 			Introduction: group.Introduction,
 			CreatedUid:   group.CreatedUID,
@@ -49,5 +50,10 @@ func (g *GroupMemberRepo) CreateGroupMemberRepo(ctx context.Context, info *ent.G
 	return g.ent.GroupMember.Create().
 		SetGroupID(info.GroupID).
 		SetUID(info.UID).
+		SetRemark(info.Remark).
 		Save(ctx)
+}
+
+func (g *GroupMemberRepo) ExistsGroupMemberRepo(ctx context.Context, uid, groupId int64) (bool, error) {
+	return g.ent.GroupMember.Query().Where(groupmember.UID(uid), groupmember.GroupID(groupId)).Exist(ctx)
 }

@@ -63,31 +63,7 @@ func (h *GroupHandler) GetGroups(c *gin.Context) {
 		return
 	}
 
-	result, err := h.groupUsecase.GetGroups(c, u.ID)
-	if err != nil {
-		resp.Code = 1
-		resp.Message = err.Error()
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	resp.Message = "ok"
-	resp.Data = result
-	c.JSON(http.StatusOK, resp)
-}
-
-func (h *GroupHandler) GetGroupMembers(c *gin.Context) {
-	resp := new(ApiResponse)
-	user, exists := c.Get("jwt-user")
-	u, ok := user.(*ent.User)
-	if !exists || !ok {
-		resp.Code = 1
-		resp.Message = "token invalid"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	result, err := h.groupUsecase.GetGroups(c, u.ID)
+	result, err := h.groupMemberUsecase.GetGroups(c, u.ID)
 	if err != nil {
 		resp.Code = 1
 		resp.Message = err.Error()
@@ -122,7 +98,15 @@ func (h *GroupHandler) JoinGroup(c *gin.Context) {
 	_, err := h.groupUsecase.GetGroupById(c, req.GroupId)
 	if err != nil || ent.IsNotFound(err) {
 		resp.Code = 1
-		resp.Message = fmt.Sprintf("group not exists: %v", req.GroupId)
+		resp.Message = fmt.Sprintf("Group not exists: %v", req.GroupId)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	b, err := h.groupMemberUsecase.ExistsGroupMember(c, u.ID, req.GroupId)
+	if err != nil || b {
+		resp.Code = 1
+		resp.Message = "You are already in this group"
 		c.JSON(http.StatusOK, resp)
 		return
 	}
@@ -132,5 +116,14 @@ func (h *GroupHandler) JoinGroup(c *gin.Context) {
 		GroupID: req.GroupId,
 		Remark:  req.Remark,
 	}
-	h.groupMemberUsecase.CreateGroupMember(c, group)
+	_, err = h.groupMemberUsecase.CreateGroupMember(c, group)
+	if err != nil {
+		resp.Code = 1
+		resp.Message = err.Error()
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	resp.Message = "ok"
+	c.JSON(http.StatusOK, resp)
 }

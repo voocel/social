@@ -1,9 +1,10 @@
 package entity
 
 type Group struct {
-	Id           int64  `json:"id"`
+	Id           int64  `json:"id,omitempty"`
 	Name         string `json:"name"`
 	Owner        int64  `json:"owner"`
+	Avatar       string `json:"avatar"`
 	Notice       string `json:"notice"`
 	Introduction string `json:"introduction"`
 	CreatedUid   int64  `json:"created_uid"`

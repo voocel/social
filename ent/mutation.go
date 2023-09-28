@@ -1650,6 +1650,7 @@ type GroupMutation struct {
 	name           *string
 	owner          *int64
 	addowner       *int64
+	avatar         *string
 	created_uid    *int64
 	addcreated_uid *int64
 	mode           *int8
@@ -1865,6 +1866,42 @@ func (m *GroupMutation) AddedOwner() (r int64, exists bool) {
 func (m *GroupMutation) ResetOwner() {
 	m.owner = nil
 	m.addowner = nil
+}
+
+// SetAvatar sets the "avatar" field.
+func (m *GroupMutation) SetAvatar(s string) {
+	m.avatar = &s
+}
+
+// Avatar returns the value of the "avatar" field in the mutation.
+func (m *GroupMutation) Avatar() (r string, exists bool) {
+	v := m.avatar
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatar returns the old "avatar" field's value of the Group entity.
+// If the Group object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GroupMutation) OldAvatar(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvatar is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvatar requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatar: %w", err)
+	}
+	return oldValue.Avatar, nil
+}
+
+// ResetAvatar resets all changes to the "avatar" field.
+func (m *GroupMutation) ResetAvatar() {
+	m.avatar = nil
 }
 
 // SetCreatedUID sets the "created_uid" field.
@@ -2385,12 +2422,15 @@ func (m *GroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GroupMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.name != nil {
 		fields = append(fields, group.FieldName)
 	}
 	if m.owner != nil {
 		fields = append(fields, group.FieldOwner)
+	}
+	if m.avatar != nil {
+		fields = append(fields, group.FieldAvatar)
 	}
 	if m.created_uid != nil {
 		fields = append(fields, group.FieldCreatedUID)
@@ -2434,6 +2474,8 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case group.FieldOwner:
 		return m.Owner()
+	case group.FieldAvatar:
+		return m.Avatar()
 	case group.FieldCreatedUID:
 		return m.CreatedUID()
 	case group.FieldMode:
@@ -2467,6 +2509,8 @@ func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldName(ctx)
 	case group.FieldOwner:
 		return m.OldOwner(ctx)
+	case group.FieldAvatar:
+		return m.OldAvatar(ctx)
 	case group.FieldCreatedUID:
 		return m.OldCreatedUID(ctx)
 	case group.FieldMode:
@@ -2509,6 +2553,13 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOwner(v)
+		return nil
+	case group.FieldAvatar:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatar(v)
 		return nil
 	case group.FieldCreatedUID:
 		v, ok := value.(int64)
@@ -2730,6 +2781,9 @@ func (m *GroupMutation) ResetField(name string) error {
 		return nil
 	case group.FieldOwner:
 		m.ResetOwner()
+		return nil
+	case group.FieldAvatar:
+		m.ResetAvatar()
 		return nil
 	case group.FieldCreatedUID:
 		m.ResetCreatedUID()

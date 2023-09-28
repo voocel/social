@@ -7,10 +7,6 @@ import (
 )
 
 type (
-	User interface {
-		GetUserById(ctx context.Context, uid int64) (*ent.User, error)
-	}
-
 	UserRepo interface {
 		GetUserByIdRepo(ctx context.Context, uid int64) (*ent.User, error)
 		GetUserByNameRepo(ctx context.Context, name string) (*ent.User, error)
@@ -43,6 +39,7 @@ type (
 		GetGroupsRepo(ctx context.Context, uid int64) ([]*entity.Group, error)
 		GetGroupMembersRepo(ctx context.Context, uid int64) ([]*ent.GroupMember, error)
 		CreateGroupMemberRepo(ctx context.Context, info *ent.GroupMember) (*ent.GroupMember, error)
+		ExistsGroupMemberRepo(ctx context.Context, uid, groupId int64) (bool, error)
 	}
 
 	UserWebAPI interface{}
