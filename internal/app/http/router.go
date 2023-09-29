@@ -87,5 +87,6 @@ func (r *groupRouter) Load(g *gin.Engine) {
 	{
 		gr.GET("/list", r.h.GetGroups)
 		gr.POST("/create", r.h.CreateGroup)
+		gr.POST("/joinGroup", r.h.JoinGroup)
 	}
 }
