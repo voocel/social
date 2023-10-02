@@ -28,6 +28,7 @@ type hooks struct {
 	FriendApply []ent.Hook
 	Group       []ent.Hook
 	GroupMember []ent.Hook
+	Message     []ent.Hook
 	User        []ent.Hook
 }
 

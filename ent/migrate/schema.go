@@ -84,6 +84,23 @@ var (
 		Columns:    GroupMembersColumns,
 		PrimaryKey: []*schema.Column{GroupMembersColumns[0]},
 	}
+	// MessagesColumns holds the columns for the "messages" table.
+	MessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "sender_id", Type: field.TypeInt64},
+		{Name: "receiver_id", Type: field.TypeInt64},
+		{Name: "content", Type: field.TypeString, Default: ""},
+		{Name: "status", Type: field.TypeInt8, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+	}
+	// MessagesTable holds the schema information for the "messages" table.
+	MessagesTable = &schema.Table{
+		Name:       "messages",
+		Columns:    MessagesColumns,
+		PrimaryKey: []*schema.Column{MessagesColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -113,6 +130,7 @@ var (
 		FriendAppliesTable,
 		GroupsTable,
 		GroupMembersTable,
+		MessagesTable,
 		UsersTable,
 	}
 )

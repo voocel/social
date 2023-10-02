@@ -6,6 +6,7 @@ import (
 	"social/ent/friend"
 	"social/ent/group"
 	"social/ent/groupmember"
+	"social/ent/message"
 	"social/ent/schema"
 )
 
@@ -63,4 +64,14 @@ func init() {
 	groupmemberDescStatus := groupmemberFields[5].Descriptor()
 	// groupmember.DefaultStatus holds the default value on creation for the status field.
 	groupmember.DefaultStatus = groupmemberDescStatus.Default.(int8)
+	messageFields := schema.Message{}.Fields()
+	_ = messageFields
+	// messageDescContent is the schema descriptor for content field.
+	messageDescContent := messageFields[3].Descriptor()
+	// message.DefaultContent holds the default value on creation for the content field.
+	message.DefaultContent = messageDescContent.Default.(string)
+	// messageDescStatus is the schema descriptor for status field.
+	messageDescStatus := messageFields[4].Descriptor()
+	// message.DefaultStatus holds the default value on creation for the status field.
+	message.DefaultStatus = messageDescStatus.Default.(int8)
 }
