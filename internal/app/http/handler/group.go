@@ -47,6 +47,19 @@ func (h *GroupHandler) CreateGroup(c *gin.Context) {
 		return
 	}
 
+	group := &ent.GroupMember{
+		UID:     u.ID,
+		GroupID: result.ID,
+		Remark:  "",
+	}
+	_, err = h.groupMemberUsecase.CreateGroupMember(c, group)
+	if err != nil {
+		resp.Code = 1
+		resp.Message = err.Error()
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
 	resp.Message = "ok"
 	resp.Data = result
 	c.JSON(http.StatusOK, resp)

@@ -60,6 +60,9 @@ func Logger(c *gin.Context) {
 	c.Next()
 
 	body = bw.body.String()
+	if buf.Len() > 1024 {
+		body = "too large body"
+	}
 	latency := time.Since(now)
 	log.Infow("response",
 		log.Pair("request_id", requestID),
