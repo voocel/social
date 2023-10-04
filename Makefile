@@ -9,6 +9,11 @@ gen:
 	 	    --go-grpc_out=./protos \
 	 	   ./protos/$(protofile)
 
+pb:
+	@protoc -I="./protos" --go_out=./protos \
+			--go-grpc_out=./protos \
+			./protos/gate.proto ./protos/node.proto ./protos/message.proto;
+
 ## build: Compile a program into an executable file
 build:
 	@CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags '-w -s' -o social
