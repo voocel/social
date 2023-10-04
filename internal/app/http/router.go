@@ -18,6 +18,7 @@ func getRouters(entClient *ent.Client) (routers []Router) {
 	fa := usecase.NewFriendApplyUseCase(repo.NewFriendApplyRepo(entClient))
 	g := usecase.NewGroupUseCase(repo.NewGroupRepo(entClient))
 	gm := usecase.NewGroupMemberUseCase(repo.NewGroupMemberRepo(entClient))
+	m := usecase.NewMessageUseCase(repo.NewMessageRepo(entClient))
 
 	userHandler := handler.NewUserHandler(u)
 	ur := newUserRouter(userHandler)
@@ -28,7 +29,10 @@ func getRouters(entClient *ent.Client) (routers []Router) {
 	groupHandler := handler.NewGroupHandler(g, gm)
 	gr := newGroupRouter(groupHandler)
 
-	routers = append(routers, ur, fr, gr)
+	messageHandler := handler.NewMessageHandler(m)
+	mr := newMessageRouter(messageHandler)
+
+	routers = append(routers, ur, fr, gr, mr)
 	return
 }
 
@@ -88,5 +92,21 @@ func (r *groupRouter) Load(g *gin.Engine) {
 		gr.GET("/list", r.h.GetGroups)
 		gr.POST("/create", r.h.CreateGroup)
 		gr.POST("/joinGroup", r.h.JoinGroup)
+	}
+}
+
+// ######################### Message Router #########################
+type messageRouter struct {
+	h *handler.MessageHandler
+}
+
+func newMessageRouter(h *handler.MessageHandler) *messageRouter {
+	return &messageRouter{h: h}
+}
+
+func (r *messageRouter) Load(g *gin.Engine) {
+	mr := g.Group("/v1/message")
+	{
+		mr.GET("/list", r.h.GetMessage)
 	}
 }
