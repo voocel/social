@@ -42,5 +42,10 @@ type (
 		ExistsGroupMemberRepo(ctx context.Context, uid, groupId int64) (bool, error)
 	}
 
+	MessageRepo interface {
+		AddMessageRepo(ctx context.Context, info *ent.Message) (*ent.Message, error)
+		GetMessagesRepo(ctx context.Context, uid int64) ([]*ent.Message, error)
+	}
+
 	UserWebAPI interface{}
 )
