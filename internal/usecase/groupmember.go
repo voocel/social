@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"social/ent"
-	"social/internal/entity"
 )
 
 type GroupMemberUseCase struct {
@@ -14,8 +13,12 @@ func NewGroupMemberUseCase(r GroupMemberRepo) *GroupMemberUseCase {
 	return &GroupMemberUseCase{repo: r}
 }
 
-func (g *GroupMemberUseCase) GetGroups(ctx context.Context, uid int64) ([]*entity.Group, error) {
+func (g *GroupMemberUseCase) GetGroups(ctx context.Context, uid int64) ([]*ent.Group, error) {
 	return g.repo.GetGroupsRepo(ctx, uid)
+}
+
+func (g *GroupMemberUseCase) GetGroupMemberUserRepo(ctx context.Context, id int64) ([]int64, error) {
+	return g.repo.GetGroupMemberUserRepo(ctx, id)
 }
 
 func (g *GroupMemberUseCase) CreateGroupMember(ctx context.Context, group *ent.GroupMember) (*ent.GroupMember, error) {

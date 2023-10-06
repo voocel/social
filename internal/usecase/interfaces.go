@@ -36,8 +36,9 @@ type (
 	}
 
 	GroupMemberRepo interface {
-		GetGroupsRepo(ctx context.Context, uid int64) ([]*entity.Group, error)
+		GetGroupsRepo(ctx context.Context, uid int64) ([]*ent.Group, error)
 		GetGroupMembersRepo(ctx context.Context, uid int64) ([]*ent.GroupMember, error)
+		GetGroupMemberUserRepo(ctx context.Context, id int64) ([]int64, error)
 		CreateGroupMemberRepo(ctx context.Context, info *ent.GroupMember) (*ent.GroupMember, error)
 		ExistsGroupMemberRepo(ctx context.Context, uid, groupId int64) (bool, error)
 	}
