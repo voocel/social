@@ -3,18 +3,28 @@ package group
 import (
 	"context"
 	"encoding/json"
+	"social/ent"
 	"social/internal/node"
 	"social/internal/route"
+	"social/internal/usecase"
+	"social/internal/usecase/repo"
 	"social/pkg/log"
 	"social/protos/pb"
+	"time"
 )
 
 type core struct {
-	proxy *node.Proxy
+	proxy     *node.Proxy
+	gUseCase  *usecase.GroupUseCase
+	gmUseCase *usecase.GroupMemberUseCase
 }
 
-func newCore(proxy *node.Proxy) *core {
-	return &core{proxy: proxy}
+func newCore(proxy *node.Proxy, entClient *ent.Client) *core {
+	return &core{
+		proxy:     proxy,
+		gmUseCase: usecase.NewGroupMemberUseCase(repo.NewGroupMemberRepo(entClient)),
+		gUseCase:  usecase.NewGroupUseCase(repo.NewGroupRepo(entClient)),
+	}
 }
 
 func (c *core) Init() {
@@ -62,9 +72,25 @@ func (c *core) message(req node.Request) {
 	}
 	log.Debugf("[Group]Message receive data: %v", msg)
 
-	err := req.Multicast(context.Background(), msg.Receiver.Id, msg)
+	uids, err := c.gmUseCase.GetGroupMemberUser(context.Background(), msg.Receiver.Id)
 	if err != nil {
-		log.Errorf("[IM]Respond message err: %v", err)
+		log.Errorf("[Group]GetGroupMemberUser err: %v", err)
+		return
+	}
+
+	group, err := c.gUseCase.GetGroupById(context.Background(), msg.Receiver.Id)
+	if err != nil {
+		log.Errorf("[Group]GetGroupById err: %v", err)
+		return
+	}
+
+	msg.Receiver.Avatar = group.Avatar
+	msg.Receiver.Nickname = group.Name
+	msg.Timestamp = time.Now().Unix()
+
+	err = req.Multicast(context.Background(), uids, msg)
+	if err != nil {
+		log.Errorf("[Group]Respond Multicast message err: %v", err)
 	}
 	return
 }

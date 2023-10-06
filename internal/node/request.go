@@ -18,8 +18,8 @@ func (r *Request) Respond(ctx context.Context, target int64, message *pb.MsgItem
 	return r.Node.proxy.Respond(ctx, r, target, message)
 }
 
-func (r *Request) Multicast(ctx context.Context, target int64, message *pb.MsgItem) error {
-	return r.Node.proxy.Multicast(ctx, target, message)
+func (r *Request) Multicast(ctx context.Context, targets []int64, message *pb.MsgItem) error {
+	return r.Node.proxy.Multicast(ctx, targets, message)
 }
 
 func (r *Request) Broadcast(ctx context.Context, target int64, message *pb.MsgItem) error {

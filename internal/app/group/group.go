@@ -1,10 +1,13 @@
 package group
 
 import (
+	"github.com/jinzhu/copier"
 	"github.com/spf13/viper"
+	"social/config"
 	"social/internal/node"
 	"social/internal/transport"
 	"social/internal/transport/grpc"
+	"social/pkg/database/ent"
 )
 
 func Run() *node.Node {
@@ -13,7 +16,10 @@ func Run() *node.Node {
 	n := node.NewNode(node.WithTransporter(
 		grpc.NewTransporter(transport.WithAddr(addr), transport.WithName(name)),
 	))
-	core := newCore(n.GetProxy())
+	cfg := ent.PgConfig{}
+	copier.Copy(&cfg, config.Conf.Postgres)
+	client := ent.InitEnt(cfg)
+	core := newCore(n.GetProxy(), client)
 	core.Init()
 	n.Start()
 	return n

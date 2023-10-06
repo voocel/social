@@ -17,7 +17,7 @@ func (g *GroupMemberUseCase) GetGroups(ctx context.Context, uid int64) ([]*ent.G
 	return g.repo.GetGroupsRepo(ctx, uid)
 }
 
-func (g *GroupMemberUseCase) GetGroupMemberUserRepo(ctx context.Context, id int64) ([]int64, error) {
+func (g *GroupMemberUseCase) GetGroupMemberUser(ctx context.Context, id int64) ([]int64, error) {
 	return g.repo.GetGroupMemberUserRepo(ctx, id)
 }
 

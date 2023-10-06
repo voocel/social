@@ -22,7 +22,7 @@ type GateProvider interface {
 	// Push 发送消息（异步）
 	Push(req *pb.PushReq) error
 	// Multicast 组播消息（异步）
-	Multicast(target int64, req *pb.Message) (n int64)
+	Multicast(targets []int64, req *pb.Message) (n int64)
 	// Broadcast 广播消息（异步）
 	Broadcast(req *pb.Message) (n int64)
 }

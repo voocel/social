@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 	"social/config"
 	"social/internal/event"
+	"social/internal/route"
 	"social/internal/transport"
 	"social/pkg/log"
 	"social/protos/pb"
@@ -73,22 +74,22 @@ ok:
 	return nil
 }
 
-func (p *Proxy) Multicast(ctx context.Context, target int64, msg *pb.MsgItem) error {
+func (p *Proxy) Multicast(ctx context.Context, targets []int64, msg *pb.MsgItem) error {
 	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err
 	}
 	b, _ := json.Marshal(msg)
-	total, err := c.Multicast(ctx, target, &transport.Message{
+	total, err := c.Multicast(ctx, targets, &transport.Message{
 		Seq:    0,
-		Route:  0,
+		Route:  route.GroupMessage,
 		Buffer: b,
 	})
 	if err != nil {
 		log.Errorf("Multicast err: %v", err)
 		return err
 	}
-	log.Infof("Respond Multicast message to gateway success: %v", total)
+	log.Infof("Respond Multicast(%v) message to gateway success: %v", targets, total)
 	return nil
 }
 
@@ -100,7 +101,7 @@ func (p *Proxy) Broadcast(ctx context.Context, msg *pb.MsgItem) error {
 	b, _ := json.Marshal(msg)
 	total, err := c.Broadcast(ctx, &transport.Message{
 		Seq:    0,
-		Route:  0,
+		Route:  route.System,
 		Buffer: b,
 	})
 	if err != nil {
