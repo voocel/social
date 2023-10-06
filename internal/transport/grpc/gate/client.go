@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/resolver"
 
 	"social/internal/transport"
@@ -95,9 +96,9 @@ func (c *client) Push(ctx context.Context, target int64, message *transport.Mess
 	return err
 }
 
-func (c *client) Multicast(ctx context.Context, target int64, message *transport.Message) (total int64, err error) {
+func (c *client) Multicast(ctx context.Context, targets []int64, message *transport.Message) (total int64, err error) {
 	reply, err := c.client.Multicast(ctx, &pb.MulticastReq{
-		Target: target,
+		Targets: targets,
 		Message: &pb.Message{
 			Seq:    message.Seq,
 			Route:  message.Route,
@@ -114,6 +115,6 @@ func (c *client) Broadcast(ctx context.Context, message *transport.Message) (tot
 			Route:  message.Route,
 			Buffer: message.Buffer,
 		},
-	})
+	}, grpc.UseCompressor(gzip.Name))
 	return reply.Total, err
 }

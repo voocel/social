@@ -51,7 +51,7 @@ message GetIPReply {
 }
 
 message MulticastReq {
-  int64 target = 1; // 组ID
+  repeated int64 targets = 1; // 组ID
   Message Message = 2; // 消息
 }
 

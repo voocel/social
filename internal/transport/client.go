@@ -24,7 +24,7 @@ type GateClient interface {
 	// Push 推送消息
 	Push(ctx context.Context, target int64, message *Message) (err error)
 	// Multicast 推送组消息
-	Multicast(ctx context.Context, target int64, message *Message) (total int64, err error)
+	Multicast(ctx context.Context, target []int64, message *Message) (total int64, err error)
 	// Broadcast 推送广播消息
 	Broadcast(ctx context.Context, message *Message) (total int64, err error)
 }
