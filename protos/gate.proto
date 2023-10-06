@@ -11,10 +11,12 @@ service Gate {
   rpc Bind(BindReq) returns (BindReply) {}
   // 解绑用户与连接
   rpc Unbind(UnbindReq) returns (UnbindReply) {}
-  // 推送消息
-  rpc Push(PushReq) returns (PushReply) {}
   // 获取客户端IP
   rpc GetIP(GetIPReq) returns (GetIPReply) {}
+  // 推送消息
+  rpc Push(PushReq) returns (PushReply) {}
+  // 推送组消息
+  rpc Multicast(MulticastReq) returns (MulticastReply) {}
   // 推送广播消息
   rpc Broadcast(BroadcastReq) returns (BroadcastReply) {}
 }
@@ -46,6 +48,15 @@ message GetIPReq {
 
 message GetIPReply {
   string IP = 1;
+}
+
+message MulticastReq {
+  int64 target = 1; // 组ID
+  Message Message = 2; // 消息
+}
+
+message MulticastReply {
+  int64 Total = 1; // 组播数量
 }
 
 message BroadcastReq {

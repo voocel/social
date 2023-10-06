@@ -95,6 +95,18 @@ func (c *client) Push(ctx context.Context, target int64, message *transport.Mess
 	return err
 }
 
+func (c *client) Multicast(ctx context.Context, target int64, message *transport.Message) (total int64, err error) {
+	reply, err := c.client.Multicast(ctx, &pb.MulticastReq{
+		Target: target,
+		Message: &pb.Message{
+			Seq:    message.Seq,
+			Route:  message.Route,
+			Buffer: message.Buffer,
+		},
+	})
+	return reply.Total, err
+}
+
 func (c *client) Broadcast(ctx context.Context, message *transport.Message) (total int64, err error) {
 	reply, err := c.client.Broadcast(ctx, &pb.BroadcastReq{
 		Message: &pb.Message{

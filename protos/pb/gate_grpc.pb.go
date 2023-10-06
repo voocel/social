@@ -21,8 +21,9 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Gate_Bind_FullMethodName      = "/pb.Gate/Bind"
 	Gate_Unbind_FullMethodName    = "/pb.Gate/Unbind"
-	Gate_Push_FullMethodName      = "/pb.Gate/Push"
 	Gate_GetIP_FullMethodName     = "/pb.Gate/GetIP"
+	Gate_Push_FullMethodName      = "/pb.Gate/Push"
+	Gate_Multicast_FullMethodName = "/pb.Gate/Multicast"
 	Gate_Broadcast_FullMethodName = "/pb.Gate/Broadcast"
 )
 
@@ -34,10 +35,12 @@ type GateClient interface {
 	Bind(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*BindReply, error)
 	// 解绑用户与连接
 	Unbind(ctx context.Context, in *UnbindReq, opts ...grpc.CallOption) (*UnbindReply, error)
-	// 推送消息
-	Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error)
 	// 获取客户端IP
 	GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error)
+	// 推送消息
+	Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error)
+	// 推送组消息
+	Multicast(ctx context.Context, in *MulticastReq, opts ...grpc.CallOption) (*MulticastReply, error)
 	// 推送广播消息
 	Broadcast(ctx context.Context, in *BroadcastReq, opts ...grpc.CallOption) (*BroadcastReply, error)
 }
@@ -68,6 +71,15 @@ func (c *gateClient) Unbind(ctx context.Context, in *UnbindReq, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *gateClient) GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error) {
+	out := new(GetIPReply)
+	err := c.cc.Invoke(ctx, Gate_GetIP_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gateClient) Push(ctx context.Context, in *PushReq, opts ...grpc.CallOption) (*PushReply, error) {
 	out := new(PushReply)
 	err := c.cc.Invoke(ctx, Gate_Push_FullMethodName, in, out, opts...)
@@ -77,9 +89,9 @@ func (c *gateClient) Push(ctx context.Context, in *PushReq, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *gateClient) GetIP(ctx context.Context, in *GetIPReq, opts ...grpc.CallOption) (*GetIPReply, error) {
-	out := new(GetIPReply)
-	err := c.cc.Invoke(ctx, Gate_GetIP_FullMethodName, in, out, opts...)
+func (c *gateClient) Multicast(ctx context.Context, in *MulticastReq, opts ...grpc.CallOption) (*MulticastReply, error) {
+	out := new(MulticastReply)
+	err := c.cc.Invoke(ctx, Gate_Multicast_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +115,12 @@ type GateServer interface {
 	Bind(context.Context, *BindReq) (*BindReply, error)
 	// 解绑用户与连接
 	Unbind(context.Context, *UnbindReq) (*UnbindReply, error)
-	// 推送消息
-	Push(context.Context, *PushReq) (*PushReply, error)
 	// 获取客户端IP
 	GetIP(context.Context, *GetIPReq) (*GetIPReply, error)
+	// 推送消息
+	Push(context.Context, *PushReq) (*PushReply, error)
+	// 推送组消息
+	Multicast(context.Context, *MulticastReq) (*MulticastReply, error)
 	// 推送广播消息
 	Broadcast(context.Context, *BroadcastReq) (*BroadcastReply, error)
 	mustEmbedUnimplementedGateServer()
@@ -122,11 +136,14 @@ func (UnimplementedGateServer) Bind(context.Context, *BindReq) (*BindReply, erro
 func (UnimplementedGateServer) Unbind(context.Context, *UnbindReq) (*UnbindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unbind not implemented")
 }
+func (UnimplementedGateServer) GetIP(context.Context, *GetIPReq) (*GetIPReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIP not implemented")
+}
 func (UnimplementedGateServer) Push(context.Context, *PushReq) (*PushReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Push not implemented")
 }
-func (UnimplementedGateServer) GetIP(context.Context, *GetIPReq) (*GetIPReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIP not implemented")
+func (UnimplementedGateServer) Multicast(context.Context, *MulticastReq) (*MulticastReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Multicast not implemented")
 }
 func (UnimplementedGateServer) Broadcast(context.Context, *BroadcastReq) (*BroadcastReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
@@ -180,6 +197,24 @@ func _Gate_Unbind_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Gate_GetIP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIPReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GateServer).GetIP(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Gate_GetIP_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GateServer).GetIP(ctx, req.(*GetIPReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Gate_Push_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PushReq)
 	if err := dec(in); err != nil {
@@ -198,20 +233,20 @@ func _Gate_Push_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Gate_GetIP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIPReq)
+func _Gate_Multicast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MulticastReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GateServer).GetIP(ctx, in)
+		return srv.(GateServer).Multicast(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Gate_GetIP_FullMethodName,
+		FullMethod: Gate_Multicast_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GateServer).GetIP(ctx, req.(*GetIPReq))
+		return srv.(GateServer).Multicast(ctx, req.(*MulticastReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -250,12 +285,16 @@ var Gate_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Gate_Unbind_Handler,
 		},
 		{
+			MethodName: "GetIP",
+			Handler:    _Gate_GetIP_Handler,
+		},
+		{
 			MethodName: "Push",
 			Handler:    _Gate_Push_Handler,
 		},
 		{
-			MethodName: "GetIP",
-			Handler:    _Gate_GetIP_Handler,
+			MethodName: "Multicast",
+			Handler:    _Gate_Multicast_Handler,
 		},
 		{
 			MethodName: "Broadcast",

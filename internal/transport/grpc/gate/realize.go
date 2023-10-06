@@ -47,6 +47,14 @@ func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.Unbin
 	return &pb.UnbindReply{}, nil
 }
 
+func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPReply, error) {
+	s, err := gs.provider.Session(req.Uid)
+	if err != nil {
+		return &pb.GetIPReply{}, nil
+	}
+	return &pb.GetIPReply{IP: s.RemoteIP()}, nil
+}
+
 // Push gateway send message to user
 func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
@@ -72,12 +80,9 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply
 	return &pb.PushReply{}, nil
 }
 
-func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPReply, error) {
-	s, err := gs.provider.Session(req.Uid)
-	if err != nil {
-		return &pb.GetIPReply{}, nil
-	}
-	return &pb.GetIPReply{IP: s.RemoteIP()}, nil
+func (gs *gateService) Multicast(ctx context.Context, req *pb.MulticastReq) (*pb.MulticastReply, error) {
+	n := gs.provider.Multicast(req.Target, req.Message)
+	return &pb.MulticastReply{Total: n}, nil
 }
 
 func (gs *gateService) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.BroadcastReply, error) {
