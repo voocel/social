@@ -38,6 +38,16 @@ func (p provider) Push(req *pb.PushReq) error {
 	return s.Push(b)
 }
 
+func (p provider) Multicast(target int64, req *pb.Message) (n int64) {
+	data := &packet.Message{
+		Seq:    req.Seq,
+		Route:  req.Route,
+		Buffer: req.GetBuffer(),
+	}
+	b, _ := packet.Pack(data)
+	return p.gate.sessionGroup.Broadcast(b)
+}
+
 func (p provider) Broadcast(req *pb.Message) (n int64) {
 	data := &packet.Message{
 		Seq:    req.Seq,

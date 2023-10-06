@@ -81,6 +81,8 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply
 }
 
 func (gs *gateService) Multicast(ctx context.Context, req *pb.MulticastReq) (*pb.MulticastReply, error) {
+	log.Debugf("[Gateway] receive node grpc multicast message to target[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
+
 	n := gs.provider.Multicast(req.Target, req.Message)
 	return &pb.MulticastReply{Total: n}, nil
 }

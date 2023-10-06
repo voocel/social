@@ -1,6 +1,7 @@
 package group
 
 import (
+	"context"
 	"encoding/json"
 	"social/internal/node"
 	"social/internal/route"
@@ -60,5 +61,10 @@ func (c *core) message(req node.Request) {
 		return
 	}
 	log.Debugf("[Group]Message receive data: %v", msg)
+
+	err := req.Multicast(context.Background(), msg.Receiver.Id, msg)
+	if err != nil {
+		log.Errorf("[IM]Respond message err: %v", err)
+	}
 	return
 }
