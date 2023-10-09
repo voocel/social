@@ -16,10 +16,15 @@ import (
 type core struct {
 	proxy       *node.Proxy
 	userUseCase *usecase.UserUseCase
+	msgUseCase  *usecase.MessageUseCase
 }
 
 func newCore(proxy *node.Proxy, entClient *ent.Client) *core {
-	return &core{proxy: proxy, userUseCase: usecase.NewUserUseCase(repo.NewUserRepo(entClient))}
+	return &core{
+		proxy:       proxy,
+		userUseCase: usecase.NewUserUseCase(repo.NewUserRepo(entClient)),
+		msgUseCase:  usecase.NewMessageUseCase(repo.NewMessageRepo(entClient)),
+	}
 }
 
 func (c *core) Init() {
@@ -75,6 +80,14 @@ func (c *core) message(req node.Request) {
 	msg.Sender.Nickname = user.Nickname
 	msg.Sender.Avatar = user.Avatar
 	msg.Timestamp = time.Now().Unix()
+
+	info := &ent.Message{
+		SenderID:   msg.Sender.Id,
+		ReceiverID: msg.Receiver.Id,
+		Content:    msg.Content,
+		Status:     0,
+	}
+	c.msgUseCase.AddMessage(context.Background(), info)
 
 	err = req.Respond(context.Background(), msg.Receiver.Id, msg)
 	if err != nil {
