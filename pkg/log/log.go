@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +13,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	_ "net/http/pprof"
 )
 
 const (
@@ -54,6 +57,12 @@ func Init(serviceName, level string, logPaths ...string) {
 	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
 	srv = &http.Server{
 		Addr:    viper.GetString("atomic_level_addr"),
