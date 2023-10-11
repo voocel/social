@@ -7,6 +7,7 @@ etcd:
   addr: 127.0.0.1:2379
 
 transport:
+  discovery_gate: "gate-inter-rpc-server"
   grpc:
     service_name: "group"
     addr: "127.0.0.1:7400"
