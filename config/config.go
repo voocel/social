@@ -7,21 +7,23 @@ import (
 	"strings"
 )
 
-var Conf = new(Config)
+var Conf = new(config)
 
-type Config struct {
+type config struct {
 	Mode            string
 	LogLevel        string `mapstructure:"log_level"`
 	LogPath         string `mapstructure:"log_path"`
-	AtomicLevelAddr string `mapstructure:"atomic_level_addr"`
+	LogLevelAddr    string `mapstructure:"log_level_addr"`
+	LogLevelPattern string `mapstructure:"log_level_pattern"`
 
 	App       AppConfig
 	Transport Transport
 	Http      HttpConfig
 	IM        IMConfig
 	Group     GroupConfig
-	Gate      GateConfig
+	Gateway   GateConfig
 	RPC       RPCConfig
+	Etcd      EtcdConfig
 	Redis     RedisConfig
 	Mysql     MysqlConfig
 	Postgres  PostgresConfig
@@ -57,6 +59,10 @@ type GateConfig struct {
 }
 
 type RPCConfig struct {
+}
+
+type EtcdConfig struct {
+	Addr string
 }
 
 type RedisConfig struct {

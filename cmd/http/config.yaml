@@ -1,7 +1,8 @@
 mode: debug
 log_level: info
 log_path: log
-atomic_level_addr: :4241
+log_level_addr: :4241
+log_level_pattern: /log/level
 
 app:
   domain: http://127.0.0.1:8100

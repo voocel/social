@@ -1,7 +1,8 @@
 mode: debug
 log_level: info
-
-atomic_level_addr: :4240
+log_path: log
+log_level_addr: :4240
+log_level_pattern: /log/level
 
 etcd:
   addr: 127.0.0.1:2379
