@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"github.com/spf13/viper"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 	"net/http"
@@ -62,7 +61,7 @@ func (s *Server) Run() {
 	s.routerLoad(g, getRouters(entClient)...)
 
 	srv := http.Server{
-		Addr:    viper.GetString("http.addr"),
+		Addr:    config.Conf.Http.Addr,
 		Handler: g,
 	}
 	go func() {

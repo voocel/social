@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/spf13/viper"
+	"social/config"
 	"social/internal/event"
 	"social/internal/transport"
 	"social/pkg/discovery"
@@ -90,7 +90,7 @@ func (n *Node) Stop() {
 func (n *Node) startRPCServer() {
 	n.rpcSrv = n.opts.transporter.NewNodeServer(&provider{n})
 
-	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
+	r, err := etcd.NewRegistry([]string{config.Conf.Etcd.Addr})
 	if err != nil {
 		panic(err)
 	}

@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
-
+	"social/config"
 	"social/internal/app/gateway/packet"
 	"social/internal/entity"
 	"social/internal/route"
@@ -64,7 +63,7 @@ func (g *Gateway) Start() {
 }
 
 func (g *Gateway) startGate() {
-	startupMessage(viper.GetString("gateway.addr"), viper.GetString("gateway.name"))
+	startupMessage(config.Conf.Gateway.Addr, config.Conf.Gateway.Name)
 	g.opts.server.OnConnect(g.handleConnect)
 	g.opts.server.OnReceive(g.handleReceive)
 	g.opts.server.OnDisconnect(g.handleDisconnect)
@@ -92,7 +91,7 @@ func (g *Gateway) startGate() {
 func (g *Gateway) startRPCServer() {
 	g.srv = g.opts.transporter.NewGateServer(&provider{g})
 
-	r, err := etcd.NewRegistry([]string{viper.GetString("etcd.addr")})
+	r, err := etcd.NewRegistry([]string{config.Conf.Etcd.Addr})
 	if err != nil {
 		panic(err)
 	}

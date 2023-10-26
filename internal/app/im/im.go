@@ -2,7 +2,6 @@ package im
 
 import (
 	"github.com/jinzhu/copier"
-	"github.com/spf13/viper"
 	"social/config"
 	"social/internal/node"
 	"social/internal/transport"
@@ -11,8 +10,8 @@ import (
 )
 
 func Run() *node.Node {
-	addr := viper.GetString("transport.grpc.addr")
-	name := viper.GetString("transport.grpc.service_name")
+	addr := config.Conf.Transport.Grpc.Addr
+	name := config.Conf.Transport.Grpc.ServiceName
 	n := node.NewNode(
 		node.WithTransporter(
 			grpc.NewTransporter(transport.WithAddr(addr), transport.WithName(name)),
