@@ -8,61 +8,54 @@ import "message.proto";
 
 service Gate {
   // 绑定用户与连接
-  rpc Bind(BindReq) returns (BindReply) {}
+  rpc Bind(BindReq) returns (BaseReply) {}
   // 解绑用户与连接
-  rpc Unbind(UnbindReq) returns (UnbindReply) {}
+  rpc Unbind(BaseReq) returns (BaseReply) {}
   // 获取客户端IP
-  rpc GetIP(GetIPReq) returns (GetIPReply) {}
+  rpc GetIP(BaseReq) returns (GetIPReply) {}
   // 推送消息
-  rpc Push(PushReq) returns (PushReply) {}
+  rpc Push(PushReq) returns (BaseReply) {}
   // 推送组消息
   rpc Multicast(MulticastReq) returns (MulticastReply) {}
   // 推送广播消息
   rpc Broadcast(BroadcastReq) returns (BroadcastReply) {}
+  // 断开网关与用户的连接
+  rpc Disconnect(BaseReq) returns (BaseReply) {}
 }
+
+message BaseReq {
+  int64 uid = 1; // 用户ID
+}
+
+message BaseReply {}
 
 message BindReq {
   int64 cid = 1; // 连接ID
   int64 uid = 2; // 用户ID
 }
 
-message BindReply {
-}
-
-message UnbindReq {
-  int64 uid = 1; // 用户ID
-}
-
-message UnbindReply {}
-
 message PushReq {
   int64 target = 1; // 推送目标
-  Message Message = 2; // 消息
-}
-
-message PushReply {}
-
-message GetIPReq {
-  int64 Uid = 1;
+  Message message = 2; // 消息
 }
 
 message GetIPReply {
-  string IP = 1;
+  string ip = 1;
 }
 
 message MulticastReq {
   repeated int64 targets = 1; // 组ID
-  Message Message = 2; // 消息
+  Message message = 2; // 消息
 }
 
 message MulticastReply {
-  int64 Total = 1; // 组播数量
+  int64 total = 1; // 组播数量
 }
 
 message BroadcastReq {
-  Message Message = 1; // 消息
+  Message message = 1; // 消息
 }
 
 message BroadcastReply {
-  int64 Total = 1; // 广播数量
+  int64 total = 1; // 广播数量
 }

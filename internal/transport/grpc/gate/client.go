@@ -3,10 +3,10 @@ package gate
 import (
 	"context"
 	"fmt"
+	"social/config"
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,7 +31,7 @@ func NewClient(serviceName string) (*client, error) {
 		return c.(*client), nil
 	}
 
-	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
+	reg, err := etcd.NewResolver([]string{config.Conf.Etcd.Addr}, serviceName)
 	if err != nil {
 		panic(err)
 	}
@@ -63,24 +63,25 @@ func (c *client) Bind(ctx context.Context, cid, uid int64) (err error) {
 }
 
 func (c *client) Unbind(ctx context.Context, uid int64) (err error) {
-	_, err = c.client.Unbind(ctx, &pb.UnbindReq{
+	_, err = c.client.Unbind(ctx, &pb.BaseReq{
 		Uid: uid,
 	})
 	return err
 }
 
 func (c *client) GetIP(ctx context.Context, target int64) (ip string, err error) {
-	res, e := c.client.GetIP(ctx, &pb.GetIPReq{
+	res, e := c.client.GetIP(ctx, &pb.BaseReq{
 		Uid: target,
 	})
 	if e != nil {
 		return "", e
 	}
-	return res.GetIP(), nil
+	return res.GetIp(), nil
 }
 
 func (c *client) Disconnect(ctx context.Context, target int64) (err error) {
-	panic("implement me")
+	_, err = c.client.Disconnect(ctx, &pb.BaseReq{Uid: target})
+	return err
 }
 
 // Push node send message to gateway grpc server

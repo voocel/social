@@ -3,18 +3,19 @@ package node
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/viper"
+	"sync"
+	"time"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/resolver"
+	"social/config"
 	"social/internal/event"
 	"social/internal/transport"
 	"social/pkg/discovery/etcd"
 	"social/pkg/log"
 	"social/protos/pb"
-	"sync"
-	"time"
 )
 
 var clients sync.Map
@@ -29,7 +30,7 @@ func NewClient(serviceName string) (*client, error) {
 		return c.(*client), nil
 	}
 
-	reg, err := etcd.NewResolver([]string{viper.GetString("etcd.addr")}, serviceName)
+	reg, err := etcd.NewResolver([]string{config.Conf.Etcd.Addr}, serviceName)
 	if err != nil {
 		panic(err)
 	}

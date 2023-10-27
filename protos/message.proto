@@ -10,7 +10,7 @@ message Message {
   bytes Buffer = 3; // 消息内容
 }
 
-message MsgItem {
+message MsgEntity {
   User sender = 1; // 发送者
   User receiver = 2; // 接收者
   string content = 3; // 内容
@@ -20,20 +20,6 @@ message MsgItem {
 
 message User {
   int64 id = 1;
-  string nickname = 2;
-  string avatar = 3;
-}
-
-message Group {
-  int64 id = 1;
   string name = 2;
   string avatar = 3;
-}
-
-message GroupMsgEntity {
-  User sender = 1; // 发送者
-  Group group = 2; // 群组信息
-  string content = 3; // 内容
-  int64 timestamp = 4; // 时间
-  int32 content_type = 5; // 1.文字 2.普通文件 3.图片 4.音频 5.视频 6.语音聊天 7.视频聊天
 }
