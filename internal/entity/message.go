@@ -10,12 +10,12 @@ import (
 )
 
 type Response struct {
-	Code uint32      `json:"code"`
-	Msg  string      `json:"msg"`
-	Data *pb.MsgItem `json:"data"`
+	Code uint32        `json:"code"`
+	Msg  string        `json:"msg"`
+	Data *pb.MsgEntity `json:"data"`
 }
 
-func (r *Response) Wrap(data *pb.MsgItem) []byte {
+func (r *Response) Wrap(data *pb.MsgEntity) []byte {
 	r.Code = 0
 	r.Msg = "ok"
 	r.Data = data

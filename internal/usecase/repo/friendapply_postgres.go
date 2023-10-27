@@ -42,13 +42,13 @@ func (r FriendApplyRepo) GetFriendApplyRepo(ctx context.Context, uid int64) ([]*
 			continue
 		}
 		item := &entity.FriendApplyResp{
-			FromId:       apply.FromID,
-			FromNickname: user.Nickname,
-			FromAvatar:   user.Avatar,
-			ToId:         apply.ToID,
-			Remark:       apply.Remark,
-			Status:       apply.Status,
-			CreatedAt:    apply.CreatedAt,
+			FromId:     apply.FromID,
+			FromName:   user.Nickname,
+			FromAvatar: user.Avatar,
+			ToId:       apply.ToID,
+			Remark:     apply.Remark,
+			Status:     apply.Status,
+			CreatedAt:  apply.CreatedAt,
 		}
 		res = append(res, item)
 	}

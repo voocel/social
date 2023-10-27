@@ -35,7 +35,7 @@ func (c *core) Init() {
 }
 
 func (c *core) Default(req node.Request) {
-	var msg = new(pb.MsgItem)
+	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
@@ -45,7 +45,7 @@ func (c *core) Default(req node.Request) {
 }
 
 func (c *core) connect(req node.Request) {
-	var msg = new(pb.MsgItem)
+	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
@@ -55,7 +55,7 @@ func (c *core) connect(req node.Request) {
 }
 
 func (c *core) disconnect(req node.Request) {
-	var msg = new(pb.MsgItem)
+	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
@@ -65,7 +65,7 @@ func (c *core) disconnect(req node.Request) {
 }
 
 func (c *core) message(req node.Request) {
-	var msg = new(pb.MsgItem)
+	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Buffer, msg); err != nil {
 		log.Errorf("[IM]Unmarshal message err: %v", err)
 		return
@@ -77,7 +77,7 @@ func (c *core) message(req node.Request) {
 		log.Errorf("[IM]GetUserById err: %v", err)
 		return
 	}
-	msg.Sender.Nickname = user.Nickname
+	msg.Sender.Name = user.Nickname
 	msg.Sender.Avatar = user.Avatar
 	msg.Timestamp = time.Now().Unix()
 

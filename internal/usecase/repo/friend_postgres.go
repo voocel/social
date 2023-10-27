@@ -33,7 +33,7 @@ func (r *FriendRepo) GetFriendsRepo(ctx context.Context, uid int64) ([]*entity.F
 		item := &entity.FriendResp{
 			Uid:      uid,
 			FriendId: friend.FriendID,
-			Nickname: user.Nickname,
+			Name:     user.Username,
 			Avatar:   user.Avatar,
 			Remark:   friend.Remark,
 			Shield:   friend.Shield,
