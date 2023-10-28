@@ -45,7 +45,7 @@ func (p *Proxy) getGateClient(name string) (transport.GateClient, error) {
 }
 
 // Respond send to gateway grpc server
-func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg *pb.MsgItem) error {
+func (p *Proxy) Respond(ctx context.Context, req *Request, target int64, msg *pb.MsgEntity) error {
 	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ ok:
 	return nil
 }
 
-func (p *Proxy) Multicast(ctx context.Context, targets []int64, msg *pb.MsgItem) error {
+func (p *Proxy) Multicast(ctx context.Context, targets []int64, msg *pb.MsgEntity) error {
 	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (p *Proxy) Multicast(ctx context.Context, targets []int64, msg *pb.MsgItem)
 	return nil
 }
 
-func (p *Proxy) Broadcast(ctx context.Context, msg *pb.MsgItem) error {
+func (p *Proxy) Broadcast(ctx context.Context, msg *pb.MsgEntity) error {
 	c, err := p.getGateClient(config.Conf.Transport.DiscoveryGate)
 	if err != nil {
 		return err

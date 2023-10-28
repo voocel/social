@@ -18,7 +18,7 @@ func (p provider) Session(target int64) (*session.Session, error) {
 
 // Push sent message to user client
 func (p provider) Push(req *pb.PushReq) error {
-	var msg = new(pb.MsgItem)
+	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Message.GetBuffer(), msg); err != nil {
 		return err
 	}

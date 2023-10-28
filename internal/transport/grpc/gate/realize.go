@@ -20,7 +20,7 @@ type gateService struct {
 }
 
 // Bind 将用户与当前网关进行绑定
-func (gs *gateService) Bind(ctx context.Context, req *pb.BindReq) (*pb.BindReply, error) {
+func (gs *gateService) Bind(ctx context.Context, req *pb.BindReq) (*pb.BaseReply, error) {
 	if req.Cid <= 0 || req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -31,10 +31,10 @@ func (gs *gateService) Bind(ctx context.Context, req *pb.BindReq) (*pb.BindReply
 
 	s.Bind(req.GetUid())
 
-	return &pb.BindReply{}, nil
+	return &pb.BaseReply{}, nil
 }
 
-func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.UnbindReply, error) {
+func (gs *gateService) Unbind(ctx context.Context, req *pb.BaseReq) (*pb.BaseReply, error) {
 	if req.Uid <= 0 {
 		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
 	}
@@ -44,19 +44,19 @@ func (gs *gateService) Unbind(ctx context.Context, req *pb.UnbindReq) (*pb.Unbin
 	}
 	s.Unbind(req.Uid)
 
-	return &pb.UnbindReply{}, nil
+	return &pb.BaseReply{}, nil
 }
 
-func (gs *gateService) GetIP(ctx context.Context, req *pb.GetIPReq) (*pb.GetIPReply, error) {
+func (gs *gateService) GetIP(ctx context.Context, req *pb.BaseReq) (*pb.GetIPReply, error) {
 	s, err := gs.provider.Session(req.Uid)
 	if err != nil {
 		return &pb.GetIPReply{}, nil
 	}
-	return &pb.GetIPReply{IP: s.RemoteIP()}, nil
+	return &pb.GetIPReply{Ip: s.RemoteIP()}, nil
 }
 
 // Push gateway send message to user
-func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply, error) {
+func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.BaseReply, error) {
 	log.Debugf("[Gateway] receive node grpc message to user[%v]: %v", req.Target, string(req.GetMessage().GetBuffer()))
 	err := gs.provider.Push(req)
 	if err != nil && errors.Is(err, code.ErrSessionNotFound) {
@@ -70,14 +70,14 @@ func (gs *gateService) Push(ctx context.Context, req *pb.PushReq) (*pb.PushReply
 			},
 		)
 		if e == nil {
-			return &pb.PushReply{}, details.Err()
+			return &pb.BaseReply{}, details.Err()
 		}
-		return &pb.PushReply{}, st.Err()
+		return &pb.BaseReply{}, st.Err()
 	}
 	if err != nil {
 		log.Errorf("[Gateway] push to user(%v) err: ", req.Target, err)
 	}
-	return &pb.PushReply{}, nil
+	return &pb.BaseReply{}, nil
 }
 
 func (gs *gateService) Multicast(ctx context.Context, req *pb.MulticastReq) (*pb.MulticastReply, error) {
@@ -89,4 +89,16 @@ func (gs *gateService) Multicast(ctx context.Context, req *pb.MulticastReq) (*pb
 func (gs *gateService) Broadcast(ctx context.Context, req *pb.BroadcastReq) (*pb.BroadcastReply, error) {
 	n := gs.provider.Broadcast(req.Message)
 	return &pb.BroadcastReply{Total: n}, nil
+}
+
+func (gs *gateService) Disconnect(ctx context.Context, req *pb.BaseReq) (*pb.BaseReply, error) {
+	if req.Uid <= 0 {
+		return nil, status.New(codes.InvalidArgument, "invalid argument").Err()
+	}
+	s, err := gs.provider.Session(req.Uid)
+	if err != nil {
+		return nil, err
+	}
+	err = s.Close()
+	return &pb.BaseReply{}, err
 }

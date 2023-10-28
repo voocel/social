@@ -14,7 +14,7 @@ type Friend struct {
 type FriendResp struct {
 	Uid      int64  `json:"uid"`
 	FriendId int64  `json:"friend_id"`
-	Nickname string `json:"nickname"`
+	Name     string `json:"name"`
 	Avatar   string `json:"avatar"`
 	Remark   string `json:"remark"`
 	Shield   int8   `json:"shield"`
@@ -29,14 +29,14 @@ type FriendApply struct {
 }
 
 type FriendApplyResp struct {
-	Id           int64     `json:"id"`
-	FromId       int64     `json:"from_id"`
-	FromNickname string    `json:"from_nickname"`
-	FromAvatar   string    `json:"from_avatar"`
-	ToId         int64     `json:"to_id"`
-	Remark       string    `json:"remark"`
-	Status       int8      `json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
+	Id         int64     `json:"id"`
+	FromId     int64     `json:"from_id"`
+	FromName   string    `json:"from_name"`
+	FromAvatar string    `json:"from_avatar"`
+	ToId       int64     `json:"to_id"`
+	Remark     string    `json:"remark"`
+	Status     int8      `json:"status"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type FriendApplyReq struct {
