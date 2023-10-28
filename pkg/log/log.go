@@ -9,17 +9,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"social/config"
 
 	_ "net/http/pprof"
-)
-
-const (
-	pattern         = "/log/level"
-	defaultEndpoint = ":4240"
 )
 
 var levelMap = map[string]zapcore.Level{
@@ -57,15 +52,14 @@ func Init(serviceName, level string, logPaths ...string) {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	mux.HandleFunc(pattern, atomicLevel.ServeHTTP)
+	mux.HandleFunc(config.Conf.LogLevelPattern, atomicLevel.ServeHTTP)
 	srv = &http.Server{
-		Addr:    viper.GetString("atomic_level_addr"),
+		Addr:    config.Conf.LogLevelAddr,
 		Handler: mux,
 	}
 
