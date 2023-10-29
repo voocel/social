@@ -66,8 +66,7 @@ type EtcdConfig struct {
 }
 
 type RedisConfig struct {
-	Host        string
-	Port        int
+	Addr        string
 	Password    string
 	Db          int
 	PoolSize    int `mapstructure:"pool_size"`
