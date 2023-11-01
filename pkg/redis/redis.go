@@ -8,7 +8,7 @@ import (
 
 var redisClient *redis.Client
 
-func InitRedis() {
+func Init() {
 	redisClient = redis.NewClient(&redis.Options{
 		DB:           config.Conf.Redis.Db,
 		Addr:         config.Conf.Redis.Addr,
@@ -22,14 +22,14 @@ func InitRedis() {
 	}
 }
 
-func GetRedisClient() *redis.Client {
+func GetClient() *redis.Client {
 	if nil == redisClient {
 		panic("Please initialize the Redis client first!")
 	}
 	return redisClient
 }
 
-func CloseRedis() {
+func Close() {
 	if nil != redisClient {
 		_ = redisClient.Close()
 	}
