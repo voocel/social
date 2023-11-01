@@ -11,6 +11,7 @@ var Conf = new(config)
 
 type config struct {
 	Mode            string
+	Name            string
 	LogLevel        string `mapstructure:"log_level"`
 	LogPath         string `mapstructure:"log_path"`
 	LogLevelAddr    string `mapstructure:"log_level_addr"`
