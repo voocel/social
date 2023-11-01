@@ -15,7 +15,7 @@ import (
 
 func main() {
 	config.LoadConfig()
-	log.Init("gateway", "debug")
+	log.Init(config.Conf.Name, config.Conf.LogLevel)
 
 	srv := ws.NewServer(config.Conf.Gateway.Addr)
 	addr := config.Conf.Transport.Grpc.Addr

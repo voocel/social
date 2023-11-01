@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config.LoadConfig()
-	log.Init("group", "debug")
+	log.Init(config.Conf.Name, config.Conf.LogLevel)
 	n := group.Run()
 
 	ch := make(chan os.Signal, 1)
