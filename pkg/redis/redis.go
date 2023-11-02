@@ -6,23 +6,28 @@ import (
 	"social/config"
 )
 
-var redisClient *redis.Client
+var redisClient *Redis
+
+type Redis struct {
+	client *redis.Client
+}
 
 func Init() {
-	redisClient = redis.NewClient(&redis.Options{
+	c := redis.NewClient(&redis.Options{
 		DB:           config.Conf.Redis.Db,
 		Addr:         config.Conf.Redis.Addr,
 		Password:     config.Conf.Redis.Password,
 		PoolSize:     config.Conf.Redis.PoolSize,
 		MinIdleConns: config.Conf.Redis.MinIdleConn,
 	})
-	_, err := redisClient.Ping(context.TODO()).Result()
+	_, err := c.Ping(context.TODO()).Result()
 	if err != nil {
 		panic(err)
 	}
+	redisClient.client = c
 }
 
-func GetClient() *redis.Client {
+func GetClient() *Redis {
 	if nil == redisClient {
 		panic("Please initialize the Redis client first!")
 	}
@@ -31,6 +36,6 @@ func GetClient() *redis.Client {
 
 func Close() {
 	if nil != redisClient {
-		_ = redisClient.Close()
+		_ = redisClient.client.Close()
 	}
 }
