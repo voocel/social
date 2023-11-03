@@ -9,14 +9,17 @@ import (
 	"social/internal/usecase"
 	"social/internal/usecase/repo"
 	"social/pkg/log"
+	"social/pkg/redis"
 	"social/protos/pb"
 	"time"
 )
 
 type core struct {
+	offlineMsg  map[string]string
 	proxy       *node.Proxy
 	userUseCase *usecase.UserUseCase
 	msgUseCase  *usecase.MessageUseCase
+	redis       *redis.Redis
 }
 
 func newCore(proxy *node.Proxy, entClient *ent.Client) *core {
@@ -24,6 +27,7 @@ func newCore(proxy *node.Proxy, entClient *ent.Client) *core {
 		proxy:       proxy,
 		userUseCase: usecase.NewUserUseCase(repo.NewUserRepo(entClient)),
 		msgUseCase:  usecase.NewMessageUseCase(repo.NewMessageRepo(entClient)),
+		redis:       redis.GetClient(),
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"social/internal/transport"
 	"social/internal/transport/grpc"
 	"social/pkg/database/ent"
+	"social/pkg/redis"
 )
 
 func Run() *node.Node {
@@ -22,6 +23,7 @@ func Run() *node.Node {
 	client := ent.InitEnt(cfg)
 	core := newCore(n.GetProxy(), client)
 	core.Init()
+	redis.Init()
 	n.Start()
 	return n
 }
