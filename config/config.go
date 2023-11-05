@@ -117,6 +117,7 @@ func LoadConfig(paths ...string) {
 	viper.SetDefault("mode", "debug")
 	viper.SetDefault("log_level", "info")
 	viper.SetDefault("log_path", "log")
+	viper.SetDefault("log_level_pattern", "/log/level")
 	viper.SetDefault("atomic_level_addr", "4240")
 
 	viper.SetDefault("http.addr", ":8090")
