@@ -90,6 +90,7 @@ var (
 		{Name: "sender_id", Type: field.TypeInt64},
 		{Name: "receiver_id", Type: field.TypeInt64},
 		{Name: "content", Type: field.TypeString, Default: ""},
+		{Name: "content_type", Type: field.TypeInt8, Default: 0},
 		{Name: "status", Type: field.TypeInt8, Default: 0},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},

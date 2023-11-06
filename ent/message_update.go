@@ -68,6 +68,27 @@ func (mu *MessageUpdate) SetNillableContent(s *string) *MessageUpdate {
 	return mu
 }
 
+// SetContentType sets the "content_type" field.
+func (mu *MessageUpdate) SetContentType(i int8) *MessageUpdate {
+	mu.mutation.ResetContentType()
+	mu.mutation.SetContentType(i)
+	return mu
+}
+
+// SetNillableContentType sets the "content_type" field if the given value is not nil.
+func (mu *MessageUpdate) SetNillableContentType(i *int8) *MessageUpdate {
+	if i != nil {
+		mu.SetContentType(*i)
+	}
+	return mu
+}
+
+// AddContentType adds i to the "content_type" field.
+func (mu *MessageUpdate) AddContentType(i int8) *MessageUpdate {
+	mu.mutation.AddContentType(i)
+	return mu
+}
+
 // SetStatus sets the "status" field.
 func (mu *MessageUpdate) SetStatus(i int8) *MessageUpdate {
 	mu.mutation.ResetStatus()
@@ -261,6 +282,20 @@ func (mu *MessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: message.FieldContent,
 		})
 	}
+	if value, ok := mu.mutation.ContentType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: message.FieldContentType,
+		})
+	}
+	if value, ok := mu.mutation.AddedContentType(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: message.FieldContentType,
+		})
+	}
 	if value, ok := mu.mutation.Status(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
@@ -370,6 +405,27 @@ func (muo *MessageUpdateOne) SetNillableContent(s *string) *MessageUpdateOne {
 	if s != nil {
 		muo.SetContent(*s)
 	}
+	return muo
+}
+
+// SetContentType sets the "content_type" field.
+func (muo *MessageUpdateOne) SetContentType(i int8) *MessageUpdateOne {
+	muo.mutation.ResetContentType()
+	muo.mutation.SetContentType(i)
+	return muo
+}
+
+// SetNillableContentType sets the "content_type" field if the given value is not nil.
+func (muo *MessageUpdateOne) SetNillableContentType(i *int8) *MessageUpdateOne {
+	if i != nil {
+		muo.SetContentType(*i)
+	}
+	return muo
+}
+
+// AddContentType adds i to the "content_type" field.
+func (muo *MessageUpdateOne) AddContentType(i int8) *MessageUpdateOne {
+	muo.mutation.AddContentType(i)
 	return muo
 }
 
@@ -588,6 +644,20 @@ func (muo *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: message.FieldContent,
+		})
+	}
+	if value, ok := muo.mutation.ContentType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: message.FieldContentType,
+		})
+	}
+	if value, ok := muo.mutation.AddedContentType(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: message.FieldContentType,
 		})
 	}
 	if value, ok := muo.mutation.Status(); ok {

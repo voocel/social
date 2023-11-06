@@ -46,6 +46,20 @@ func (mc *MessageCreate) SetNillableContent(s *string) *MessageCreate {
 	return mc
 }
 
+// SetContentType sets the "content_type" field.
+func (mc *MessageCreate) SetContentType(i int8) *MessageCreate {
+	mc.mutation.SetContentType(i)
+	return mc
+}
+
+// SetNillableContentType sets the "content_type" field if the given value is not nil.
+func (mc *MessageCreate) SetNillableContentType(i *int8) *MessageCreate {
+	if i != nil {
+		mc.SetContentType(*i)
+	}
+	return mc
+}
+
 // SetStatus sets the "status" field.
 func (mc *MessageCreate) SetStatus(i int8) *MessageCreate {
 	mc.mutation.SetStatus(i)
@@ -183,6 +197,10 @@ func (mc *MessageCreate) defaults() {
 		v := message.DefaultContent
 		mc.mutation.SetContent(v)
 	}
+	if _, ok := mc.mutation.ContentType(); !ok {
+		v := message.DefaultContentType
+		mc.mutation.SetContentType(v)
+	}
 	if _, ok := mc.mutation.Status(); !ok {
 		v := message.DefaultStatus
 		mc.mutation.SetStatus(v)
@@ -199,6 +217,9 @@ func (mc *MessageCreate) check() error {
 	}
 	if _, ok := mc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Message.content"`)}
+	}
+	if _, ok := mc.mutation.ContentType(); !ok {
+		return &ValidationError{Name: "content_type", err: errors.New(`ent: missing required field "Message.content_type"`)}
 	}
 	if _, ok := mc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Message.status"`)}
@@ -259,6 +280,14 @@ func (mc *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			Column: message.FieldContent,
 		})
 		_node.Content = value
+	}
+	if value, ok := mc.mutation.ContentType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt8,
+			Value:  value,
+			Column: message.FieldContentType,
+		})
+		_node.ContentType = value
 	}
 	if value, ok := mc.mutation.Status(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

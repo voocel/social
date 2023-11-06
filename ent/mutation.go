@@ -3835,23 +3835,25 @@ func (m *GroupMemberMutation) ResetEdge(name string) error {
 // MessageMutation represents an operation that mutates the Message nodes in the graph.
 type MessageMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int64
-	sender_id      *int64
-	addsender_id   *int64
-	receiver_id    *int64
-	addreceiver_id *int64
-	content        *string
-	status         *int8
-	addstatus      *int8
-	created_at     *time.Time
-	updated_at     *time.Time
-	deleted_at     *time.Time
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*Message, error)
-	predicates     []predicate.Message
+	op              Op
+	typ             string
+	id              *int64
+	sender_id       *int64
+	addsender_id    *int64
+	receiver_id     *int64
+	addreceiver_id  *int64
+	content         *string
+	content_type    *int8
+	addcontent_type *int8
+	status          *int8
+	addstatus       *int8
+	created_at      *time.Time
+	updated_at      *time.Time
+	deleted_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*Message, error)
+	predicates      []predicate.Message
 }
 
 var _ ent.Mutation = (*MessageMutation)(nil)
@@ -4106,6 +4108,62 @@ func (m *MessageMutation) ResetContent() {
 	m.content = nil
 }
 
+// SetContentType sets the "content_type" field.
+func (m *MessageMutation) SetContentType(i int8) {
+	m.content_type = &i
+	m.addcontent_type = nil
+}
+
+// ContentType returns the value of the "content_type" field in the mutation.
+func (m *MessageMutation) ContentType() (r int8, exists bool) {
+	v := m.content_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentType returns the old "content_type" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldContentType(ctx context.Context) (v int8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentType: %w", err)
+	}
+	return oldValue.ContentType, nil
+}
+
+// AddContentType adds i to the "content_type" field.
+func (m *MessageMutation) AddContentType(i int8) {
+	if m.addcontent_type != nil {
+		*m.addcontent_type += i
+	} else {
+		m.addcontent_type = &i
+	}
+}
+
+// AddedContentType returns the value that was added to the "content_type" field in this mutation.
+func (m *MessageMutation) AddedContentType() (r int8, exists bool) {
+	v := m.addcontent_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetContentType resets all changes to the "content_type" field.
+func (m *MessageMutation) ResetContentType() {
+	m.content_type = nil
+	m.addcontent_type = nil
+}
+
 // SetStatus sets the "status" field.
 func (m *MessageMutation) SetStatus(i int8) {
 	m.status = &i
@@ -4328,7 +4386,7 @@ func (m *MessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.sender_id != nil {
 		fields = append(fields, message.FieldSenderID)
 	}
@@ -4337,6 +4395,9 @@ func (m *MessageMutation) Fields() []string {
 	}
 	if m.content != nil {
 		fields = append(fields, message.FieldContent)
+	}
+	if m.content_type != nil {
+		fields = append(fields, message.FieldContentType)
 	}
 	if m.status != nil {
 		fields = append(fields, message.FieldStatus)
@@ -4364,6 +4425,8 @@ func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 		return m.ReceiverID()
 	case message.FieldContent:
 		return m.Content()
+	case message.FieldContentType:
+		return m.ContentType()
 	case message.FieldStatus:
 		return m.Status()
 	case message.FieldCreatedAt:
@@ -4387,6 +4450,8 @@ func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldReceiverID(ctx)
 	case message.FieldContent:
 		return m.OldContent(ctx)
+	case message.FieldContentType:
+		return m.OldContentType(ctx)
 	case message.FieldStatus:
 		return m.OldStatus(ctx)
 	case message.FieldCreatedAt:
@@ -4424,6 +4489,13 @@ func (m *MessageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
+		return nil
+	case message.FieldContentType:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentType(v)
 		return nil
 	case message.FieldStatus:
 		v, ok := value.(int8)
@@ -4467,6 +4539,9 @@ func (m *MessageMutation) AddedFields() []string {
 	if m.addreceiver_id != nil {
 		fields = append(fields, message.FieldReceiverID)
 	}
+	if m.addcontent_type != nil {
+		fields = append(fields, message.FieldContentType)
+	}
 	if m.addstatus != nil {
 		fields = append(fields, message.FieldStatus)
 	}
@@ -4482,6 +4557,8 @@ func (m *MessageMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedSenderID()
 	case message.FieldReceiverID:
 		return m.AddedReceiverID()
+	case message.FieldContentType:
+		return m.AddedContentType()
 	case message.FieldStatus:
 		return m.AddedStatus()
 	}
@@ -4506,6 +4583,13 @@ func (m *MessageMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReceiverID(v)
+		return nil
+	case message.FieldContentType:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddContentType(v)
 		return nil
 	case message.FieldStatus:
 		v, ok := value.(int8)
@@ -4570,6 +4654,9 @@ func (m *MessageMutation) ResetField(name string) error {
 		return nil
 	case message.FieldContent:
 		m.ResetContent()
+		return nil
+	case message.FieldContentType:
+		m.ResetContentType()
 		return nil
 	case message.FieldStatus:
 		m.ResetStatus()
