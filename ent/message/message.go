@@ -13,6 +13,8 @@ const (
 	FieldReceiverID = "receiver_id"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// FieldContentType holds the string denoting the content_type field in the database.
+	FieldContentType = "content_type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -31,6 +33,7 @@ var Columns = []string{
 	FieldSenderID,
 	FieldReceiverID,
 	FieldContent,
+	FieldContentType,
 	FieldStatus,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -50,6 +53,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultContent holds the default value on creation for the "content" field.
 	DefaultContent string
+	// DefaultContentType holds the default value on creation for the "content_type" field.
+	DefaultContentType int8
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus int8
 )

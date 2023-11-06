@@ -70,8 +70,12 @@ func init() {
 	messageDescContent := messageFields[3].Descriptor()
 	// message.DefaultContent holds the default value on creation for the content field.
 	message.DefaultContent = messageDescContent.Default.(string)
+	// messageDescContentType is the schema descriptor for content_type field.
+	messageDescContentType := messageFields[4].Descriptor()
+	// message.DefaultContentType holds the default value on creation for the content_type field.
+	message.DefaultContentType = messageDescContentType.Default.(int8)
 	// messageDescStatus is the schema descriptor for status field.
-	messageDescStatus := messageFields[4].Descriptor()
+	messageDescStatus := messageFields[5].Descriptor()
 	// message.DefaultStatus holds the default value on creation for the status field.
 	message.DefaultStatus = messageDescStatus.Default.(int8)
 }

@@ -22,6 +22,8 @@ type Message struct {
 	ReceiverID int64 `json:"receiver_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
+	// ContentType holds the value of the "content_type" field.
+	ContentType int8 `json:"content_type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status int8 `json:"status,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -37,7 +39,7 @@ func (*Message) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case message.FieldID, message.FieldSenderID, message.FieldReceiverID, message.FieldStatus:
+		case message.FieldID, message.FieldSenderID, message.FieldReceiverID, message.FieldContentType, message.FieldStatus:
 			values[i] = new(sql.NullInt64)
 		case message.FieldContent:
 			values[i] = new(sql.NullString)
@@ -81,6 +83,12 @@ func (m *Message) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
 				m.Content = value.String
+			}
+		case message.FieldContentType:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field content_type", values[i])
+			} else if value.Valid {
+				m.ContentType = int8(value.Int64)
 			}
 		case message.FieldStatus:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -141,6 +149,8 @@ func (m *Message) String() string {
 	builder.WriteString(fmt.Sprintf("%v", m.ReceiverID))
 	builder.WriteString(", content=")
 	builder.WriteString(m.Content)
+	builder.WriteString(", content_type=")
+	builder.WriteString(fmt.Sprintf("%v", m.ContentType))
 	builder.WriteString(", status=")
 	builder.WriteString(fmt.Sprintf("%v", m.Status))
 	builder.WriteString(", created_at=")

@@ -17,6 +17,7 @@ func (Message) Fields() []ent.Field {
 		field.Int64("sender_id"),
 		field.Int64("receiver_id"),
 		field.String("content").Default(""),
+		field.Int8("content_type").Default(0),
 		field.Int8("status").Default(0),
 		field.Time("created_at").Optional().StructTag(`json:"-"`),
 		field.Time("updated_at").Optional().StructTag(`json:"-"`),
