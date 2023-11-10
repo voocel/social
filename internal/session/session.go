@@ -32,14 +32,14 @@ func (s *Session) Reset() {
 	s.conn = nil
 }
 
-func (s *Session) CID() int64 {
+func (s *Session) Cid() int64 {
 	s.rw.RLock()
 	defer s.rw.RUnlock()
 
 	return s.conn.Cid()
 }
 
-func (s *Session) UID() int64 {
+func (s *Session) Uid() int64 {
 	s.rw.RLock()
 	defer s.rw.RUnlock()
 
@@ -130,8 +130,8 @@ func NewSessionGroup() *SessionGroup {
 func (g *SessionGroup) AddSession(s *Session) {
 	g.rw.Lock()
 	defer g.rw.Unlock()
-	g.CidSession[s.CID()] = s
-	if uid := s.UID(); uid > 0 {
+	g.CidSession[s.Cid()] = s
+	if uid := s.Uid(); uid > 0 {
 		g.UidSession[uid] = s
 	}
 }
@@ -192,7 +192,7 @@ func (g *SessionGroup) RemoveByCid(cid int64) error {
 	if !ok {
 		return errors.New("cid session not found")
 	}
-	if uid := sess.UID(); uid > 0 {
+	if uid := sess.Uid(); uid > 0 {
 		delete(g.UidSession, uid)
 	}
 	delete(g.CidSession, cid)
@@ -206,7 +206,7 @@ func (g *SessionGroup) RemoveByUid(uid int64) error {
 	if !ok {
 		return errors.New("uid session not found")
 	}
-	delete(g.CidSession, sess.CID())
+	delete(g.CidSession, sess.Cid())
 	delete(g.UidSession, uid)
 	return nil
 }

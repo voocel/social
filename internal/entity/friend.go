@@ -1,6 +1,8 @@
 package entity
 
-import "time"
+import (
+	"time"
+)
 
 type Friend struct {
 	Id          int64  `json:"id"`

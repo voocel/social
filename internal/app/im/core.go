@@ -86,10 +86,11 @@ func (c *core) message(req node.Request) {
 	msg.Timestamp = time.Now().Unix()
 
 	info := &ent.Message{
-		SenderID:   msg.Sender.Id,
-		ReceiverID: msg.Receiver.Id,
-		Content:    msg.Content,
-		Status:     0,
+		SenderID:    msg.Sender.Id,
+		ReceiverID:  msg.Receiver.Id,
+		Content:     msg.Content,
+		ContentType: int8(msg.ContentType),
+		Status:      0,
 	}
 	c.msgUseCase.AddMessage(context.Background(), info)
 
