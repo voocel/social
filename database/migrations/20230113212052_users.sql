@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users(
     email           varchar(50) NOT NULL DEFAULT '',
     avatar          varchar(128) NOT NULL DEFAULT '',
     summary         varchar(128) NOT NULL DEFAULT '',
+    ip              varchar(50) NOT NULL DEFAULT '',
+    address         varchar(50) NOT NULL DEFAULT '',
     sex             smallint  NOT NULL DEFAULT 0,
     status          smallint  NOT NULL DEFAULT 1,
     birthday        DATE,

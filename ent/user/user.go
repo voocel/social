@@ -17,6 +17,10 @@ const (
 	FieldNickname = "nickname"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldIP holds the string denoting the ip field in the database.
+	FieldIP = "ip"
+	// FieldAddress holds the string denoting the address field in the database.
+	FieldAddress = "address"
 	// FieldAvatar holds the string denoting the avatar field in the database.
 	FieldAvatar = "avatar"
 	// FieldSummary holds the string denoting the summary field in the database.
@@ -45,6 +49,8 @@ var Columns = []string{
 	FieldMobile,
 	FieldNickname,
 	FieldEmail,
+	FieldIP,
+	FieldAddress,
 	FieldAvatar,
 	FieldSummary,
 	FieldSex,

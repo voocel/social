@@ -26,6 +26,10 @@ type User struct {
 	Nickname string `json:"nickname,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// IP holds the value of the "ip" field.
+	IP string `json:"ip,omitempty"`
+	// Address holds the value of the "address" field.
+	Address string `json:"address,omitempty"`
 	// Avatar holds the value of the "avatar" field.
 	Avatar string `json:"avatar,omitempty"`
 	// Summary holds the value of the "summary" field.
@@ -51,7 +55,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldID, user.FieldSex, user.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldPassword, user.FieldMobile, user.FieldNickname, user.FieldEmail, user.FieldAvatar, user.FieldSummary:
+		case user.FieldUsername, user.FieldPassword, user.FieldMobile, user.FieldNickname, user.FieldEmail, user.FieldIP, user.FieldAddress, user.FieldAvatar, user.FieldSummary:
 			values[i] = new(sql.NullString)
 		case user.FieldBirthday, user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -105,6 +109,18 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
 				u.Email = value.String
+			}
+		case user.FieldIP:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ip", values[i])
+			} else if value.Valid {
+				u.IP = value.String
+			}
+		case user.FieldAddress:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field address", values[i])
+			} else if value.Valid {
+				u.Address = value.String
 			}
 		case user.FieldAvatar:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -193,6 +209,10 @@ func (u *User) String() string {
 	builder.WriteString(u.Nickname)
 	builder.WriteString(", email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", ip=")
+	builder.WriteString(u.IP)
+	builder.WriteString(", address=")
+	builder.WriteString(u.Address)
 	builder.WriteString(", avatar=")
 	builder.WriteString(u.Avatar)
 	builder.WriteString(", summary=")

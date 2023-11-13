@@ -19,6 +19,8 @@ func (User) Fields() []ent.Field {
 		field.String("mobile"),
 		field.String("nickname"),
 		field.String("email"),
+		field.String("ip"),
+		field.String("address"),
 		field.String("avatar").Optional(),
 		field.String("summary").Optional(),
 		field.Int8("sex").Optional(),
