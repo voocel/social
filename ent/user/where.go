@@ -127,6 +127,20 @@ func Email(v string) predicate.User {
 	})
 }
 
+// IP applies equality check predicate on the "ip" field. It's identical to IPEQ.
+func IP(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIP), v))
+	})
+}
+
+// Address applies equality check predicate on the "address" field. It's identical to AddressEQ.
+func Address(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAddress), v))
+	})
+}
+
 // Avatar applies equality check predicate on the "avatar" field. It's identical to AvatarEQ.
 func Avatar(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -735,6 +749,228 @@ func EmailEqualFold(v string) predicate.User {
 func EmailContainsFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldEmail), v))
+	})
+}
+
+// IPEQ applies the EQ predicate on the "ip" field.
+func IPEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIP), v))
+	})
+}
+
+// IPNEQ applies the NEQ predicate on the "ip" field.
+func IPNEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldIP), v))
+	})
+}
+
+// IPIn applies the In predicate on the "ip" field.
+func IPIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldIP), v...))
+	})
+}
+
+// IPNotIn applies the NotIn predicate on the "ip" field.
+func IPNotIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldIP), v...))
+	})
+}
+
+// IPGT applies the GT predicate on the "ip" field.
+func IPGT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldIP), v))
+	})
+}
+
+// IPGTE applies the GTE predicate on the "ip" field.
+func IPGTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldIP), v))
+	})
+}
+
+// IPLT applies the LT predicate on the "ip" field.
+func IPLT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldIP), v))
+	})
+}
+
+// IPLTE applies the LTE predicate on the "ip" field.
+func IPLTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldIP), v))
+	})
+}
+
+// IPContains applies the Contains predicate on the "ip" field.
+func IPContains(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldIP), v))
+	})
+}
+
+// IPHasPrefix applies the HasPrefix predicate on the "ip" field.
+func IPHasPrefix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldIP), v))
+	})
+}
+
+// IPHasSuffix applies the HasSuffix predicate on the "ip" field.
+func IPHasSuffix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldIP), v))
+	})
+}
+
+// IPEqualFold applies the EqualFold predicate on the "ip" field.
+func IPEqualFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldIP), v))
+	})
+}
+
+// IPContainsFold applies the ContainsFold predicate on the "ip" field.
+func IPContainsFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldIP), v))
+	})
+}
+
+// AddressEQ applies the EQ predicate on the "address" field.
+func AddressEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAddress), v))
+	})
+}
+
+// AddressNEQ applies the NEQ predicate on the "address" field.
+func AddressNEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAddress), v))
+	})
+}
+
+// AddressIn applies the In predicate on the "address" field.
+func AddressIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAddress), v...))
+	})
+}
+
+// AddressNotIn applies the NotIn predicate on the "address" field.
+func AddressNotIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAddress), v...))
+	})
+}
+
+// AddressGT applies the GT predicate on the "address" field.
+func AddressGT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldAddress), v))
+	})
+}
+
+// AddressGTE applies the GTE predicate on the "address" field.
+func AddressGTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldAddress), v))
+	})
+}
+
+// AddressLT applies the LT predicate on the "address" field.
+func AddressLT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldAddress), v))
+	})
+}
+
+// AddressLTE applies the LTE predicate on the "address" field.
+func AddressLTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldAddress), v))
+	})
+}
+
+// AddressContains applies the Contains predicate on the "address" field.
+func AddressContains(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldAddress), v))
+	})
+}
+
+// AddressHasPrefix applies the HasPrefix predicate on the "address" field.
+func AddressHasPrefix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldAddress), v))
+	})
+}
+
+// AddressHasSuffix applies the HasSuffix predicate on the "address" field.
+func AddressHasSuffix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldAddress), v))
+	})
+}
+
+// AddressEqualFold applies the EqualFold predicate on the "address" field.
+func AddressEqualFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldAddress), v))
+	})
+}
+
+// AddressContainsFold applies the ContainsFold predicate on the "address" field.
+func AddressContainsFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldAddress), v))
 	})
 }
 

@@ -110,6 +110,8 @@ var (
 		{Name: "mobile", Type: field.TypeString},
 		{Name: "nickname", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
+		{Name: "ip", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString},
 		{Name: "avatar", Type: field.TypeString, Nullable: true},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "sex", Type: field.TypeInt8, Nullable: true},

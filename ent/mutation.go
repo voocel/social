@@ -4733,6 +4733,8 @@ type UserMutation struct {
 	mobile        *string
 	nickname      *string
 	email         *string
+	ip            *string
+	address       *string
 	avatar        *string
 	summary       *string
 	sex           *int8
@@ -5031,6 +5033,78 @@ func (m *UserMutation) OldEmail(ctx context.Context) (v string, err error) {
 // ResetEmail resets all changes to the "email" field.
 func (m *UserMutation) ResetEmail() {
 	m.email = nil
+}
+
+// SetIP sets the "ip" field.
+func (m *UserMutation) SetIP(s string) {
+	m.ip = &s
+}
+
+// IP returns the value of the "ip" field in the mutation.
+func (m *UserMutation) IP() (r string, exists bool) {
+	v := m.ip
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIP returns the old "ip" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIP(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIP is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIP requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIP: %w", err)
+	}
+	return oldValue.IP, nil
+}
+
+// ResetIP resets all changes to the "ip" field.
+func (m *UserMutation) ResetIP() {
+	m.ip = nil
+}
+
+// SetAddress sets the "address" field.
+func (m *UserMutation) SetAddress(s string) {
+	m.address = &s
+}
+
+// Address returns the value of the "address" field in the mutation.
+func (m *UserMutation) Address() (r string, exists bool) {
+	v := m.address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddress returns the old "address" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAddress(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddress: %w", err)
+	}
+	return oldValue.Address, nil
+}
+
+// ResetAddress resets all changes to the "address" field.
+func (m *UserMutation) ResetAddress() {
+	m.address = nil
 }
 
 // SetAvatar sets the "avatar" field.
@@ -5486,7 +5560,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 15)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -5501,6 +5575,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
+	}
+	if m.ip != nil {
+		fields = append(fields, user.FieldIP)
+	}
+	if m.address != nil {
+		fields = append(fields, user.FieldAddress)
 	}
 	if m.avatar != nil {
 		fields = append(fields, user.FieldAvatar)
@@ -5544,6 +5624,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Nickname()
 	case user.FieldEmail:
 		return m.Email()
+	case user.FieldIP:
+		return m.IP()
+	case user.FieldAddress:
+		return m.Address()
 	case user.FieldAvatar:
 		return m.Avatar()
 	case user.FieldSummary:
@@ -5579,6 +5663,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldNickname(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
+	case user.FieldIP:
+		return m.OldIP(ctx)
+	case user.FieldAddress:
+		return m.OldAddress(ctx)
 	case user.FieldAvatar:
 		return m.OldAvatar(ctx)
 	case user.FieldSummary:
@@ -5638,6 +5726,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmail(v)
+		return nil
+	case user.FieldIP:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIP(v)
+		return nil
+	case user.FieldAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddress(v)
 		return nil
 	case user.FieldAvatar:
 		v, ok := value.(string)
@@ -5836,6 +5938,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldEmail:
 		m.ResetEmail()
+		return nil
+	case user.FieldIP:
+		m.ResetIP()
+		return nil
+	case user.FieldAddress:
+		m.ResetAddress()
 		return nil
 	case user.FieldAvatar:
 		m.ResetAvatar()

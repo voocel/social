@@ -75,3 +75,11 @@ func (r *UserRepo) UpdateAvatarUserRepo(ctx context.Context, uid int64, avatar s
 		Save(ctx)
 	return n, err
 }
+
+func (r *UserRepo) UpdateAddressUserRepo(ctx context.Context, uid int64, address string) (int, error) {
+	n, err := r.ent.User.Update().
+		Where(entUser.ID(uid)).
+		SetAvatar(address).
+		Save(ctx)
+	return n, err
+}

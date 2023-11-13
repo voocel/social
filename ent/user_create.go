@@ -50,6 +50,18 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
+// SetIP sets the "ip" field.
+func (uc *UserCreate) SetIP(s string) *UserCreate {
+	uc.mutation.SetIP(s)
+	return uc
+}
+
+// SetAddress sets the "address" field.
+func (uc *UserCreate) SetAddress(s string) *UserCreate {
+	uc.mutation.SetAddress(s)
+	return uc
+}
+
 // SetAvatar sets the "avatar" field.
 func (uc *UserCreate) SetAvatar(s string) *UserCreate {
 	uc.mutation.SetAvatar(s)
@@ -253,6 +265,12 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
+	if _, ok := uc.mutation.IP(); !ok {
+		return &ValidationError{Name: "ip", err: errors.New(`ent: missing required field "User.ip"`)}
+	}
+	if _, ok := uc.mutation.Address(); !ok {
+		return &ValidationError{Name: "address", err: errors.New(`ent: missing required field "User.address"`)}
+	}
 	return nil
 }
 
@@ -325,6 +343,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldEmail,
 		})
 		_node.Email = value
+	}
+	if value, ok := uc.mutation.IP(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldIP,
+		})
+		_node.IP = value
+	}
+	if value, ok := uc.mutation.Address(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldAddress,
+		})
+		_node.Address = value
 	}
 	if value, ok := uc.mutation.Avatar(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

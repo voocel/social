@@ -58,6 +58,18 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	return uu
 }
 
+// SetIP sets the "ip" field.
+func (uu *UserUpdate) SetIP(s string) *UserUpdate {
+	uu.mutation.SetIP(s)
+	return uu
+}
+
+// SetAddress sets the "address" field.
+func (uu *UserUpdate) SetAddress(s string) *UserUpdate {
+	uu.mutation.SetAddress(s)
+	return uu
+}
+
 // SetAvatar sets the "avatar" field.
 func (uu *UserUpdate) SetAvatar(s string) *UserUpdate {
 	uu.mutation.SetAvatar(s)
@@ -344,6 +356,20 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldEmail,
 		})
 	}
+	if value, ok := uu.mutation.IP(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldIP,
+		})
+	}
+	if value, ok := uu.mutation.Address(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldAddress,
+		})
+	}
 	if value, ok := uu.mutation.Avatar(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -508,6 +534,18 @@ func (uuo *UserUpdateOne) SetNickname(s string) *UserUpdateOne {
 // SetEmail sets the "email" field.
 func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	uuo.mutation.SetEmail(s)
+	return uuo
+}
+
+// SetIP sets the "ip" field.
+func (uuo *UserUpdateOne) SetIP(s string) *UserUpdateOne {
+	uuo.mutation.SetIP(s)
+	return uuo
+}
+
+// SetAddress sets the "address" field.
+func (uuo *UserUpdateOne) SetAddress(s string) *UserUpdateOne {
+	uuo.mutation.SetAddress(s)
 	return uuo
 }
 
@@ -819,6 +857,20 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldEmail,
+		})
+	}
+	if value, ok := uuo.mutation.IP(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldIP,
+		})
+	}
+	if value, ok := uuo.mutation.Address(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldAddress,
 		})
 	}
 	if value, ok := uuo.mutation.Avatar(); ok {
