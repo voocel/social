@@ -14,6 +14,7 @@ type (
 		GetUsersRepo(ctx context.Context) ([]*ent.User, int, error)
 		AddUserRepo(ctx context.Context, user *entity.User) (*ent.User, error)
 		UpdateAvatarUserRepo(ctx context.Context, uid int64, avatar string) (int, error)
+		UpdateAddressUserRepo(ctx context.Context, uid int64, address string) (int, error)
 	}
 
 	FriendRepo interface {
