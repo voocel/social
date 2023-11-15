@@ -67,6 +67,8 @@ func (h *UserHandler) Login(c *gin.Context) {
 		"nickname":      user.Nickname,
 		"sex":           user.Sex,
 		"avatar":        user.Avatar,
+		"ip":            user.IP,
+		"address":       user.Address,
 		"access_token":  at,
 		"refresh_token": rt,
 	}
@@ -182,7 +184,7 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	_, err = h.userUsecase.UpdateFieldUserRepo(c, u.ID, path)
+	_, err = h.userUsecase.UpdateFieldUser(c, u.ID, path)
 	if err != nil {
 		resp.Code = 1
 		resp.Message = "update not image fail"
