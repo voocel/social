@@ -3,11 +3,12 @@ package repo
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"social/ent"
 	"social/ent/friendapply"
 	"social/internal/entity"
 	"social/pkg/log"
-	"time"
 )
 
 type FriendApplyRepo struct {
