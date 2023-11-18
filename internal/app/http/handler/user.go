@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -88,7 +87,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 	m := make(map[string]interface{})
 	if err := copier.Copy(&m, req); err != nil {
-		fmt.Println(err)
 		resp.Code = 1
 		resp.Message = "params invalid."
 		c.JSON(http.StatusOK, resp)
