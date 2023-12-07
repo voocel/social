@@ -18,6 +18,7 @@ func (Group) Fields() []ent.Field {
 		field.Int64("owner"),
 		field.String("avatar").Default(""),
 		field.Int64("created_uid"),
+		field.Int("max_members").Default(200),
 		field.Int8("mode").Default(0),
 		field.Int8("type").Default(0),
 		field.Int8("status").Default(0),

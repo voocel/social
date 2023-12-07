@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS groups(
     owner        bigint NOT NULL DEFAULT 0,
     avatar       varchar(128) NOT NULL DEFAULT '',
     created_uid  bigint NOT NULL DEFAULT 0,
+    max_members   int NOT NULL DEFAULT 200,
     mode         smallint  NOT NULL DEFAULT 0,
     type         smallint  NOT NULL DEFAULT 0,
     status       smallint  NOT NULL DEFAULT 0,
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS groups(
 COMMENT ON COLUMN groups.status IS '群组状态: 0 正常, 1 已解散';
 COMMENT ON COLUMN groups.mode IS '禁言模式: 0 无, 1 仅管理员可发言, 2 全员禁言';
 COMMENT ON COLUMN groups.invite_mode IS '邀请模式: 0 仅群主可邀请, 1 仅管理员可邀请, 2 所有成员可邀请';
+COMMENT ON COLUMN groups.max_members IS '最大成员数量, 默认200';
 
 -- +goose StatementEnd
 
