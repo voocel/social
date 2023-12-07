@@ -49,6 +49,7 @@ var (
 		{Name: "owner", Type: field.TypeInt64},
 		{Name: "avatar", Type: field.TypeString, Default: ""},
 		{Name: "created_uid", Type: field.TypeInt64},
+		{Name: "max_members", Type: field.TypeInt, Default: 200},
 		{Name: "mode", Type: field.TypeInt8, Default: 0},
 		{Name: "type", Type: field.TypeInt8, Default: 0},
 		{Name: "status", Type: field.TypeInt8, Default: 0},

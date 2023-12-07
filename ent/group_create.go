@@ -52,6 +52,20 @@ func (gc *GroupCreate) SetCreatedUID(i int64) *GroupCreate {
 	return gc
 }
 
+// SetMaxMembers sets the "max_members" field.
+func (gc *GroupCreate) SetMaxMembers(i int) *GroupCreate {
+	gc.mutation.SetMaxMembers(i)
+	return gc
+}
+
+// SetNillableMaxMembers sets the "max_members" field if the given value is not nil.
+func (gc *GroupCreate) SetNillableMaxMembers(i *int) *GroupCreate {
+	if i != nil {
+		gc.SetMaxMembers(*i)
+	}
+	return gc
+}
+
 // SetMode sets the "mode" field.
 func (gc *GroupCreate) SetMode(i int8) *GroupCreate {
 	gc.mutation.SetMode(i)
@@ -259,6 +273,10 @@ func (gc *GroupCreate) defaults() {
 		v := group.DefaultAvatar
 		gc.mutation.SetAvatar(v)
 	}
+	if _, ok := gc.mutation.MaxMembers(); !ok {
+		v := group.DefaultMaxMembers
+		gc.mutation.SetMaxMembers(v)
+	}
 	if _, ok := gc.mutation.Mode(); !ok {
 		v := group.DefaultMode
 		gc.mutation.SetMode(v)
@@ -298,6 +316,9 @@ func (gc *GroupCreate) check() error {
 	}
 	if _, ok := gc.mutation.CreatedUID(); !ok {
 		return &ValidationError{Name: "created_uid", err: errors.New(`ent: missing required field "Group.created_uid"`)}
+	}
+	if _, ok := gc.mutation.MaxMembers(); !ok {
+		return &ValidationError{Name: "max_members", err: errors.New(`ent: missing required field "Group.max_members"`)}
 	}
 	if _, ok := gc.mutation.Mode(); !ok {
 		return &ValidationError{Name: "mode", err: errors.New(`ent: missing required field "Group.mode"`)}
@@ -381,6 +402,14 @@ func (gc *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Column: group.FieldCreatedUID,
 		})
 		_node.CreatedUID = value
+	}
+	if value, ok := gc.mutation.MaxMembers(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: group.FieldMaxMembers,
+		})
+		_node.MaxMembers = value
 	}
 	if value, ok := gc.mutation.Mode(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

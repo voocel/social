@@ -120,6 +120,13 @@ func CreatedUID(v int64) predicate.Group {
 	})
 }
 
+// MaxMembers applies equality check predicate on the "max_members" field. It's identical to MaxMembersEQ.
+func MaxMembers(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMaxMembers), v))
+	})
+}
+
 // Mode applies equality check predicate on the "mode" field. It's identical to ModeEQ.
 func Mode(v int8) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -554,6 +561,82 @@ func CreatedUIDLT(v int64) predicate.Group {
 func CreatedUIDLTE(v int64) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedUID), v))
+	})
+}
+
+// MaxMembersEQ applies the EQ predicate on the "max_members" field.
+func MaxMembersEQ(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldMaxMembers), v))
+	})
+}
+
+// MaxMembersNEQ applies the NEQ predicate on the "max_members" field.
+func MaxMembersNEQ(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldMaxMembers), v))
+	})
+}
+
+// MaxMembersIn applies the In predicate on the "max_members" field.
+func MaxMembersIn(vs ...int) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldMaxMembers), v...))
+	})
+}
+
+// MaxMembersNotIn applies the NotIn predicate on the "max_members" field.
+func MaxMembersNotIn(vs ...int) predicate.Group {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldMaxMembers), v...))
+	})
+}
+
+// MaxMembersGT applies the GT predicate on the "max_members" field.
+func MaxMembersGT(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldMaxMembers), v))
+	})
+}
+
+// MaxMembersGTE applies the GTE predicate on the "max_members" field.
+func MaxMembersGTE(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldMaxMembers), v))
+	})
+}
+
+// MaxMembersLT applies the LT predicate on the "max_members" field.
+func MaxMembersLT(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldMaxMembers), v))
+	})
+}
+
+// MaxMembersLTE applies the LTE predicate on the "max_members" field.
+func MaxMembersLTE(v int) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldMaxMembers), v))
 	})
 }
 

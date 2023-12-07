@@ -24,6 +24,8 @@ type Group struct {
 	Avatar string `json:"avatar,omitempty"`
 	// CreatedUID holds the value of the "created_uid" field.
 	CreatedUID int64 `json:"created_uid,omitempty"`
+	// MaxMembers holds the value of the "max_members" field.
+	MaxMembers int `json:"max_members,omitempty"`
 	// Mode holds the value of the "mode" field.
 	Mode int8 `json:"mode,omitempty"`
 	// Type holds the value of the "type" field.
@@ -49,7 +51,7 @@ func (*Group) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case group.FieldID, group.FieldOwner, group.FieldCreatedUID, group.FieldMode, group.FieldType, group.FieldStatus, group.FieldInviteMode:
+		case group.FieldID, group.FieldOwner, group.FieldCreatedUID, group.FieldMaxMembers, group.FieldMode, group.FieldType, group.FieldStatus, group.FieldInviteMode:
 			values[i] = new(sql.NullInt64)
 		case group.FieldName, group.FieldAvatar, group.FieldNotice, group.FieldIntroduction:
 			values[i] = new(sql.NullString)
@@ -99,6 +101,12 @@ func (gr *Group) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field created_uid", values[i])
 			} else if value.Valid {
 				gr.CreatedUID = value.Int64
+			}
+		case group.FieldMaxMembers:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field max_members", values[i])
+			} else if value.Valid {
+				gr.MaxMembers = int(value.Int64)
 			}
 		case group.FieldMode:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -191,6 +199,8 @@ func (gr *Group) String() string {
 	builder.WriteString(gr.Avatar)
 	builder.WriteString(", created_uid=")
 	builder.WriteString(fmt.Sprintf("%v", gr.CreatedUID))
+	builder.WriteString(", max_members=")
+	builder.WriteString(fmt.Sprintf("%v", gr.MaxMembers))
 	builder.WriteString(", mode=")
 	builder.WriteString(fmt.Sprintf("%v", gr.Mode))
 	builder.WriteString(", type=")

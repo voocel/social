@@ -74,6 +74,27 @@ func (gu *GroupUpdate) AddCreatedUID(i int64) *GroupUpdate {
 	return gu
 }
 
+// SetMaxMembers sets the "max_members" field.
+func (gu *GroupUpdate) SetMaxMembers(i int) *GroupUpdate {
+	gu.mutation.ResetMaxMembers()
+	gu.mutation.SetMaxMembers(i)
+	return gu
+}
+
+// SetNillableMaxMembers sets the "max_members" field if the given value is not nil.
+func (gu *GroupUpdate) SetNillableMaxMembers(i *int) *GroupUpdate {
+	if i != nil {
+		gu.SetMaxMembers(*i)
+	}
+	return gu
+}
+
+// AddMaxMembers adds i to the "max_members" field.
+func (gu *GroupUpdate) AddMaxMembers(i int) *GroupUpdate {
+	gu.mutation.AddMaxMembers(i)
+	return gu
+}
+
 // SetMode sets the "mode" field.
 func (gu *GroupUpdate) SetMode(i int8) *GroupUpdate {
 	gu.mutation.ResetMode()
@@ -365,6 +386,20 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: group.FieldCreatedUID,
 		})
 	}
+	if value, ok := gu.mutation.MaxMembers(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: group.FieldMaxMembers,
+		})
+	}
+	if value, ok := gu.mutation.AddedMaxMembers(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: group.FieldMaxMembers,
+		})
+	}
 	if value, ok := gu.mutation.Mode(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt8,
@@ -536,6 +571,27 @@ func (guo *GroupUpdateOne) SetCreatedUID(i int64) *GroupUpdateOne {
 // AddCreatedUID adds i to the "created_uid" field.
 func (guo *GroupUpdateOne) AddCreatedUID(i int64) *GroupUpdateOne {
 	guo.mutation.AddCreatedUID(i)
+	return guo
+}
+
+// SetMaxMembers sets the "max_members" field.
+func (guo *GroupUpdateOne) SetMaxMembers(i int) *GroupUpdateOne {
+	guo.mutation.ResetMaxMembers()
+	guo.mutation.SetMaxMembers(i)
+	return guo
+}
+
+// SetNillableMaxMembers sets the "max_members" field if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableMaxMembers(i *int) *GroupUpdateOne {
+	if i != nil {
+		guo.SetMaxMembers(*i)
+	}
+	return guo
+}
+
+// AddMaxMembers adds i to the "max_members" field.
+func (guo *GroupUpdateOne) AddMaxMembers(i int) *GroupUpdateOne {
+	guo.mutation.AddMaxMembers(i)
 	return guo
 }
 
@@ -852,6 +908,20 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error
 			Type:   field.TypeInt64,
 			Value:  value,
 			Column: group.FieldCreatedUID,
+		})
+	}
+	if value, ok := guo.mutation.MaxMembers(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: group.FieldMaxMembers,
+		})
+	}
+	if value, ok := guo.mutation.AddedMaxMembers(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: group.FieldMaxMembers,
 		})
 	}
 	if value, ok := guo.mutation.Mode(); ok {

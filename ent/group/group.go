@@ -15,6 +15,8 @@ const (
 	FieldAvatar = "avatar"
 	// FieldCreatedUID holds the string denoting the created_uid field in the database.
 	FieldCreatedUID = "created_uid"
+	// FieldMaxMembers holds the string denoting the max_members field in the database.
+	FieldMaxMembers = "max_members"
 	// FieldMode holds the string denoting the mode field in the database.
 	FieldMode = "mode"
 	// FieldType holds the string denoting the type field in the database.
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldOwner,
 	FieldAvatar,
 	FieldCreatedUID,
+	FieldMaxMembers,
 	FieldMode,
 	FieldType,
 	FieldStatus,
@@ -68,6 +71,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultAvatar holds the default value on creation for the "avatar" field.
 	DefaultAvatar string
+	// DefaultMaxMembers holds the default value on creation for the "max_members" field.
+	DefaultMaxMembers int
 	// DefaultMode holds the default value on creation for the "mode" field.
 	DefaultMode int8
 	// DefaultType holds the default value on creation for the "type" field.
