@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"social/config"
 	"social/internal/transport"
+	"social/pkg/util"
 )
 
 type proxy struct {
@@ -26,7 +27,7 @@ func (p *proxy) getNodeClient(name string) (transport.NodeClient, error) {
 func (p *proxy) push(ctx context.Context, cid, uid int64, route int32, message []byte) error {
 	var serviceName string
 	for _, v := range config.Conf.Transport.DiscoveryNode {
-		if inSlice(v.Routers, route) {
+		if util.InSlice(v.Routers, route) {
 			serviceName = v.Name
 		}
 	}
@@ -46,13 +47,4 @@ func (p *proxy) push(ctx context.Context, cid, uid int64, route int32, message [
 			Buffer: message,
 		},
 	)
-}
-
-func inSlice(s []int32, v int32) bool {
-	for _, i := range s {
-		if i == v {
-			return true
-		}
-	}
-	return false
 }
