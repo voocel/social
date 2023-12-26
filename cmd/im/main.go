@@ -6,6 +6,7 @@ import (
 	"social/config"
 	"social/internal/app/im"
 	"social/pkg/log"
+	"social/pkg/redis"
 	"syscall"
 )
 
@@ -22,6 +23,7 @@ func main() {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			n.Stop()
 			log.Sync()
+			redis.Close()
 			return
 		case syscall.SIGHUP:
 			config.LoadConfig()
