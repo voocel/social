@@ -13,7 +13,7 @@ func TestClient(t *testing.T) {
 		fmt.Println("connect")
 	})
 
-	c.OnReceive(func(conn network.Conn, msg []byte, msgType int) {
+	c.OnReceive(func(conn network.Conn, msg []byte) {
 		fmt.Println("msg: ", string(msg))
 	})
 
@@ -28,7 +28,7 @@ func TestClient(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		b := []byte("test\n")
-		if err = conn.Send(b, 1); err != nil {
+		if err = conn.Send(b); err != nil {
 			fmt.Println("send err:", err)
 		}
 	}
