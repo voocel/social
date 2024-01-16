@@ -1,6 +1,6 @@
 <p align="center" style="color: red">
     <h1 align="center">Social</h1>
-    <p align="center">一款社交app</p>
+    <p align="center">A social application</p>
 </p>
 
 
@@ -34,3 +34,7 @@ You are very welcome to join！[Raise an issue](https://github.com/voocel/social
 ## Thanks
 
 Thanks to [JetBrains](https://jb.gg/OpenSourceSupport) for supporting open source projects!
+
+## License
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvoocel%2Fvoocel.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvoocel%2Fvoocel?ref=badge_large&issueType=license)
