@@ -32,7 +32,10 @@ func getRouters(entClient *ent.Client) (routers []Router) {
 	messageHandler := handler.NewMessageHandler(m)
 	mr := newMessageRouter(messageHandler)
 
-	routers = append(routers, ur, fr, gr, mr)
+	fileHandler := handler.NewFileHandler()
+	file := newFileRouter(fileHandler)
+
+	routers = append(routers, ur, fr, gr, mr, file)
 	return
 }
 
@@ -53,7 +56,6 @@ func (r *userRouter) Load(g *gin.Engine) {
 		ur.GET("/info", r.h.Info)
 		ur.GET("/getEmoji", r.h.GetEmoji)
 		ur.PUT("/updateAvatar", r.h.UpdateAvatar)
-		ur.POST("/uploadFile", r.h.UploadFile)
 	}
 }
 
@@ -108,5 +110,21 @@ func (r *messageRouter) Load(g *gin.Engine) {
 	mr := g.Group("/v1/message")
 	{
 		mr.GET("/list", r.h.GetMessage)
+	}
+}
+
+// ######################### File Router #########################
+type fileRouter struct {
+	h *handler.FileHandler
+}
+
+func newFileRouter(f *handler.FileHandler) *fileRouter {
+	return &fileRouter{h: f}
+}
+
+func (r *fileRouter) Load(g *gin.Engine) {
+	file := g.Group("/v1/file")
+	{
+		file.POST("/uploadFile", r.h.UploadFile)
 	}
 }
