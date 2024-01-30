@@ -3,18 +3,15 @@ package handler
 import (
 	"context"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"social/config"
 	"social/ent"
 	"social/internal/app/http/middleware"
 	"social/internal/entity"
 	"social/internal/usecase"
 	"social/pkg/files"
-	"social/pkg/log"
 )
 
 type UserHandler struct {
@@ -124,43 +121,6 @@ func (h *UserHandler) RetrievePassword(c *gin.Context) {
 
 func (h *UserHandler) GetEmoji(c *gin.Context) {
 
-}
-
-func (h *UserHandler) UploadFile(c *gin.Context) {
-	resp := new(ApiResponse)
-	user, exists := c.Get("jwt-user")
-	_, ok := user.(*ent.User)
-	if !exists || !ok {
-		resp.Code = 1
-		resp.Message = "token invalid"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	file, err := c.FormFile("file")
-	if err != nil {
-		resp.Code = 1
-		resp.Message = "params invalid"
-		c.JSON(http.StatusOK, resp)
-		log.Error(err)
-		return
-	}
-	ext := filepath.Ext(file.Filename)
-	filename := files.GenFilename(ext)
-	folderPath := filepath.Join(config.Conf.App.StaticRootPath, "images", filename)
-	if err := c.SaveUploadedFile(file, folderPath); err != nil {
-		resp.Code = 1
-		resp.Message = "upload file fail"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	data := map[string]interface{}{
-		"url": config.Conf.App.Domain + "/" + folderPath,
-	}
-	resp.Message = "ok"
-	resp.Data = data
-	c.JSON(http.StatusOK, resp)
 }
 
 func (h *UserHandler) UpdateAvatar(c *gin.Context) {
