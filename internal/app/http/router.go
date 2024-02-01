@@ -55,7 +55,6 @@ func (r *userRouter) Load(g *gin.Engine) {
 		ur.POST("/register", r.h.Register)
 		ur.GET("/info", r.h.Info)
 		ur.GET("/getEmoji", r.h.GetEmoji)
-		ur.PUT("/updateAvatar", r.h.UpdateAvatar)
 	}
 }
 
@@ -126,5 +125,6 @@ func (r *fileRouter) Load(g *gin.Engine) {
 	file := g.Group("/v1/file")
 	{
 		file.POST("/uploadFile", r.h.UploadFile)
+		file.PUT("/updateAvatar", r.h.UpdateAvatar)
 	}
 }
