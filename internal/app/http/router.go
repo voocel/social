@@ -32,7 +32,7 @@ func getRouters(entClient *ent.Client) (routers []Router) {
 	messageHandler := handler.NewMessageHandler(m)
 	mr := newMessageRouter(messageHandler)
 
-	fileHandler := handler.NewFileHandler()
+	fileHandler := handler.NewFileHandler(u)
 	file := newFileRouter(fileHandler)
 
 	routers = append(routers, ur, fr, gr, mr, file)
