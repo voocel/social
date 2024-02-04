@@ -7,11 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"social/ent"
 	"social/internal/app/http/middleware"
 	"social/internal/entity"
 	"social/internal/usecase"
-	"social/pkg/files"
 )
 
 type UserHandler struct {
@@ -121,35 +119,4 @@ func (h *UserHandler) RetrievePassword(c *gin.Context) {
 
 func (h *UserHandler) GetEmoji(c *gin.Context) {
 
-}
-
-func (h *UserHandler) UpdateAvatar(c *gin.Context) {
-	resp := new(ApiResponse)
-	user, exists := c.Get("jwt-user")
-	u, ok := user.(*ent.User)
-	if !exists || !ok {
-		resp.Code = 1
-		resp.Message = "token invalid"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	base64Data := c.PostForm("image")
-	path, err := files.ImgFromBase64("", base64Data)
-	if err != nil {
-		resp.Code = 1
-		resp.Message = "user not exists"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-	_, err = h.userUsecase.UpdateFieldUser(c, u.ID, path)
-	if err != nil {
-		resp.Code = 1
-		resp.Message = "update not image fail"
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	resp.Message = "ok"
-	c.JSON(http.StatusOK, resp)
 }
