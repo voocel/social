@@ -92,7 +92,10 @@ func (c *core) message(req node.Request) {
 		ContentType: int8(msg.ContentType),
 		Status:      0,
 	}
-	c.msgUseCase.AddMessage(context.Background(), info)
+	if _, err = c.msgUseCase.AddMessage(context.Background(), info); err != nil {
+		log.Errorf("[IM]AddMessage err: %v", err)
+		return
+	}
 
 	err = req.Respond(context.Background(), msg.Receiver.Id, msg)
 	if err != nil {
