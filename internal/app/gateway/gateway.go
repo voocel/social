@@ -132,11 +132,7 @@ func (g *Gateway) handleConnect(conn network.Conn) {
 	log.Debugf("[Gateway] user connect successful: %v", conn.RemoteAddr())
 	uid, err := g.parseUid(conn)
 	if err != nil {
-		b, _ := packet.Pack(&packet.Message{
-			Seq:   0,
-			Route: route.Auth,
-		})
-		conn.Send(b)
+		g.send(conn, route.Auth)
 		log.Errorf("[Gateway] user connect parse uid err: %v", err)
 		return
 	}
@@ -163,8 +159,9 @@ func (g *Gateway) handleReceive(conn network.Conn, data []byte) {
 
 	switch msg.Route {
 	case route.Heartbeat:
-		g.heartbeat(conn)
+		g.send(conn, route.Heartbeat)
 		return
+	default:
 	}
 
 	err = g.proxy.push(ctx, conn.Cid(), conn.Uid(), msg.Route, msg.Buffer)
@@ -179,13 +176,14 @@ func (g *Gateway) handleDisconnect(conn network.Conn, err error) {
 	g.sessionGroup.RemoveByCid(conn.Cid())
 }
 
-// send heartbeat
-func (g *Gateway) heartbeat(conn network.Conn) {
+func (g *Gateway) send(conn network.Conn, route int32) {
 	b, _ := packet.Pack(&packet.Message{
 		Seq:   0,
-		Route: route.Heartbeat,
+		Route: route,
 	})
-	conn.Send(b)
+	if err := conn.Send(b); err != nil {
+		log.Errorf("gateway send to user[%v] error: %v", conn.Uid(), err)
+	}
 }
 
 // 上线后处理离线消息
