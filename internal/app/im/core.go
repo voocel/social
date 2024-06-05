@@ -41,7 +41,7 @@ func (c *core) Init() {
 func (c *core) Default(req node.Request) {
 	var msg = new(pb.MsgEntity)
 	if err := json.Unmarshal(req.Buffer, msg); err != nil {
-		log.Errorf("[IM]Unmarshal message err: %v", err)
+		log.Errorf("[IM]Default unmarshal message err: %v", err)
 		return
 	}
 	log.Debugf("[IM]Default receive data: %v", msg)
