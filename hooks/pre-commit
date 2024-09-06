@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#
+#  Go code style automatic review
+#
+#  Usage: Copy this file to the repository directory ".git/hooks"
+#
+
+set -e
+
+# Check style for main and test
+go fmt .
+
+# Check the exit status
+if [ $? -eq 0 ]; then
+  echo "Great job! Your code complies with the standards."
+else
+  echo "Code review failed. Please make the necessary changes before submitting."
+  exit 1
+fi
